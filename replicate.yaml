@@ -1,0 +1,19 @@
+# replicate.yaml
+name: sd-lora-roomdesign
+description: Stable Diffusion v1.5 with LoRA support and image-to-image
+input:
+  prompt:
+    type: string
+    required: true
+  init_image:
+    type: string
+    required: true
+    description: URL or base64 image for image-to-image input
+  strength:
+    type: number
+    default: 0.75
+  guidance_scale:
+    type: number
+    default: 7.5
+output:
+  type: string

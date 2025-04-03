@@ -1,0 +1,14 @@
+build:
+  gpu: true
+  python_version: "3.10"
+  python_packages:
+    - torch
+    - diffusers[torch]
+    - transformers
+    - peft
+    - accelerate
+    - safetensors
+    - opencv-python
+    - pillow
+
+predict: "predict.py:Predictor"
