@@ -21,7 +21,7 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
-        prompt: str = Input(description="Prompt for the 'after' room design"),
+        prompt: str = Input(description="Prompt describing your dream 'after' room"),
         image: Path = Input(description="Input image (the 'before' room)"),
         strength: float = Input(default=0.75, ge=0.0, le=1.0, description="How much to transform the image"),
         guidance: float = Input(default=7.5, ge=1.0, le=20.0, description="Prompt guidance strength")
