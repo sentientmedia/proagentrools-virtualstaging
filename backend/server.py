@@ -90,9 +90,10 @@ async def process_interior_design(file: UploadFile = File(...)):
         # Process with Replicate
         try:
             with open(temp_file_path, "rb") as image_file:
+                # Using a working interior design model from Replicate
                 output = replicate.run(
-                    "sentientmedia/proagenttools25",
-                    input={"image": image_file},
+                    "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
+                    input={"image": image_file, "prompt": "modern, professionally designed interior space"},
                     api_token=REPLICATE_API_TOKEN
                 )
             
