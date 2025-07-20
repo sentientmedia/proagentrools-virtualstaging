@@ -90,12 +90,14 @@ async def process_interior_design(file: UploadFile = File(...)):
         # Process with Replicate using your custom trained model
         try:
             with open(temp_file_path, "rb") as image_file:
-                # Using your custom trained ProAgentTools interior design model
-                output = replicate.run(
-                    "deployments/sentientmedia/proagenttools25",
-                    input={"image": image_file},
-                    api_token=REPLICATE_API_TOKEN
-                )
+                # Using your custom trained ProAgentTools interior design model deployment
+                client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+                deployment = client.deployments.get("sentientmedia/proagenttools25")
+                prediction = deployment.predictions.create(input={"image": image_file})
+                
+                # Wait for completion
+                prediction.wait()
+                output = prediction.output
             
             # Extract URL from output - handle different Replicate response formats
             if hasattr(output, 'url'):
