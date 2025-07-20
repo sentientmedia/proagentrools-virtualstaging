@@ -97,8 +97,22 @@ async def process_interior_design(file: UploadFile = File(...)):
                     api_token=REPLICATE_API_TOKEN
                 )
             
-            # Extract URL from output (format may vary)
-            processed_url = output[0] if isinstance(output, list) else output
+            # Extract URL from output - handle different Replicate response formats
+            if hasattr(output, 'url'):
+                # FileOutput object
+                processed_url = str(output.url)
+            elif isinstance(output, str):
+                # Direct URL string
+                processed_url = output
+            elif isinstance(output, list) and len(output) > 0:
+                # List of URLs or FileOutput objects
+                if hasattr(output[0], 'url'):
+                    processed_url = str(output[0].url)
+                else:
+                    processed_url = str(output[0])
+            else:
+                # Try to convert to string
+                processed_url = str(output)
             
             # Update database with success
             await db.interior_designs.update_one(
