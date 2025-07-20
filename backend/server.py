@@ -145,9 +145,15 @@ async def process_interior_design(file: UploadFile = File(...)):
 async def get_interior_design_history():
     """Get user's interior design processing history"""
     try:
-        designs = await db.interior_designs.find().sort("upload_timestamp", -1).limit(20).to_list(20)
-        return {"designs": designs}
+        designs_list = []
+        async for design in db.interior_designs.find().sort("upload_timestamp", -1).limit(20):
+            # Convert ObjectId to string for JSON serialization
+            if '_id' in design:
+                design['_id'] = str(design['_id'])
+            designs_list.append(design)
+        return {"designs": designs_list}
     except Exception as e:
+        logger.error(f"Error retrieving interior design history: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to retrieve history: {str(e)}")
 
 # GPT Concept Wrapper Routes
