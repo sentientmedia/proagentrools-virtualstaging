@@ -144,7 +144,10 @@ const InteriorDesignTool = () => {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center space-x-3">
                     <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                    <span className="text-blue-800">Processing your image with AI...</span>
+                    <div>
+                      <span className="text-blue-800 font-medium">Processing your image with AI...</span>
+                      <p className="text-blue-600 text-sm mt-1">This may take 1-2 minutes for the best quality results</p>
+                    </div>
                   </div>
                 </div>
               )}
