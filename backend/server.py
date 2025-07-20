@@ -87,13 +87,13 @@ async def process_interior_design(file: UploadFile = File(...)):
         
         await db.interior_designs.insert_one(design_request.dict())
         
-        # Process with Replicate
+        # Process with Replicate using your custom trained model
         try:
             with open(temp_file_path, "rb") as image_file:
-                # Using a working interior design model from Replicate
+                # Using your custom trained ProAgentTools interior design model
                 output = replicate.run(
-                    "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
-                    input={"image": image_file, "prompt": "modern, professionally designed interior space"},
+                    "deployments/sentientmedia/proagenttools25",
+                    input={"image": image_file},
                     api_token=REPLICATE_API_TOKEN
                 )
             
