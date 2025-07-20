@@ -93,7 +93,10 @@ async def process_interior_design(file: UploadFile = File(...)):
                 # Using your custom trained ProAgentTools interior design model deployment
                 client = replicate.Client(api_token=REPLICATE_API_TOKEN)
                 deployment = client.deployments.get("sentientmedia/proagenttools25")
-                prediction = deployment.predictions.create(input={"image": image_file})
+                prediction = deployment.predictions.create(input={
+                    "image": image_file,
+                    "prompt": "modern, professionally designed interior space with stylish furniture and elegant decor"
+                })
                 
                 # Wait for completion
                 prediction.wait()
