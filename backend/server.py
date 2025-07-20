@@ -286,9 +286,15 @@ async def get_available_concepts():
 async def get_gpt_concepts_history():
     """Get user's GPT concepts usage history"""
     try:
-        concepts = await db.gpt_concepts.find().sort("timestamp", -1).limit(20).to_list(20)
-        return {"concepts": concepts}
+        concepts_list = []
+        async for concept in db.gpt_concepts.find().sort("timestamp", -1).limit(20):
+            # Convert ObjectId to string for JSON serialization
+            if '_id' in concept:
+                concept['_id'] = str(concept['_id'])
+            concepts_list.append(concept)
+        return {"concepts": concepts_list}
     except Exception as e:
+        logger.error(f"Error retrieving GPT concepts history: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to retrieve history: {str(e)}")
 
 # Main route
