@@ -46,6 +46,7 @@ class InteriorDesignRequest(BaseModel):
     status: str = "processing"
     processed_image_url: Optional[str] = None
     error_message: Optional[str] = None
+    prediction_id: Optional[str] = None
 
 class GPTConceptRequest(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
