@@ -63,7 +63,7 @@ class GPTConceptResponse(BaseModel):
 # Interior Design Model Routes
 @api_router.post("/interior-design/process")
 async def process_interior_design(file: UploadFile = File(...)):
-    """Process an interior image using the trained Replicate model"""
+    """Process an interior image using the trained Replicate model - Async processing"""
     try:
         # Validate file type
         if not file.content_type.startswith('image/'):
@@ -79,7 +79,7 @@ async def process_interior_design(file: UploadFile = File(...)):
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # Create database record
+        # Create database record with processing status
         design_request = InteriorDesignRequest(
             original_filename=file.filename,
             status="processing"
@@ -87,57 +87,39 @@ async def process_interior_design(file: UploadFile = File(...)):
         
         await db.interior_designs.insert_one(design_request.dict())
         
-        # Process with Replicate using your custom trained model
+        # Start async processing with Replicate
         try:
             with open(temp_file_path, "rb") as image_file:
                 # Using your custom trained ProAgentTools interior design model deployment
                 client = replicate.Client(api_token=REPLICATE_API_TOKEN)
                 deployment = client.deployments.get("sentientmedia/proagenttools25")
+                
+                # Create prediction without waiting (async)
                 prediction = deployment.predictions.create(input={
                     "image": image_file,
                     "prompt": "modern, professionally designed interior space with stylish furniture and elegant decor"
                 })
                 
-                # Wait for completion
-                prediction.wait()
-                output = prediction.output
-            
-            # Extract URL from output - handle different Replicate response formats
-            if hasattr(output, 'url'):
-                # FileOutput object
-                processed_url = str(output.url)
-            elif isinstance(output, str):
-                # Direct URL string
-                processed_url = output
-            elif isinstance(output, list) and len(output) > 0:
-                # List of URLs or FileOutput objects
-                if hasattr(output[0], 'url'):
-                    processed_url = str(output[0].url)
-                else:
-                    processed_url = str(output[0])
-            else:
-                # Try to convert to string
-                processed_url = str(output)
-            
-            # Update database with success
-            await db.interior_designs.update_one(
-                {"id": design_request.id},
-                {"$set": {
-                    "status": "completed",
-                    "processed_image_url": processed_url
-                }}
-            )
-            
-            # Clean up temp file
-            temp_file_path.unlink()
-            
-            return {
-                "id": design_request.id,
-                "status": "completed",
-                "processed_image_url": processed_url,
-                "original_filename": file.filename
-            }
-            
+                # Store prediction ID for status tracking
+                await db.interior_designs.update_one(
+                    {"id": design_request.id},
+                    {"$set": {
+                        "prediction_id": prediction.id,
+                        "status": "submitted"
+                    }}
+                )
+                
+                # Clean up temp file immediately
+                temp_file_path.unlink()
+                
+                return {
+                    "id": design_request.id,
+                    "status": "submitted",
+                    "message": "Image processing started. Check status or come back in 2-3 minutes.",
+                    "prediction_id": prediction.id,
+                    "original_filename": file.filename
+                }
+                
         except Exception as replicate_error:
             # Update database with error
             error_msg = str(replicate_error)
@@ -153,12 +135,104 @@ async def process_interior_design(file: UploadFile = File(...)):
             if temp_file_path.exists():
                 temp_file_path.unlink()
                 
-            raise HTTPException(status_code=500, detail=f"Interior design processing failed: {error_msg}")
+            raise HTTPException(status_code=500, detail=f"Failed to start processing: {error_msg}")
         
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+@api_router.get("/interior-design/status/{design_id}")
+async def check_design_status(design_id: str):
+    """Check the status of an interior design processing job"""
+    try:
+        design = await db.interior_designs.find_one({"id": design_id})
+        if not design:
+            raise HTTPException(status_code=404, detail="Design not found")
+        
+        # If we have a prediction ID and status is not completed/failed, check Replicate
+        if design.get("prediction_id") and design.get("status") in ["submitted", "processing"]:
+            try:
+                client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+                prediction = client.predictions.get(design["prediction_id"])
+                
+                if prediction.status == "succeeded":
+                    # Extract URL from output
+                    processed_url = None
+                    if hasattr(prediction.output, 'url'):
+                        processed_url = str(prediction.output.url)
+                    elif isinstance(prediction.output, str):
+                        processed_url = prediction.output
+                    elif isinstance(prediction.output, list) and len(prediction.output) > 0:
+                        if hasattr(prediction.output[0], 'url'):
+                            processed_url = str(prediction.output[0].url)
+                        else:
+                            processed_url = str(prediction.output[0])
+                    else:
+                        processed_url = str(prediction.output)
+                    
+                    # Update database with success
+                    await db.interior_designs.update_one(
+                        {"id": design_id},
+                        {"$set": {
+                            "status": "completed",
+                            "processed_image_url": processed_url
+                        }}
+                    )
+                    
+                    return {
+                        "id": design_id,
+                        "status": "completed",
+                        "processed_image_url": processed_url,
+                        "original_filename": design.get("original_filename")
+                    }
+                    
+                elif prediction.status == "failed":
+                    error_msg = prediction.error or "Unknown error occurred"
+                    await db.interior_designs.update_one(
+                        {"id": design_id},
+                        {"$set": {
+                            "status": "failed",
+                            "error_message": error_msg
+                        }}
+                    )
+                    
+                    return {
+                        "id": design_id,
+                        "status": "failed",
+                        "error_message": error_msg
+                    }
+                    
+                elif prediction.status in ["starting", "processing"]:
+                    # Update status but don't change anything else
+                    await db.interior_designs.update_one(
+                        {"id": design_id},
+                        {"$set": {"status": "processing"}}
+                    )
+                    
+                    return {
+                        "id": design_id,
+                        "status": "processing",
+                        "message": "Your image is being processed. This may take 2-3 minutes due to cold boot."
+                    }
+                
+            except Exception as e:
+                logger.error(f"Error checking prediction status: {str(e)}")
+                # Return current database status if Replicate check fails
+        
+        # Return current database status
+        return {
+            "id": design_id,
+            "status": design.get("status", "unknown"),
+            "processed_image_url": design.get("processed_image_url"),
+            "error_message": design.get("error_message"),
+            "original_filename": design.get("original_filename")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to check status: {str(e)}")
 
 @api_router.get("/interior-design/history")
 async def get_interior_design_history():
