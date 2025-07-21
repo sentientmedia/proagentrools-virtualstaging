@@ -91,9 +91,9 @@ async def process_interior_design(file: UploadFile = File(...)):
         # Start async processing with Replicate
         try:
             with open(temp_file_path, "rb") as image_file:
-                # Using your custom trained ProAgentTools interior design model deployment
+                # Using your new custom trained ProAgentTools interior design model deployment
                 client = replicate.Client(api_token=REPLICATE_API_TOKEN)
-                deployment = client.deployments.get("sentientmedia/proagenttools25")
+                deployment = client.deployments.get("sentientmedia/pat-stager-deployment")
                 
                 # Create prediction without waiting (async)
                 prediction = deployment.predictions.create(input={
