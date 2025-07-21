@@ -64,6 +64,35 @@ const InteriorDesignTool = () => {
   const [processedImage, setProcessedImage] = useState(null);
   const [error, setError] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [currentJobId, setCurrentJobId] = useState(null);
+
+  const pollStatus = async (jobId) => {
+    try {
+      const response = await axios.get(`${API}/interior-design/status/${jobId}`);
+      const status = response.data;
+      
+      if (status.status === 'completed') {
+        setProcessedImage(status);
+        setProcessing(false);
+        setStatusMessage('');
+        setCurrentJobId(null);
+      } else if (status.status === 'failed') {
+        setError(status.error_message || 'Processing failed');
+        setProcessing(false);
+        setStatusMessage('');
+        setCurrentJobId(null);
+      } else if (status.status === 'processing' || status.status === 'submitted') {
+        setStatusMessage(status.message || 'Processing in progress...');
+        // Poll again in 10 seconds
+        setTimeout(() => pollStatus(jobId), 10000);
+      }
+    } catch (err) {
+      console.error('Status check failed:', err);
+      // Try again in 15 seconds if status check fails
+      setTimeout(() => pollStatus(jobId), 15000);
+    }
+  };
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -72,6 +101,7 @@ const InteriorDesignTool = () => {
     setProcessing(true);
     setError(null);
     setProcessedImage(null);
+    setStatusMessage('Uploading and starting AI processing...');
 
     try {
       const formData = new FormData();
@@ -83,11 +113,18 @@ const InteriorDesignTool = () => {
         },
       });
 
-      setProcessedImage(response.data);
+      // Start polling for status
+      const jobId = response.data.id;
+      setCurrentJobId(jobId);
+      setStatusMessage('Image submitted! Processing started - this may take 2-3 minutes due to AI model startup...');
+      
+      // Start polling status
+      setTimeout(() => pollStatus(jobId), 5000); // Start checking after 5 seconds
+
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to process image');
-    } finally {
       setProcessing(false);
+      setStatusMessage('');
     }
   }, []);
 
@@ -142,11 +179,16 @@ const InteriorDesignTool = () => {
 
               {processing && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                    <div>
-                      <span className="text-blue-800 font-medium">Processing your image with AI...</span>
-                      <p className="text-blue-600 text-sm mt-1">This may take 1-2 minutes for the best quality results</p>
+                  <div className="flex items-start space-x-3">
+                    <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mt-0.5"></div>
+                    <div className="flex-1">
+                      <span className="text-blue-800 font-medium">AI Processing in Progress</span>
+                      <p className="text-blue-600 text-sm mt-1">
+                        {statusMessage || 'Your custom interior design AI is starting up and processing your image...'}
+                      </p>
+                      <p className="text-blue-500 text-xs mt-2">
+                        ⏱️ Estimated time: 2-3 minutes (due to AI model cold boot)
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -169,16 +211,23 @@ const InteriorDesignTool = () => {
                       src={processedImage.processed_image_url}
                       alt="AI Enhanced Interior"
                       className="w-full rounded-lg shadow-lg"
+                      onLoad={() => console.log('Image loaded successfully')}
+                      onError={() => console.error('Failed to load processed image')}
                     />
                     <div className="flex justify-between items-center text-sm text-gray-600">
                       <span>Original: {processedImage.original_filename}</span>
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">Completed</span>
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">✅ Completed</span>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="bg-gray-100 rounded-xl p-6 h-64 flex items-center justify-center">
-                  <p className="text-gray-500">Upload an image to see the AI-enhanced result</p>
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-2">Upload an image to see the AI-enhanced result</p>
+                    {processing && (
+                      <p className="text-blue-600 text-sm">Your image will appear here when processing completes</p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
