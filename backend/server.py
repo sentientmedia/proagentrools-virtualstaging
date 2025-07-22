@@ -258,6 +258,33 @@ async def check_design_status(design_id: str):
                             "status": "processing",
                             "message": "Your image is being processed by RunPod. This may take 2-3 minutes."
                         }
+                    
+                    elif job_status == "IN_QUEUE":
+                        # Check if job has been stuck in queue too long
+                        design_time = design.get("upload_timestamp")
+                        if design_time:
+                            from datetime import datetime, timedelta
+                            time_diff = datetime.utcnow() - design_time
+                            if time_diff > timedelta(minutes=5):  # Stuck for more than 5 minutes
+                                await db.interior_designs.update_one(
+                                    {"id": design_id},
+                                    {"$set": {
+                                        "status": "failed",
+                                        "error_message": "RunPod workers are currently experiencing issues. Please try again later."
+                                    }}
+                                )
+                                
+                                return {
+                                    "id": design_id,
+                                    "status": "failed",
+                                    "error_message": "RunPod workers are currently experiencing issues. Please try again later."
+                                }
+                        
+                        return {
+                            "id": design_id,
+                            "status": "processing", 
+                            "message": "Your image is queued for processing. RunPod workers are starting up..."
+                        }
                 
             except Exception as e:
                 logger.error(f"Error checking RunPod status: {str(e)}")
