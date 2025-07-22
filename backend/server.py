@@ -111,19 +111,26 @@ async def process_interior_design(file: UploadFile = File(...)):
                 }
                 
                 # Make request to RunPod serverless endpoint
+                logger.info(f"Making request to RunPod endpoint: {RUNPOD_ENDPOINT}/run")
                 runpod_response = requests.post(
                     f"{RUNPOD_ENDPOINT}/run",
                     headers=headers,
-                    json=payload
+                    json=payload,
+                    timeout=30
                 )
                 
+                logger.info(f"RunPod response status: {runpod_response.status_code}")
+                logger.info(f"RunPod response headers: {runpod_response.headers}")
+                
                 if runpod_response.status_code != 200:
+                    logger.error(f"RunPod API error: {runpod_response.text}")
                     raise Exception(f"RunPod API error: {runpod_response.status_code} - {runpod_response.text}")
                 
                 result = runpod_response.json()
                 job_id = result.get("id")
                 
                 if not job_id:
+                    logger.error(f"No job ID in response: {result}")
                     raise Exception("No job ID returned from RunPod")
                 
                 # Store RunPod job ID for status tracking
