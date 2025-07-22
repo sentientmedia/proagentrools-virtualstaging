@@ -24,8 +24,9 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# API Keys
-REPLICATE_API_TOKEN = os.environ.get('REPLICATE_API_TOKEN')
+# API Keys  
+RUNPOD_ENDPOINT = "https://api.runpod.ai/v2/kfi0ulqzkpuu5e"
+RUNPOD_API_KEY = os.environ.get('REPLICATE_API_TOKEN')  # Reusing same env var for now
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 # Create the main app without a prefix
@@ -92,7 +93,7 @@ async def process_interior_design(file: UploadFile = File(...)):
         try:
             with open(temp_file_path, "rb") as image_file:
                 # Using your new custom trained ProAgentTools interior design model deployment
-                client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+                client = replicate.Client(api_token=RUNPOD_API_KEY)
                 deployment = client.deployments.get("sentientmedia/pat-stager-deployment")
                 
                 # Create prediction without waiting (async)
@@ -154,7 +155,7 @@ async def check_design_status(design_id: str):
         # If we have a prediction ID and status is not completed/failed, check Replicate
         if design.get("prediction_id") and design.get("status") in ["submitted", "processing"]:
             try:
-                client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+                client = replicate.Client(api_token=RUNPOD_API_KEY)
                 prediction = client.predictions.get(design["prediction_id"])
                 
                 if prediction.status == "succeeded":
