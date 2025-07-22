@@ -176,75 +176,85 @@ async def check_design_status(design_id: str):
         if not design:
             raise HTTPException(status_code=404, detail="Design not found")
         
-        # If we have a prediction ID and status is not completed/failed, check Replicate
+        # If we have a prediction ID and status is not completed/failed, check RunPod
         if design.get("prediction_id") and design.get("status") in ["submitted", "processing"]:
             try:
-                client = replicate.Client(api_token=RUNPOD_API_KEY)
-                prediction = client.predictions.get(design["prediction_id"])
+                # Check status with RunPod API
+                headers = {
+                    "Authorization": f"Bearer {RUNPOD_API_KEY}",
+                    "Content-Type": "application/json"
+                }
                 
-                if prediction.status == "succeeded":
-                    # Extract URL from output
-                    processed_url = None
-                    if hasattr(prediction.output, 'url'):
-                        processed_url = str(prediction.output.url)
-                    elif isinstance(prediction.output, str):
-                        processed_url = prediction.output
-                    elif isinstance(prediction.output, list) and len(prediction.output) > 0:
-                        if hasattr(prediction.output[0], 'url'):
-                            processed_url = str(prediction.output[0].url)
-                        else:
-                            processed_url = str(prediction.output[0])
-                    else:
-                        processed_url = str(prediction.output)
+                status_response = requests.get(
+                    f"{RUNPOD_ENDPOINT}/status/{design['prediction_id']}",
+                    headers=headers
+                )
+                
+                if status_response.status_code == 200:
+                    status_data = status_response.json()
+                    job_status = status_data.get("status")
                     
-                    # Update database with success
-                    await db.interior_designs.update_one(
-                        {"id": design_id},
-                        {"$set": {
-                            "status": "completed",
-                            "processed_image_url": processed_url
-                        }}
-                    )
-                    
-                    return {
-                        "id": design_id,
-                        "status": "completed",
-                        "processed_image_url": processed_url,
-                        "original_filename": design.get("original_filename")
-                    }
-                    
-                elif prediction.status == "failed":
-                    error_msg = prediction.error or "Unknown error occurred"
-                    await db.interior_designs.update_one(
-                        {"id": design_id},
-                        {"$set": {
+                    if job_status == "COMPLETED":
+                        # Extract the output image URL
+                        output_data = status_data.get("output")
+                        processed_url = None
+                        
+                        if isinstance(output_data, dict):
+                            processed_url = output_data.get("image_url") or output_data.get("output")
+                        elif isinstance(output_data, list) and len(output_data) > 0:
+                            processed_url = output_data[0]
+                        elif isinstance(output_data, str):
+                            processed_url = output_data
+                        
+                        if processed_url:
+                            # Update database with success
+                            await db.interior_designs.update_one(
+                                {"id": design_id},
+                                {"$set": {
+                                    "status": "completed",
+                                    "processed_image_url": processed_url
+                                }}
+                            )
+                            
+                            return {
+                                "id": design_id,
+                                "status": "completed",
+                                "processed_image_url": processed_url,
+                                "original_filename": design.get("original_filename")
+                            }
+                        
+                    elif job_status == "FAILED":
+                        error_msg = status_data.get("error", "Unknown error occurred")
+                        await db.interior_designs.update_one(
+                            {"id": design_id},
+                            {"$set": {
+                                "status": "failed",
+                                "error_message": error_msg
+                            }}
+                        )
+                        
+                        return {
+                            "id": design_id,
                             "status": "failed",
                             "error_message": error_msg
-                        }}
-                    )
-                    
-                    return {
-                        "id": design_id,
-                        "status": "failed",
-                        "error_message": error_msg
-                    }
-                    
-                elif prediction.status in ["starting", "processing"]:
-                    # Update status but don't change anything else
-                    await db.interior_designs.update_one(
-                        {"id": design_id},
-                        {"$set": {"status": "processing"}}
-                    )
-                    
-                    return {
-                        "id": design_id,
-                        "status": "processing",
-                        "message": "Your image is being processed. This may take 2-3 minutes due to cold boot."
-                    }
+                        }
+                        
+                    elif job_status in ["IN_QUEUE", "IN_PROGRESS"]:
+                        # Update status but don't change anything else
+                        await db.interior_designs.update_one(
+                            {"id": design_id},
+                            {"$set": {"status": "processing"}}
+                        )
+                        
+                        return {
+                            "id": design_id,
+                            "status": "processing",
+                            "message": "Your image is being processed by RunPod. This may take 2-3 minutes."
+                        }
                 
             except Exception as e:
-                logger.error(f"Error checking prediction status: {str(e)}")
-                # Return current database status if Replicate check fails
+                logger.error(f"Error checking RunPod status: {str(e)}")
+                # Return current database status if RunPod check fails
         
         # Return current database status
         return {
