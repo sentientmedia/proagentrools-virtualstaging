@@ -91,24 +91,46 @@ async def process_interior_design(file: UploadFile = File(...)):
         
         await db.interior_designs.insert_one(design_request.dict())
         
-        # Start async processing with Replicate
+        # Start async processing with RunPod
         try:
             with open(temp_file_path, "rb") as image_file:
-                # Using your new custom trained ProAgentTools interior design model deployment
-                client = replicate.Client(api_token=RUNPOD_API_KEY)
-                deployment = client.deployments.get("sentientmedia/pat-stager-deployment")
+                # Encode image as base64 for RunPod API
+                image_data = base64.b64encode(image_file.read()).decode('utf-8')
                 
-                # Create prediction without waiting (async)
-                prediction = deployment.predictions.create(input={
-                    "image": image_file,
-                    "prompt": "modern, professionally designed interior space with stylish furniture and elegant decor"
-                })
+                # Prepare RunPod API request
+                headers = {
+                    "Authorization": f"Bearer {RUNPOD_API_KEY}",
+                    "Content-Type": "application/json"
+                }
                 
-                # Store prediction ID for status tracking
+                payload = {
+                    "input": {
+                        "image": f"data:image/jpeg;base64,{image_data}",
+                        "prompt": "modern, professionally designed interior space with stylish furniture and elegant decor"
+                    }
+                }
+                
+                # Make request to RunPod serverless endpoint
+                runpod_response = requests.post(
+                    f"{RUNPOD_ENDPOINT}/run",
+                    headers=headers,
+                    json=payload
+                )
+                
+                if runpod_response.status_code != 200:
+                    raise Exception(f"RunPod API error: {runpod_response.status_code} - {runpod_response.text}")
+                
+                result = runpod_response.json()
+                job_id = result.get("id")
+                
+                if not job_id:
+                    raise Exception("No job ID returned from RunPod")
+                
+                # Store RunPod job ID for status tracking
                 await db.interior_designs.update_one(
                     {"id": design_request.id},
                     {"$set": {
-                        "prediction_id": prediction.id,
+                        "prediction_id": job_id,
                         "status": "submitted"
                     }}
                 )
@@ -119,8 +141,8 @@ async def process_interior_design(file: UploadFile = File(...)):
                 return {
                     "id": design_request.id,
                     "status": "submitted",
-                    "message": "Image processing started. Check status or come back in 2-3 minutes.",
-                    "prediction_id": prediction.id,
+                    "message": "Image processing started with RunPod. Check status or come back in 2-3 minutes.",
+                    "prediction_id": job_id,
                     "original_filename": file.filename
                 }
                 
