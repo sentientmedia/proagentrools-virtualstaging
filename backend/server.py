@@ -105,8 +105,10 @@ async def process_interior_design(file: UploadFile = File(...)):
                 
                 payload = {
                     "input": {
-                        "image": f"data:image/jpeg;base64,{image_data}",
-                        "prompt": "modern, professionally designed interior space with stylish furniture and elegant decor"
+                        "init_image": f"data:image/jpeg;base64,{image_data}",
+                        "prompt": "modern, professionally designed interior space with stylish furniture and elegant decor",
+                        "strength": 0.75,
+                        "guidance_scale": 7.5
                     }
                 }
                 
