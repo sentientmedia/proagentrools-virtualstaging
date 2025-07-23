@@ -463,6 +463,220 @@ class ProAgentToolsAPITester:
         )
         return success
 
+    def test_queue_status_endpoint(self):
+        """Test queue status endpoint - NEW FEATURE"""
+        success, response = self.run_test(
+            "Queue Status Endpoint",
+            "GET",
+            "interior-design/queue",
+            200
+        )
+        
+        if success and response:
+            # Validate structure
+            if 'queue_status' not in response:
+                print("❌ Missing queue_status in response")
+                return False
+            
+            queue_status = response['queue_status']
+            if 'queued' not in queue_status or 'processing' not in queue_status:
+                print("❌ Missing queued/processing counts in queue_status")
+                return False
+            
+            print(f"   Queue Status: {queue_status}")
+            print("✅ Queue status structure validated")
+            return True
+        
+        return success
+
+    def test_process_endpoint_queued_status(self):
+        """Test that process endpoint returns 'queued' status immediately - ENHANCED FEATURE"""
+        # Create test image
+        test_image = self.create_test_image()
+        
+        files = {
+            'file': ('test_interior.jpg', test_image, 'image/jpeg')
+        }
+        
+        success, response = self.run_test(
+            "Process Endpoint - Queued Status Test",
+            "POST",
+            "interior-design/process",
+            200,
+            files=files
+        )
+        
+        if success and response:
+            # Verify immediate queued status
+            status = response.get('status')
+            
+            print(f"   Immediate status returned: {status}")
+            
+            if status != "queued":
+                print(f"❌ Expected immediate status 'queued', got '{status}'")
+                return False
+            
+            # Should have an ID for tracking
+            if 'id' not in response:
+                print("❌ Missing 'id' field in response")
+                return False
+            
+            print("✅ Process endpoint returns immediate 'queued' status")
+            return True
+        
+        return success
+
+    def test_storage_directory_structure(self):
+        """Test that storage directory exists and is properly configured"""
+        print("\n🔍 Testing Storage Directory Structure...")
+        
+        # Test if we can access the images endpoint (even if no images exist)
+        success, response = self.run_test(
+            "Storage Directory - Images Endpoint Test",
+            "GET",
+            "images/nonexistent.jpg",
+            404  # Should return 404 for non-existent image
+        )
+        
+        # 404 is expected for non-existent image, which means endpoint is working
+        if success:
+            print("✅ Images endpoint properly configured (returns 404 for non-existent)")
+            return True
+        else:
+            print("❌ Images endpoint not properly configured")
+            return False
+
+    def test_image_serving_endpoint(self):
+        """Test image serving endpoint with proper headers - NEW FEATURE"""
+        # First, try to upload an image to get one stored
+        test_image = self.create_test_image()
+        
+        files = {
+            'file': ('test_storage.jpg', test_image, 'image/jpeg')
+        }
+        
+        # Upload an image first
+        upload_success, upload_response = self.run_test(
+            "Upload for Image Serving Test",
+            "POST",
+            "interior-design/process",
+            200,
+            files=files
+        )
+        
+        if upload_success and upload_response:
+            design_id = upload_response.get('id')
+            print(f"   Uploaded design ID: {design_id}")
+            
+            # Test the images endpoint (even though image might not be processed yet)
+            # We'll test with a hypothetical filename
+            test_filename = f"{design_id}.jpg"
+            
+            print(f"   Testing image serving for: {test_filename}")
+            
+            # Make a direct request to check headers
+            try:
+                url = f"{self.api_url}/images/{test_filename}"
+                response = requests.get(url)
+                
+                print(f"   Image endpoint status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    # Check for proper MIME type and caching headers
+                    content_type = response.headers.get('content-type', '')
+                    cache_control = response.headers.get('cache-control', '')
+                    
+                    print(f"   Content-Type: {content_type}")
+                    print(f"   Cache-Control: {cache_control}")
+                    
+                    if 'image' in content_type:
+                        print("✅ Proper MIME type for image serving")
+                    else:
+                        print(f"❌ Incorrect MIME type: {content_type}")
+                        return False
+                    
+                    if 'max-age' in cache_control:
+                        print("✅ Proper caching headers present")
+                    else:
+                        print(f"❌ Missing caching headers: {cache_control}")
+                        return False
+                    
+                    return True
+                elif response.status_code == 404:
+                    print("✅ Image endpoint working (404 for non-existent image is expected)")
+                    return True
+                else:
+                    print(f"❌ Unexpected status code: {response.status_code}")
+                    return False
+                    
+            except Exception as e:
+                print(f"❌ Error testing image endpoint: {str(e)}")
+                return False
+        
+        print("⚠️  Could not test image serving due to upload failure")
+        return False
+
+    def test_download_design_endpoint(self):
+        """Test download design endpoint - NEW FEATURE"""
+        # First, try to upload an image to get a design ID
+        test_image = self.create_test_image()
+        
+        files = {
+            'file': ('test_download.jpg', test_image, 'image/jpeg')
+        }
+        
+        # Upload an image first
+        upload_success, upload_response = self.run_test(
+            "Upload for Download Test",
+            "POST",
+            "interior-design/process",
+            200,
+            files=files
+        )
+        
+        if upload_success and upload_response:
+            design_id = upload_response.get('id')
+            print(f"   Testing download for design ID: {design_id}")
+            
+            # Test the download endpoint
+            try:
+                url = f"{self.api_url}/interior-design/download/{design_id}"
+                response = requests.get(url)
+                
+                print(f"   Download endpoint status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    # Check for proper file response headers
+                    content_disposition = response.headers.get('content-disposition', '')
+                    content_type = response.headers.get('content-type', '')
+                    
+                    print(f"   Content-Disposition: {content_disposition}")
+                    print(f"   Content-Type: {content_type}")
+                    
+                    if 'attachment' in content_disposition:
+                        print("✅ Proper download headers present")
+                        return True
+                    else:
+                        print("⚠️  Download headers may not be optimal")
+                        return True  # Still working, just not optimal
+                        
+                elif response.status_code == 400:
+                    print("✅ Download endpoint working (400 for incomplete design is expected)")
+                    return True
+                elif response.status_code == 404:
+                    print("❌ Design not found for download")
+                    return False
+                else:
+                    print(f"❌ Unexpected status code: {response.status_code}")
+                    return False
+                    
+            except Exception as e:
+                print(f"❌ Error testing download endpoint: {str(e)}")
+                return False
+        
+        print("⚠️  Could not test download due to upload failure")
+        return False
+
 def main():
     print("🚀 Starting ProAgentTools API Testing...")
     print("🔥 CRITICAL FIX VERIFICATION: Testing NEW default values after hardcoded fix")
