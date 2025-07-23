@@ -796,6 +796,10 @@ class ProAgentToolsAPITester:
 
     def test_process_endpoint_custom_parameters(self):
         """Test that process endpoint accepts custom designer/color_scheme parameters"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping authenticated test")
+            return False
+        
         # Create test image
         test_image = self.create_test_image()
         
@@ -810,13 +814,16 @@ class ProAgentToolsAPITester:
             'color_scheme': 'nomad_prism'  # Different from default
         }
         
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
         success, response = self.run_test(
-            "Process Endpoint - Custom Parameters Test",
+            "Process Endpoint - Custom Parameters Test (Authenticated)",
             "POST",
             "interior-design/process",
             200,
             data=data,
-            files=files
+            files=files,
+            headers=headers
         )
         
         if success and response:
