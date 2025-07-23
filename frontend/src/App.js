@@ -151,27 +151,44 @@ const InteriorDesignTool = () => {
     if (!isOpen || !designer) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-        <div className="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto m-4" onClick={e => e.stopPropagation()}>
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+        onClick={onClose}
+      >
+        <div 
+          className="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto m-4 shadow-2xl" 
+          onClick={e => e.stopPropagation()}
+          onMouseEnter={() => {
+            // Keep modal open when hovering over it
+          }}
+        >
           <div className="flex items-center mb-4">
             <img 
               src={designer.image_url} 
               alt={designer.name}
-              className="w-16 h-16 rounded-full object-cover mr-4"
+              className="w-16 h-16 rounded-full object-cover mr-4 border-2 border-gray-200"
             />
-            <div>
+            <div className="flex-1">
               <h3 className="text-2xl font-bold text-gray-900">{designer.name}</h3>
-              <p className="text-gray-600">{designer.description}</p>
+              <p className="text-blue-600 font-medium">{designer.description}</p>
             </div>
             <button 
               onClick={onClose}
-              className="ml-auto text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              className="ml-auto text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none"
             >
               ×
             </button>
           </div>
-          <div className="text-gray-700 whitespace-pre-line leading-relaxed">
+          <div className="text-gray-700 whitespace-pre-line leading-relaxed text-sm">
             {designer.full_bio}
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-200 text-center">
+            <button 
+              onClick={onClose}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
