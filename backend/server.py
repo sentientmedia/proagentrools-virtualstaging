@@ -625,6 +625,46 @@ async def get_analytics(current_admin: AdminUser = Depends(get_current_admin_use
         logger.error(f"Error retrieving analytics: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve analytics")
 
+# Development/Setup endpoints (remove in production)
+@api_router.post("/setup/create-admin")
+async def create_admin_user_endpoint(
+    email: EmailStr,
+    password: str,
+    full_name: str,
+    setup_key: str = "SETUP_ADMIN_2024"  # Simple protection
+):
+    """Create admin user (development only)"""
+    if setup_key != "SETUP_ADMIN_2024":
+        raise HTTPException(status_code=403, detail="Invalid setup key")
+    
+    try:
+        # Check if admin already exists
+        existing_admin = await db.admin_users.find_one({"email": email})
+        if existing_admin:
+            raise HTTPException(status_code=400, detail="Admin already exists")
+        
+        # Hash password
+        hashed_password = get_password_hash(password)
+        
+        # Create admin user
+        admin_user = {
+            "id": str(uuid.uuid4()),
+            "email": email,
+            "full_name": full_name,
+            "hashed_password": hashed_password,
+            "role": "admin",
+            "created_at": datetime.utcnow()
+        }
+        
+        # Insert admin user
+        await db.admin_users.insert_one(admin_user)
+        
+        return {"message": f"Admin user created: {email}"}
+        
+    except Exception as e:
+        logger.error(f"Error creating admin: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create admin")
+
 # Interior Design Configuration Endpoints
 @api_router.get("/interior-design/room-types")
 async def get_room_types():
