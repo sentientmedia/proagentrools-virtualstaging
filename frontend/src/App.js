@@ -169,8 +169,11 @@ const InteriorDesignTool = () => {
 
   const downloadImage = async (designId, filename) => {
     try {
+      console.log(`Attempting to download image for design ID: ${designId}`);
+      
       // Create a direct download link to the backend endpoint
       const downloadUrl = `${API}/interior-design/download/${designId}`;
+      console.log(`Download URL: ${downloadUrl}`);
       
       // Create a temporary link and trigger download
       const link = document.createElement('a');
@@ -180,6 +183,8 @@ const InteriorDesignTool = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      console.log('Download triggered successfully');
     } catch (err) {
       console.error('Failed to download image:', err);
       setError('Failed to download image');
