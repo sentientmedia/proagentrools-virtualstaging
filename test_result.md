@@ -186,8 +186,6 @@
 
 ## test_plan:
   current_focus:
-    - "Extract designer data from CSV and update backend"
-    - "Extract color scheme data from CSV and update backend" 
     - "Update frontend to work with new data structure"
   stuck_tasks: []
   test_all: false
