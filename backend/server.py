@@ -96,6 +96,22 @@ class GPTConceptResponse(BaseModel):
     response: str
     timestamp: datetime
 
+# Interior Design Configuration Endpoints
+@api_router.get("/interior-design/room-types")
+async def get_room_types():
+    """Get available room types"""
+    return {"room_types": ROOM_TYPES}
+
+@api_router.get("/interior-design/designers") 
+async def get_designers():
+    """Get available interior designers"""
+    return {"designers": DESIGNERS}
+
+@api_router.get("/interior-design/color-schemes")
+async def get_color_schemes():
+    """Get available color schemes"""
+    return {"color_schemes": COLOR_SCHEMES}
+
 # Interior Design Model Routes
 @api_router.post("/interior-design/process")
 async def process_interior_design(file: UploadFile = File(...)):
