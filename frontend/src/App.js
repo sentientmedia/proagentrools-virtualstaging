@@ -114,16 +114,20 @@ const InteriorDesignTool = () => {
   // Separate useEffect for polling that depends on activeJobs
   useEffect(() => {
     // Set up polling for queue status
-    const queueInterval = setInterval(loadQueueStatus, 3000);
+    const queueInterval = setInterval(loadQueueStatus, 2000); // More frequent
     const jobsInterval = setInterval(() => {
       if (activeJobs.length > 0) {
         updateActiveJobs();
       }
-    }, 2000);
+    }, 1500); // More frequent updates
+    
+    // Also refresh history periodically
+    const historyInterval = setInterval(loadHistory, 5000); // Refresh history every 5 seconds
     
     return () => {
       clearInterval(queueInterval);
       clearInterval(jobsInterval);
+      clearInterval(historyInterval);
     };
   }, [activeJobs.length]); // Only re-run when the number of active jobs changes
 
