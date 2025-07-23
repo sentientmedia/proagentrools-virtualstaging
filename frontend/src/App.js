@@ -376,6 +376,30 @@ const InteriorDesignTool = () => {
         </div>
 
         <div className="max-w-6xl mx-auto">
+          {/* Queue Status Bar */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-6">
+                <div className="text-sm">
+                  <span className="font-semibold text-blue-900">Queue Status:</span>
+                  <span className="ml-2 text-blue-700">
+                    {queueStatus.queued} queued, {queueStatus.processing} processing
+                  </span>
+                </div>
+                <div className="text-sm">
+                  <span className="font-semibold text-blue-900">Active Jobs:</span>
+                  <span className="ml-2 text-blue-700">{activeJobs.length}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+              >
+                {showHistory ? 'Hide History' : 'Show History'}
+              </button>
+            </div>
+          </div>
+
           {/* Step 1: Upload Image */}
           <div className="bg-gray-50 rounded-xl p-8 mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Step 1: Upload Your Interior Photo</h3>
@@ -396,7 +420,7 @@ const InteriorDesignTool = () => {
                 </div>
                 <div>
                   <p className="text-lg font-medium text-gray-900">
-                    {processing ? 'Processing...' : 'Drop your interior photo here'}
+                    {uploadedFile ? `Selected: ${uploadedFile.name}` : 'Drop your interior photo here'}
                   </p>
                   <p className="text-gray-500">or click to browse</p>
                 </div>
@@ -436,90 +460,103 @@ const InteriorDesignTool = () => {
             <div className="text-center">
               <button
                 onClick={handleSubmit}
-                disabled={!uploadedFile || processing}
+                disabled={!uploadedFile}
                 className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
-                  !uploadedFile || processing
+                  !uploadedFile
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700 transform hover:scale-105'
                 }`}
               >
-                {processing ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    <span>Processing...</span>
-                  </div>
-                ) : (
-                  'Generate AI Design'
-                )}
+                Add to Queue
               </button>
               {!uploadedFile && (
                 <p className="text-gray-500 text-sm mt-2">Please upload an image first</p>
               )}
+              {statusMessage && (
+                <p className="text-blue-600 text-sm mt-2">{statusMessage}</p>
+              )}
             </div>
           </div>
 
-          {/* Processing Status and Results */}
-          <div className="space-y-6">
-            {processing && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start space-x-3">
-                  <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mt-0.5"></div>
-                  <div className="flex-1">
-                    <span className="text-blue-800 font-medium">AI Design Processing</span>
-                    <p className="text-blue-600 text-sm mt-1">
-                      {statusMessage || 'Creating your custom design with AI...'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800">{error}</p>
-              </div>
-            )}
-
-            {/* Results Area */}
-            {processedImage && (
-              <div className="bg-gray-50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Custom Design</h3>
-                <div className="space-y-4">
-                  <img
-                    src={processedImage.processed_image_url}
-                    alt="AI Enhanced Interior"
-                    className="w-full rounded-lg shadow-lg"
-                    onLoad={() => console.log('Image loaded successfully')}
-                    onError={() => console.error('Failed to load processed image')}
-                  />
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex justify-between">
-                      <span>Original:</span>
-                      <span>{processedImage.original_filename}</span>
+          {/* Active Jobs Queue */}
+          {activeJobs.length > 0 && (
+            <div className="bg-white rounded-xl p-6 mb-8 border">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Active Jobs</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {activeJobs.map((job) => (
+                  <div key={job.id} className="bg-gray-50 rounded-lg p-4 border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-900">
+                        {job.original_filename}
+                      </span>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        job.status === 'queued' ? 'bg-yellow-100 text-yellow-800' :
+                        job.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {job.status}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Room Type:</span>
-                      <span>{roomTypes.find(r => r.id === processedImage.room_type)?.name || processedImage.room_type}</span>
+                    <div className="text-xs text-gray-600 space-y-1">
+                      <div>Room: {roomTypes.find(r => r.id === job.room_type)?.name}</div>
+                      <div>Designer: {designers.find(d => d.id === job.designer)?.name}</div>
+                      <div>Colors: {colorSchemes.find(c => c.id === job.color_scheme)?.name}</div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Designer:</span>
-                      <span>{designers.find(d => d.id === processedImage.designer)?.name || processedImage.designer}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Color Scheme:</span>
-                      <span>{colorSchemes.find(c => c.id === processedImage.color_scheme)?.name || processedImage.color_scheme}</span>
-                    </div>
-                    {processedImage.generated_prompt && (
-                      <div className="mt-4 p-3 bg-blue-50 rounded text-blue-800 text-xs">
-                        <strong>AI Prompt:</strong> {processedImage.generated_prompt.substring(0, 150)}...
+                    {job.status === 'processing' && (
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                        </div>
                       </div>
                     )}
-                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Completed</span>
                   </div>
-                </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* History Section */}
+          {showHistory && (
+            <div className="bg-white rounded-xl p-6 mb-8 border">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Design History</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {jobHistory.filter(job => job.status === 'completed').map((job) => (
+                  <div key={job.id} className="bg-gray-50 rounded-lg overflow-hidden">
+                    {job.processed_image_url && (
+                      <img
+                        src={job.processed_image_url}
+                        alt="Generated Design"
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      <div className="text-sm font-medium text-gray-900 mb-2">
+                        {job.original_filename}
+                      </div>
+                      <div className="text-xs text-gray-600 space-y-1 mb-3">
+                        <div>Room: {roomTypes.find(r => r.id === job.room_type)?.name}</div>
+                        <div>Designer: {designers.find(d => d.id === job.designer)?.name}</div>
+                        <div>Colors: {colorSchemes.find(c => c.id === job.color_scheme)?.name}</div>
+                      </div>
+                      <button
+                        onClick={() => downloadImage(job.id, job.original_filename)}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors"
+                      >
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+              <p className="text-red-800">{error}</p>
+            </div>
+          )}
         </div>
       </div>
       
