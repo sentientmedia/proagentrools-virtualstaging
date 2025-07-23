@@ -465,7 +465,8 @@ class ProAgentToolsAPITester:
 
 def main():
     print("🚀 Starting ProAgentTools API Testing...")
-    print("=" * 60)
+    print("🔥 CRITICAL FIX VERIFICATION: Testing NEW default values after hardcoded fix")
+    print("=" * 80)
     
     # Setup
     tester = ProAgentToolsAPITester()
@@ -481,6 +482,12 @@ def main():
     tester.test_room_types_endpoint()
     tester.test_designers_endpoint()
     tester.test_color_schemes_endpoint()
+    
+    # CRITICAL FIX VERIFICATION TESTS
+    print("\n🔥 CRITICAL FIX VERIFICATION - NEW Default Values...")
+    tester.test_process_endpoint_new_defaults()
+    tester.test_process_endpoint_custom_parameters()
+    tester.test_no_old_placeholder_data()
     
     # Test GPT Concept tools
     print("\n🤖 Testing GPT Concept Tools...")
@@ -502,7 +509,7 @@ def main():
     tester.test_invalid_endpoints()
     
     # Print final results
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 80)
     print(f"📊 FINAL RESULTS:")
     print(f"   Tests Run: {tester.tests_run}")
     print(f"   Tests Passed: {tester.tests_passed}")
@@ -510,9 +517,11 @@ def main():
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
+        print("✅ CRITICAL FIX VERIFIED: NEW default values working correctly")
         return 0
     else:
         print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
+        print("❌ CRITICAL FIX VERIFICATION: Some tests failed - check results above")
         return 1
 
 if __name__ == "__main__":
