@@ -530,6 +530,49 @@ async def get_interior_design_history():
         logger.error(f"Error retrieving interior design history: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to retrieve history: {str(e)}")
 
+@api_router.get("/interior-design/queue")
+async def get_queue_status():
+    """Get current queue status"""
+    try:
+        # Count designs by status
+        queued_count = await db.interior_designs.count_documents({"status": "queued"})
+        processing_count = await db.interior_designs.count_documents({"status": "processing"})
+        
+        # Get recent queue items
+        queued_items = await db.interior_designs.find({"status": "queued"}).sort("created_at", 1).limit(10).to_list(length=10)
+        processing_items = await db.interior_designs.find({"status": "processing"}).sort("created_at", 1).limit(5).to_list(length=5)
+        
+        return {
+            "queue_status": {
+                "queued": queued_count,
+                "processing": processing_count
+            },
+            "queued_items": queued_items,
+            "processing_items": processing_items
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/interior-design/download/{design_id}")
+async def download_design_image(design_id: str):
+    """Download processed design image"""
+    try:
+        design = await db.interior_designs.find_one({"id": design_id})
+        if not design:
+            raise HTTPException(status_code=404, detail="Design not found")
+        
+        if design["status"] != "completed" or not design.get("processed_image_url"):
+            raise HTTPException(status_code=400, detail="Design not completed or image not available")
+        
+        # Return the image URL for download
+        return {
+            "download_url": design["processed_image_url"],
+            "filename": f"ai_design_{design_id}.jpg",
+            "original_filename": design.get("original_filename")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # GPT Concept Wrapper Routes
 @api_router.post("/gpt-concepts/property-description", response_model=GPTConceptResponse)
 async def generate_property_description(request: Dict[str, Any]):
