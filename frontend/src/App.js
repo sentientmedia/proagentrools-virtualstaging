@@ -146,19 +146,32 @@ const InteriorDesignTool = () => {
   };
 
   const updateActiveJobs = async () => {
+    if (activeJobs.length === 0) return; // No need to update if no active jobs
+    
     try {
-      if (activeJobs.length === 0) return; // No need to update if no active jobs
+      console.log(`Updating ${activeJobs.length} active jobs...`);
       
       // Update status for each active job
       const updatedJobs = await Promise.all(
         activeJobs.map(async (job) => {
           if (job.status === 'queued' || job.status === 'processing') {
-            const response = await axios.get(`${API}/interior-design/status/${job.id}`);
-            return response.data;
+            try {
+              const response = await axios.get(`${API}/interior-design/status/${job.id}`);
+              return response.data;
+            } catch (err) {
+              console.error(`Failed to update job ${job.id}:`, err);
+              return job; // Keep original job if update fails
+            }
           }
           return job;
         })
       );
+      
+      // Check for newly completed jobs
+      const originallyActive = activeJobs.filter(job => job.status !== 'completed');
+      const nowCompleted = updatedJobs.filter(job => job.status === 'completed');
+      
+      console.log(`Found ${nowCompleted.length} newly completed jobs`);
       
       setActiveJobs(updatedJobs);
       
@@ -167,12 +180,11 @@ const InteriorDesignTool = () => {
         job.status === 'queued' || job.status === 'processing'
       );
       
-      const completedJobs = updatedJobs.filter(job => job.status === 'completed');
-      
-      if (stillActive.length !== activeJobs.length || completedJobs.length > 0) {
+      if (stillActive.length !== activeJobs.length || nowCompleted.length > 0) {
+        console.log('Jobs completed, updating active list and refreshing history');
         setActiveJobs(stillActive);
-        // Refresh history when jobs complete
-        await loadHistory();
+        // Force refresh history when jobs complete
+        loadHistory();
       }
     } catch (err) {
       console.error('Failed to update active jobs:', err);
