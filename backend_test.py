@@ -572,7 +572,11 @@ class ProAgentToolsAPITester:
         return success
 
     def test_interior_design_upload(self):
-        """Test interior design image processing"""
+        """Test interior design image processing (with authentication)"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping authenticated test")
+            return False
+        
         # Create test image
         test_image = self.create_test_image()
         
@@ -580,12 +584,15 @@ class ProAgentToolsAPITester:
             'file': ('test_interior.jpg', test_image, 'image/jpeg')
         }
         
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
         success, response = self.run_test(
-            "Interior Design Image Processing",
+            "Interior Design Image Processing (Authenticated)",
             "POST",
             "interior-design/process",
             200,
-            files=files
+            files=files,
+            headers=headers
         )
         return success
 
