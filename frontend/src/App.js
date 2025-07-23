@@ -485,194 +485,241 @@ const InteriorDesignTool = () => {
           </p>
         </div>
 
-        <div className="max-w-6xl mx-auto">
-          {/* Queue Status Bar */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <div className="text-sm">
-                  <span className="font-semibold text-blue-900">Queue Status:</span>
-                  <span className="ml-2 text-blue-700">
-                    {queueStatus.queued} queued, {queueStatus.processing} processing
-                  </span>
-                </div>
-                <div className="text-sm">
-                  <span className="font-semibold text-blue-900">Active Jobs:</span>
-                  <span className="ml-2 text-blue-700">{activeJobs.length}</span>
+        <div className="max-w-7xl mx-auto">
+          {/* Two-column layout */}
+          <div className="grid grid-cols-12 gap-6">
+            
+            {/* Left Column - Queue and History (1/3 width) */}
+            <div className="col-span-4 space-y-6">
+              
+              {/* Queue Status */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Queue Status</h3>
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span>Queued:</span>
+                    <span className="font-medium">{queueStatus.queued}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Processing:</span>
+                    <span className="font-medium">{queueStatus.processing}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Active Jobs:</span>
+                    <span className="font-medium">{activeJobs.length}</span>
+                  </div>
                 </div>
               </div>
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
-              >
-                {showHistory ? 'Hide History' : 'Show History'}
-              </button>
-            </div>
-          </div>
 
-          {/* Step 1: Upload Image */}
-          <div className="bg-gray-50 rounded-xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Step 1: Upload Your Interior Photo</h3>
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer
-                ${dragActive || isDragActive 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-                }`}
-            >
-              <input {...getInputProps()} />
-              <div className="space-y-4">
-                <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                  </svg>
+              {/* Active Jobs */}
+              {activeJobs.length > 0 && (
+                <div className="bg-white rounded-lg border p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Active Jobs</h3>
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {activeJobs.map((job) => (
+                      <div key={job.id} className="bg-gray-50 rounded-lg p-3 border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-900 truncate">
+                            {job.original_filename}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            job.status === 'queued' ? 'bg-yellow-100 text-yellow-800' :
+                            job.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {job.status}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <div>Room: {roomTypes.find(r => r.id === job.room_type)?.name}</div>
+                          <div>Designer: {designers.find(d => d.id === job.designer)?.name}</div>
+                          <div>Colors: {colorSchemes.find(c => c.id === job.color_scheme)?.name}</div>
+                        </div>
+                        {job.status === 'processing' && (
+                          <div className="mt-2">
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-lg font-medium text-gray-900">
-                    {uploadedFile ? `Selected: ${uploadedFile.name}` : 'Drop your interior photo here'}
-                  </p>
-                  <p className="text-gray-500">or click to browse</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 2-4: Customization Options */}
-          <div className="bg-gray-50 rounded-xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Customize Your Design</h3>
-            
-            {/* Step 2: Room Type */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-900 mb-1">Step 2: Select Room Type</h4>
-              <div className="mt-4">
-                {renderToggleGroup(roomTypes, selectedRoomType, setSelectedRoomType, "")}
-              </div>
-            </div>
-            
-            {/* Step 3: Designer Style */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-900 mb-1">Step 3: Choose Designer Style</h4>
-              <div className="mt-4">
-                {renderDesignerGroup(designers, selectedDesigner, setSelectedDesigner, "")}
-              </div>
-            </div>
-            
-            {/* Step 4: Color Scheme */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-900 mb-1">Step 4: Pick Color Scheme</h4>
-              <div className="mt-4">
-                {renderToggleGroup(colorSchemes, selectedColorScheme, setSelectedColorScheme, "")}
-              </div>
-            </div>
-            
-            {/* Step 5: Submit Button */}
-            <div className="text-center">
-              <button
-                onClick={handleSubmit}
-                disabled={!uploadedFile}
-                className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
-                  !uploadedFile
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 transform hover:scale-105'
-                }`}
-              >
-                Add to Queue
-              </button>
-              {!uploadedFile && (
-                <p className="text-gray-500 text-sm mt-2">Please upload an image first</p>
               )}
-              {statusMessage && (
-                <p className="text-blue-600 text-sm mt-2">{statusMessage}</p>
-              )}
-            </div>
-          </div>
 
-          {/* Active Jobs Queue */}
-          {activeJobs.length > 0 && (
-            <div className="bg-white rounded-xl p-6 mb-8 border">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Active Jobs</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {activeJobs.map((job) => (
-                  <div key={job.id} className="bg-gray-50 rounded-lg p-4 border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-900">
-                        {job.original_filename}
-                      </span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        job.status === 'queued' ? 'bg-yellow-100 text-yellow-800' :
-                        job.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {job.status}
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-600 space-y-1">
-                      <div>Room: {roomTypes.find(r => r.id === job.room_type)?.name}</div>
-                      <div>Designer: {designers.find(d => d.id === job.designer)?.name}</div>
-                      <div>Colors: {colorSchemes.find(c => c.id === job.color_scheme)?.name}</div>
-                    </div>
-                    {job.status === 'processing' && (
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+              {/* History - Always visible */}
+              <div className="bg-white rounded-lg border p-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Recent Designs</h3>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {jobHistory.filter(job => job.status === 'completed').slice(0, 10).map((job) => (
+                    <div key={job.id} className="bg-gray-50 rounded-lg overflow-hidden border">
+                      {job.processed_image_url && (
+                        <img
+                          src={job.processed_image_url}
+                          alt="Generated Design"
+                          className="w-full h-24 object-cover"
+                        />
+                      )}
+                      <div className="p-3">
+                        <div className="text-sm font-medium text-gray-900 mb-2 truncate">
+                          {job.original_filename}
+                        </div>
+                        <div className="text-xs text-gray-600 space-y-1 mb-2">
+                          <div>Room: {roomTypes.find(r => r.id === job.room_type)?.name}</div>
+                          <div>Designer: {designers.find(d => d.id === job.designer)?.name}</div>
+                          <div>Colors: {colorSchemes.find(c => c.id === job.color_scheme)?.name}</div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => downloadImage(job.id, job.original_filename)}
+                            className="flex-1 bg-blue-600 text-white py-1 px-2 rounded text-xs hover:bg-blue-700 transition-colors"
+                          >
+                            Download
+                          </button>
+                          <button
+                            onClick={() => deleteImage(job.id, job.original_filename)}
+                            className="bg-red-600 text-white py-1 px-2 rounded text-xs hover:bg-red-700 transition-colors"
+                            title="Delete design"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          )}
 
-          {/* History Section */}
-          {showHistory && (
-            <div className="bg-white rounded-xl p-6 mb-8 border">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Design History</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobHistory.filter(job => job.status === 'completed').map((job) => (
-                  <div key={job.id} className="bg-gray-50 rounded-lg overflow-hidden">
-                    {job.processed_image_url && (
-                      <img
-                        src={job.processed_image_url}
-                        alt="Generated Design"
-                        className="w-full h-48 object-cover"
-                      />
-                    )}
-                    <div className="p-4">
-                      <div className="text-sm font-medium text-gray-900 mb-2">
-                        {job.original_filename}
-                      </div>
-                      <div className="text-xs text-gray-600 space-y-1 mb-3">
-                        <div>Room: {roomTypes.find(r => r.id === job.room_type)?.name}</div>
-                        <div>Designer: {designers.find(d => d.id === job.designer)?.name}</div>
-                        <div>Colors: {colorSchemes.find(c => c.id === job.color_scheme)?.name}</div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => downloadImage(job.id, job.original_filename)}
-                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors"
-                        >
-                          Download
-                        </button>
-                        <button
-                          onClick={() => deleteImage(job.id, job.original_filename)}
-                          className="bg-red-600 text-white py-2 px-3 rounded text-sm hover:bg-red-700 transition-colors"
-                          title="Delete design"
-                        >
-                          🗑️
-                        </button>
-                      </div>
+            {/* Right Column - Settings (2/3 width) */}
+            <div className="col-span-8 space-y-6">
+              
+              {/* Step 1: Upload Image */}
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Step 1: Upload Your Interior Photo</h3>
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer
+                    ${dragActive || isDragActive 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+                    }`}
+                >
+                  <input {...getInputProps()} />
+                  <div className="space-y-3">
+                    <div className="w-12 h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {uploadedFile ? `Selected: ${uploadedFile.name}` : 'Drop your interior photo here'}
+                      </p>
+                      <p className="text-gray-500 text-sm">or click to browse</p>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+
+              {/* Step 2: Room Type */}
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Step 2: Select Room Type</h3>
+                {renderToggleGroup(roomTypes, selectedRoomType, setSelectedRoomType, "")}
+              </div>
+              
+              {/* Step 3: Designer Style - Compact with scroll */}
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Step 3: Choose Designer Style</h3>
+                <p className="text-sm text-blue-600 mb-4">Double-click for full bio</p>
+                <div className="max-h-64 overflow-y-auto border rounded-lg bg-white p-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                    {designers.map((designer) => (
+                      <div key={designer.id} className="relative">
+                        <button
+                          onClick={(e) => {
+                            if (e.detail === 1) {
+                              // Single click - select designer
+                              setSelectedDesigner(designer.id);
+                            } else if (e.detail === 2) {
+                              // Double click - show modal
+                              e.preventDefault();
+                              setSelectedDesignerForModal(designer);
+                              setShowDesignerModal(true);
+                            }
+                          }}
+                          className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                            selectedDesigner === designer.id
+                              ? 'border-blue-500 bg-blue-50 text-blue-900'
+                              : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <img 
+                              src={designer.image_url} 
+                              alt={designer.name}
+                              className="w-10 h-10 rounded-full object-cover mb-2 border-2 border-gray-200"
+                            />
+                            <div className="font-medium text-xs text-center">{designer.name}</div>
+                            <div className="text-xs mt-1 opacity-75 text-center line-clamp-2">{designer.description}</div>
+                          </div>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Step 4: Color Scheme - Compact with scroll */}
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Step 4: Pick Color Scheme</h3>
+                <div className="max-h-64 overflow-y-auto border rounded-lg bg-white p-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                    {colorSchemes.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setSelectedColorScheme(item.id)}
+                        className={`p-3 rounded-lg border-2 text-left transition-all ${
+                          selectedColorScheme === item.id
+                            ? 'border-blue-500 bg-blue-50 text-blue-900'
+                            : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700'
+                        }`}
+                      >
+                        <div className="font-medium text-xs">{item.name}</div>
+                        <div className="text-xs mt-1 opacity-75 line-clamp-2">{item.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Step 5: Submit Button */}
+              <div className="text-center bg-white rounded-xl p-6 border">
+                <button
+                  onClick={handleSubmit}
+                  disabled={!uploadedFile}
+                  className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
+                    !uploadedFile
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 transform hover:scale-105'
+                  }`}
+                >
+                  Add to Queue
+                </button>
+                {!uploadedFile && (
+                  <p className="text-gray-500 text-sm mt-2">Please upload an image first</p>
+                )}
+                {statusMessage && (
+                  <p className="text-blue-600 text-sm mt-2">{statusMessage}</p>
+                )}
               </div>
             </div>
-          )}
+          </div>
 
           {/* Error Display */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-6">
               <p className="text-red-800">{error}</p>
             </div>
           )}
