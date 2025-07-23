@@ -169,13 +169,14 @@ const InteriorDesignTool = () => {
 
   const downloadImage = async (designId, filename) => {
     try {
-      const response = await axios.get(`${API}/interior-design/download/${designId}`);
-      const downloadUrl = response.data.download_url;
+      // Create a direct download link to the backend endpoint
+      const downloadUrl = `${API}/interior-design/download/${designId}`;
       
       // Create a temporary link and trigger download
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = filename || `ai_design_${designId}.jpg`;
+      link.target = '_blank'; // Open in new tab if direct download fails
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
