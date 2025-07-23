@@ -356,11 +356,11 @@ class ProAgentToolsAPITester:
         # Create test image
         test_image = self.create_test_image()
         
+        # Test with custom parameters using NEW CSV-based IDs - send as form data
         files = {
             'file': ('test_interior.jpg', test_image, 'image/jpeg')
         }
         
-        # Test with custom parameters using NEW CSV-based IDs
         data = {
             'room_type': 'bedroom',
             'designer': 'adrian_mercer',  # Different from default
