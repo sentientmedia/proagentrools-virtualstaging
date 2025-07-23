@@ -691,6 +691,16 @@ function App() {
       <FeaturesSection />
       <PricingSection />
       <Footer />
+      
+      {/* Designer Bio Modal */}
+      <DesignerModal 
+        designer={selectedDesignerForModal} 
+        isOpen={showDesignerModal} 
+        onClose={() => {
+          setShowDesignerModal(false);
+          setSelectedDesignerForModal(null);
+        }} 
+      />
     </div>
   );
 }
