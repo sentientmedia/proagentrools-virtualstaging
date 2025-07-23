@@ -180,6 +180,125 @@ class ProAgentToolsAPITester:
         )
         return success
 
+    def test_room_types_endpoint(self):
+        """Test room types endpoint - should return 5 room types WITHOUT descriptions"""
+        success, response = self.run_test(
+            "Room Types Endpoint",
+            "GET",
+            "interior-design/room-types",
+            200
+        )
+        
+        if success and response:
+            # Validate structure and content
+            room_types = response.get('room_types', [])
+            print(f"   Found {len(room_types)} room types")
+            
+            # Check count
+            if len(room_types) != 5:
+                print(f"❌ Expected 5 room types, got {len(room_types)}")
+                return False
+            
+            # Check structure - should NOT have description field
+            for room_type in room_types:
+                if 'description' in room_type:
+                    print(f"❌ Room type {room_type.get('name')} has description field (should be removed)")
+                    return False
+                if 'id' not in room_type or 'name' not in room_type:
+                    print(f"❌ Room type missing required fields: {room_type}")
+                    return False
+            
+            print("✅ Room types structure validated - no description fields found")
+            return True
+        
+        return success
+
+    def test_designers_endpoint(self):
+        """Test designers endpoint - should return 12 real designers from CSV"""
+        success, response = self.run_test(
+            "Designers Endpoint",
+            "GET",
+            "interior-design/designers",
+            200
+        )
+        
+        if success and response:
+            # Validate structure and content
+            designers = response.get('designers', [])
+            print(f"   Found {len(designers)} designers")
+            
+            # Check count
+            if len(designers) != 12:
+                print(f"❌ Expected 12 designers, got {len(designers)}")
+                return False
+            
+            # Check for specific required names from CSV
+            required_names = ["Alessia Duval", "Adrian Mercer", "Lucien Hart"]
+            found_names = [d.get('name') for d in designers]
+            
+            for required_name in required_names:
+                if required_name not in found_names:
+                    print(f"❌ Required designer '{required_name}' not found in response")
+                    return False
+            
+            # Check structure - should have id, name, and description
+            for designer in designers:
+                if not all(key in designer for key in ['id', 'name', 'description']):
+                    print(f"❌ Designer missing required fields: {designer}")
+                    return False
+                if not designer['description'] or len(designer['description']) < 10:
+                    print(f"❌ Designer {designer['name']} has invalid description")
+                    return False
+            
+            print(f"✅ All required designers found: {required_names}")
+            print("✅ Designers structure validated with descriptions")
+            return True
+        
+        return success
+
+    def test_color_schemes_endpoint(self):
+        """Test color schemes endpoint - should return 20 real color schemes from CSV"""
+        success, response = self.run_test(
+            "Color Schemes Endpoint",
+            "GET",
+            "interior-design/color-schemes",
+            200
+        )
+        
+        if success and response:
+            # Validate structure and content
+            color_schemes = response.get('color_schemes', [])
+            print(f"   Found {len(color_schemes)} color schemes")
+            
+            # Check count
+            if len(color_schemes) != 20:
+                print(f"❌ Expected 20 color schemes, got {len(color_schemes)}")
+                return False
+            
+            # Check for specific required names from CSV
+            required_names = ["Glacial Muse", "Nomad Prism", "Urban Alloy"]
+            found_names = [cs.get('name') for cs in color_schemes]
+            
+            for required_name in required_names:
+                if required_name not in found_names:
+                    print(f"❌ Required color scheme '{required_name}' not found in response")
+                    return False
+            
+            # Check structure - should have id, name, and description
+            for color_scheme in color_schemes:
+                if not all(key in color_scheme for key in ['id', 'name', 'description']):
+                    print(f"❌ Color scheme missing required fields: {color_scheme}")
+                    return False
+                if not color_scheme['description'] or len(color_scheme['description']) < 10:
+                    print(f"❌ Color scheme {color_scheme['name']} has invalid description")
+                    return False
+            
+            print(f"✅ All required color schemes found: {required_names}")
+            print("✅ Color schemes structure validated with descriptions")
+            return True
+        
+        return success
+
     def test_invalid_endpoints(self):
         """Test invalid endpoints return proper errors"""
         success, response = self.run_test(
