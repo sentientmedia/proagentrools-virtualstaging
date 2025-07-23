@@ -44,11 +44,11 @@ uploads_dir.mkdir(exist_ok=True)
 
 # Interior Design Configuration Data
 ROOM_TYPES = [
-    {"id": "living_room", "name": "Living Room", "description": "Main gathering space for relaxation and entertainment"},
-    {"id": "bedroom", "name": "Bedroom", "description": "Personal retreat for rest and relaxation"},
-    {"id": "kitchen", "name": "Kitchen", "description": "Heart of the home for cooking and dining"},
-    {"id": "dining_room", "name": "Dining Room", "description": "Formal space for meals and gatherings"},
-    {"id": "bathroom", "name": "Bathroom", "description": "Private space for daily routines and self-care"}
+    {"id": "living_room", "name": "Living Room"},
+    {"id": "bedroom", "name": "Bedroom"},
+    {"id": "kitchen", "name": "Kitchen"},
+    {"id": "dining_room", "name": "Dining Room"},
+    {"id": "bathroom", "name": "Bathroom"}
 ]
 
 DESIGNERS = [
