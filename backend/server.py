@@ -67,12 +67,26 @@ DESIGNERS = [
 ]
 
 COLOR_SCHEMES = [
-    {"id": "neutral_warm", "name": "Warm Neutrals", "colors": ["Cream", "Beige", "Soft Gray", "Warm White"], "description": "Cozy and inviting earth tones"},
-    {"id": "coastal_blue", "name": "Coastal Blues", "colors": ["Navy", "Sky Blue", "Seafoam", "Pearl White"], "description": "Refreshing ocean-inspired palette"},
-    {"id": "forest_green", "name": "Forest Greens", "colors": ["Sage", "Forest Green", "Cream", "Natural Wood"], "description": "Nature-inspired calming greens"},
-    {"id": "monochrome", "name": "Monochrome", "colors": ["Pure White", "Charcoal", "Light Gray", "Black Accents"], "description": "Timeless black and white sophistication"},
-    {"id": "jewel_tones", "name": "Jewel Tones", "colors": ["Emerald", "Sapphire", "Ruby", "Gold Accents"], "description": "Rich and luxurious deep colors"},
-    {"id": "pastel_soft", "name": "Soft Pastels", "colors": ["Blush Pink", "Lavender", "Mint", "Ivory"], "description": "Gentle and romantic soft hues"}
+    {"id": "glacial_muse", "name": "Glacial Muse", "description": "A tranquil blend of icy pastels and frosted neutrals evoking Nordic serenity and snow-dappled calm."},
+    {"id": "nomad_prism", "name": "Nomad Prism", "description": "A kaleidoscope of vibrant gems and wanderlust tones, perfect for free spirits with eclectic tastes."},
+    {"id": "urban_alloy", "name": "Urban Alloy", "description": "A cold fusion of iron hues and industrial patina—gritty, architectural, and unapologetically raw."},
+    {"id": "aegean_whisper", "name": "Aegean Whisper", "description": "Salty breeze in a palette—oceanic blues and sun-kissed earth tones conjure Mediterranean leisure."},
+    {"id": "velvet_deco", "name": "Velvet Deco", "description": "Moody, moony, and maximalist. Deep jewel tones, metallic flourishes, and cinematic glamour."},
+    {"id": "desert_modern", "name": "Desert Modern", "description": "Warmed by sand and cactus shadow, this scheme blends burnt earth and washed neutrals with desert grace."},
+    {"id": "enchanted_forest", "name": "Enchanted Forest", "description": "Lush emeralds and bark browns meet mossy whispers—an ode to deep woods and fairy tale glades."},
+    {"id": "savannah_bloom", "name": "Savannah Bloom", "description": "Sunburnt petals and golden grass—this palette hums with the wild, untamed joy of African summers."},
+    {"id": "canyon_clay", "name": "Canyon Clay", "description": "Terracotta cliffs under a molten sky. Rust, clay, and sun-scorched neutrals layer like canyon walls."},
+    {"id": "lunar_drift", "name": "Lunar Drift", "description": "Muted moonlight and futuristic haze—icy greys, pale lavenders, and shadows in motion."},
+    {"id": "sienna_smoke", "name": "Sienna Smoke", "description": "Warm neutrals drift through dusty plumes of clay and chalk—effortlessly grounded and elegant."},
+    {"id": "retro_zest", "name": "Retro Zest", "description": "A punchy throwback of avocado green, popsicle orange, and lemony optimism—your cool aunt's kitchen."},
+    {"id": "twilight_grove", "name": "Twilight Grove", "description": "Evening rain on bark and bloom. Smoky violet, ash green, and the hush of forest shadows."},
+    {"id": "citrus_pop", "name": "Citrus Pop", "description": "Grapefruit zest and neon fizz—this is breakfast at sunrise with sunglasses on."},
+    {"id": "oxblood_study", "name": "Oxblood Study", "description": "Oxblood, ink, and old paper tones—academic without the arrogance, rich with ritual."},
+    {"id": "sunken_studio", "name": "Sunken Studio", "description": "An undersea study in moody ink, shale, and studio-light neutrals. Moody, tactile, introspective."},
+    {"id": "charred_cotton", "name": "Charred Cotton", "description": "Ash, linen, and charcoal smudge together like erased sketches on vintage paper."},
+    {"id": "silken_ember", "name": "Silken Ember", "description": "Firelight meets silk scarf—subdued luxury with a whisper of spice and after-hours warmth."},
+    {"id": "mineral_tonic", "name": "Mineral Tonic", "description": "This tonic blends mineral blue, flint, and dried herbs for a grounded yet experimental harmony."},
+    {"id": "bauhaus_dusk", "name": "Bauhaus Dusk", "description": "A modernist poem in color—primary accents on a bed of greys and grounded pastels."}
 ]
 
 # Models
