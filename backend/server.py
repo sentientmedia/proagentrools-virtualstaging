@@ -113,6 +113,61 @@ async def get_color_schemes():
     return {"color_schemes": COLOR_SCHEMES}
 
 # Interior Design Model Routes
+async def generate_design_prompt_with_assistant(room_type: str, designer: str, color_scheme: str) -> str:
+    """Generate design prompt using OpenAI Assistant"""
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        
+        # Create a thread
+        thread = client.beta.threads.create()
+        
+        # Create message with user preferences
+        message_content = f"""
+        Please generate a detailed interior design prompt for:
+        
+        Room Type: {room_type}
+        Designer Style: {designer}
+        Color Scheme: {color_scheme}
+        
+        The prompt should be optimized for AI image generation and include specific details about furniture, lighting, textures, and overall aesthetic.
+        """
+        
+        message = client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content=message_content
+        )
+        
+        # Run the assistant
+        run = client.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=OPENAI_ASSISTANT_ID
+        )
+        
+        # Wait for completion
+        import time
+        max_wait = 30  # 30 seconds max
+        wait_time = 0
+        while run.status in ["queued", "in_progress"] and wait_time < max_wait:
+            time.sleep(2)
+            wait_time += 2
+            run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+        
+        if run.status == "completed":
+            # Get messages
+            messages = client.beta.threads.messages.list(thread_id=thread.id)
+            assistant_message = messages.data[0].content[0].text.value
+            return assistant_message
+        else:
+            logger.error(f"Assistant run failed with status: {run.status}")
+            return f"A {designer} style {room_type} with {color_scheme} color scheme, featuring modern furniture and elegant lighting"
+            
+    except Exception as e:
+        logger.error(f"OpenAI Assistant error: {str(e)}")
+        # Fallback prompt
+        return f"A {designer} style {room_type} with {color_scheme} color scheme, featuring modern furniture and elegant lighting"
+
 @api_router.post("/interior-design/process")
 async def process_interior_design(file: UploadFile = File(...)):
     """Process an interior image using the trained Replicate model - Async processing"""
