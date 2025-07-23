@@ -217,28 +217,6 @@ const InteriorDesignTool = () => {
                   setShowDesignerModal(true);
                 }
               }}
-              onMouseEnter={(e) => {
-                // Set timeout for hover modal
-                const timeoutId = setTimeout(() => {
-                  setSelectedDesignerForModal(designer);
-                  setShowDesignerModal(true);
-                }, 500);
-                // Store timeout ID to clear it on mouse leave
-                e.currentTarget.setAttribute('data-timeout', timeoutId);
-              }}
-              onMouseLeave={(e) => {
-                // Clear hover timeout
-                const timeoutId = e.currentTarget.getAttribute('data-timeout');
-                if (timeoutId) {
-                  clearTimeout(timeoutId);
-                  e.currentTarget.removeAttribute('data-timeout');
-                }
-                // Delay closing modal to allow moving to it
-                setTimeout(() => {
-                  setShowDesignerModal(false);
-                  setSelectedDesignerForModal(null);
-                }, 300);
-              }}
               className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
                 selected === designer.id
                   ? 'border-blue-500 bg-blue-50 text-blue-900'
