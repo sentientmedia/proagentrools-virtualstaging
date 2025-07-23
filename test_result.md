@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-## user_problem_statement: "Extract and integrate specific designer names and descriptions from CSV files into the ProAgentTools backend, replacing placeholder data. Also remove descriptions from room types as requested."
+## user_problem_statement: "Test the complete authentication and admin system implementation for ProAgentTools. Comprehensive verification of user authentication, admin authentication, credit system integration, and database schema."
 
 ## backend:
   - task: "Extract designer data from CSV and update backend"
