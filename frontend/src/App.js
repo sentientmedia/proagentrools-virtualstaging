@@ -157,30 +157,8 @@ const InteriorDesignTool = () => {
             }`}
           >
             <div className="font-medium text-sm">{item.name}</div>
-            <div className="text-xs mt-1 opacity-75">{item.description}</div>
-            {item.colors && (
-              <div className="flex space-x-1 mt-2">
-                {item.colors.slice(0, 4).map((color, idx) => (
-                  <div
-                    key={idx}
-                    className="w-3 h-3 rounded-full border"
-                    style={{
-                      backgroundColor: color.toLowerCase().includes('white') ? '#ffffff' :
-                                     color.toLowerCase().includes('black') ? '#000000' :
-                                     color.toLowerCase().includes('gray') ? '#9ca3af' :
-                                     color.toLowerCase().includes('blue') ? '#3b82f6' :
-                                     color.toLowerCase().includes('green') ? '#10b981' :
-                                     color.toLowerCase().includes('red') ? '#ef4444' :
-                                     color.toLowerCase().includes('pink') ? '#ec4899' :
-                                     color.toLowerCase().includes('purple') || color.toLowerCase().includes('lavender') ? '#8b5cf6' :
-                                     color.toLowerCase().includes('yellow') || color.toLowerCase().includes('gold') ? '#f59e0b' :
-                                     color.toLowerCase().includes('orange') ? '#f97316' :
-                                     color.toLowerCase().includes('brown') || color.toLowerCase().includes('wood') || color.toLowerCase().includes('beige') ? '#92400e' :
-                                     '#6b7280'
-                    }}
-                  />
-                ))}
-              </div>
+            {item.description && (
+              <div className="text-xs mt-1 opacity-75">{item.description}</div>
             )}
           </button>
         ))}
