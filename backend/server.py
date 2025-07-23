@@ -291,7 +291,7 @@ async def process_interior_design(
         # Create database record with preferences
         design_request = InteriorDesignRequest(
             original_filename=file.filename,
-            status="processing",
+            status="queued",  # Changed from "processing" to "queued"
             room_type=room_type,
             designer=designer,
             color_scheme=color_scheme,
@@ -300,78 +300,91 @@ async def process_interior_design(
         
         await db.interior_designs.insert_one(design_request.dict())
         
+        # Return immediately with queue status - process asynchronously
+        import asyncio
+        asyncio.create_task(process_image_async(design_request.id, temp_file_path, generated_prompt, file.filename, room_type, designer, color_scheme))
+        
+        return {
+            "id": design_request.id,
+            "status": "queued",
+            "message": "Your design request has been queued for processing",
+            "original_filename": file.filename,
+            "room_type": room_type,
+            "designer": designer,
+            "color_scheme": color_scheme,
+            "generated_prompt": generated_prompt
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing request: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def process_image_async(request_id: str, temp_file_path, generated_prompt: str, filename: str, room_type: str, designer: str, color_scheme: str):
+    """Process image asynchronously to allow queue functionality"""
+    try:
+        # Update status to processing
+        await db.interior_designs.update_one(
+            {"id": request_id},
+            {"$set": {"status": "processing"}}
+        )
+        
         # TEMPORARY: Switch to working Replicate model while RunPod is being fixed
-        try:
-            import replicate
+        import replicate
+        
+        with open(temp_file_path, "rb") as image_file:
+            # Use a working interior design model with custom prompt and higher resolution
+            output = replicate.run(
+                "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
+                input={
+                    "image": image_file,
+                    "prompt": generated_prompt,
+                    "width": 1024,  # Higher resolution
+                    "height": 1024,  # Higher resolution
+                    "num_inference_steps": 50,  # Better quality
+                    "guidance_scale": 7.5,  # Better prompt adherence
+                }
+            )
             
-            with open(temp_file_path, "rb") as image_file:
-                # Use a working interior design model with custom prompt
-                output = replicate.run(
-                    "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
-                    input={
-                        "image": image_file,
-                        "prompt": generated_prompt  # Use the AI-generated prompt
-                    }
-                )
-                
-                # Extract URL from output
-                if hasattr(output, 'url'):
-                    processed_url = str(output.url)
-                elif isinstance(output, str):
-                    processed_url = output
-                elif isinstance(output, list) and len(output) > 0:
-                    if hasattr(output[0], 'url'):
-                        processed_url = str(output[0].url)
-                    else:
-                        processed_url = str(output[0])
+            # Extract URL from output
+            if hasattr(output, 'url'):
+                processed_url = str(output.url)
+            elif isinstance(output, str):
+                processed_url = output
+            elif isinstance(output, list) and len(output) > 0:
+                if hasattr(output[0], 'url'):
+                    processed_url = str(output[0].url)
                 else:
-                    processed_url = str(output)
-                
-                # Update database with success
-                await db.interior_designs.update_one(
-                    {"id": design_request.id},
-                    {"$set": {
-                        "status": "completed",
-                        "processed_image_url": processed_url
-                    }}
-                )
-                
-                # Clean up temp file
-                temp_file_path.unlink()
-                
-                return {
-                    "id": design_request.id,
+                    processed_url = str(output[0])
+            else:
+                processed_url = str(output)
+            
+            # Update database with success
+            await db.interior_designs.update_one(
+                {"id": request_id},
+                {"$set": {
                     "status": "completed",
                     "processed_image_url": processed_url,
-                    "original_filename": file.filename,
-                    "room_type": room_type,
-                    "designer": designer,
-                    "color_scheme": color_scheme,
-                    "generated_prompt": generated_prompt,
-                    "message": "Image processed with custom design preferences"
-                }
-                
-        except Exception as replicate_error:
-            # Update database with error
-            error_msg = str(replicate_error)
-            await db.interior_designs.update_one(
-                {"id": design_request.id},
-                {"$set": {
-                    "status": "failed",
-                    "error_message": error_msg
+                    "completed_at": datetime.utcnow()
                 }}
             )
             
-            # Clean up temp file
-            if temp_file_path.exists():
-                temp_file_path.unlink()
-                
-            raise HTTPException(status_code=500, detail=f"Failed to start processing: {error_msg}")
-        
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        logger.error(f"Error processing image async: {str(e)}")
+        # Update database with error
+        await db.interior_designs.update_one(
+            {"id": request_id},
+            {"$set": {
+                "status": "failed",
+                "error_message": str(e),
+                "completed_at": datetime.utcnow()
+            }}
+        )
+    finally:
+        # Clean up temp file
+        try:
+            temp_file_path.unlink()
+        except:
+            pass
 
 @api_router.get("/interior-design/status/{design_id}")
 async def check_design_status(design_id: str):
