@@ -625,32 +625,33 @@ async def get_analytics(current_admin: AdminUser = Depends(get_current_admin_use
         logger.error(f"Error retrieving analytics: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve analytics")
 
+class AdminCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+    setup_key: str
+
 # Development/Setup endpoints (remove in production)
 @api_router.post("/setup/create-admin")
-async def create_admin_user_endpoint(
-    email: EmailStr,
-    password: str,
-    full_name: str,
-    setup_key: str = "SETUP_ADMIN_2024"  # Simple protection
-):
+async def create_admin_user_endpoint(admin_data: AdminCreate):
     """Create admin user (development only)"""
-    if setup_key != "SETUP_ADMIN_2024":
+    if admin_data.setup_key != "SETUP_ADMIN_2024":
         raise HTTPException(status_code=403, detail="Invalid setup key")
     
     try:
         # Check if admin already exists
-        existing_admin = await db.admin_users.find_one({"email": email})
+        existing_admin = await db.admin_users.find_one({"email": admin_data.email})
         if existing_admin:
             raise HTTPException(status_code=400, detail="Admin already exists")
         
         # Hash password
-        hashed_password = get_password_hash(password)
+        hashed_password = get_password_hash(admin_data.password)
         
         # Create admin user
         admin_user = {
             "id": str(uuid.uuid4()),
-            "email": email,
-            "full_name": full_name,
+            "email": admin_data.email,
+            "full_name": admin_data.full_name,
             "hashed_password": hashed_password,
             "role": "admin",
             "created_at": datetime.utcnow()
@@ -659,7 +660,7 @@ async def create_admin_user_endpoint(
         # Insert admin user
         await db.admin_users.insert_one(admin_user)
         
-        return {"message": f"Admin user created: {email}"}
+        return {"message": f"Admin user created: {admin_data.email}"}
         
     except Exception as e:
         logger.error(f"Error creating admin: {str(e)}")
