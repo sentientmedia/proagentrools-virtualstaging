@@ -326,6 +326,30 @@ async def process_interior_design(
         logger.error(f"Error processing request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+async def download_and_store_image(image_url: str, request_id: str) -> str:
+    """Download image from URL and store it permanently"""
+    try:
+        # Generate filename
+        filename = f"{request_id}.jpg"
+        file_path = PROCESSED_IMAGES_DIR / filename
+        
+        # Download image
+        async with aiohttp.ClientSession() as session:
+            async with session.get(image_url) as response:
+                if response.status == 200:
+                    async with aiofiles.open(file_path, 'wb') as f:
+                        async for chunk in response.content.iter_chunked(8192):
+                            await f.write(chunk)
+                    
+                    # Return the local URL path
+                    return f"/api/images/{filename}"
+                else:
+                    logger.error(f"Failed to download image: {response.status}")
+                    return image_url  # Return original URL as fallback
+    except Exception as e:
+        logger.error(f"Error downloading image: {str(e)}")
+        return image_url  # Return original URL as fallback
+
 async def process_image_async(request_id: str, temp_file_path, generated_prompt: str, filename: str, room_type: str, designer: str, color_scheme: str):
     """Process image asynchronously to allow queue functionality"""
     try:
