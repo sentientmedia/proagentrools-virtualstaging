@@ -278,125 +278,149 @@ const InteriorDesignTool = () => {
         </div>
 
         <div className="max-w-6xl mx-auto">
-          {/* Design Preferences */}
+          {/* Step 1: Upload Image */}
           <div className="bg-gray-50 rounded-xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Customize Your Design</h3>
-            
-            {/* Room Type Row */}
-            <div className="mb-8">
-              {renderToggleGroup(roomTypes, selectedRoomType, setSelectedRoomType, "Room Type")}
-            </div>
-            
-            {/* Designer Style Row */}
-            <div className="mb-8">
-              {renderDesignerGroup(designers, selectedDesigner, setSelectedDesigner, "Designer Style")}
-            </div>
-            
-            {/* Color Scheme Row */}
-            <div>
-              {renderToggleGroup(colorSchemes, selectedColorScheme, setSelectedColorScheme, "Color Scheme")}
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Step 1: Upload Your Interior Photo</h3>
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer
+                ${dragActive || isDragActive 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+                }`}
+            >
+              <input {...getInputProps()} />
+              <div className="space-y-4">
+                <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-lg font-medium text-gray-900">
+                    {processing ? 'Processing...' : 'Drop your interior photo here'}
+                  </p>
+                  <p className="text-gray-500">or click to browse</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Image Upload and Processing */}
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Upload Area */}
-            <div className="space-y-6">
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer
-                  ${dragActive || isDragActive 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-                  }`}
+          {/* Step 2-4: Customization Options */}
+          <div className="bg-gray-50 rounded-xl p-8 mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Customize Your Design</h3>
+            
+            {/* Step 2: Room Type */}
+            <div className="mb-8">
+              <h4 className="text-lg font-semibold text-gray-900 mb-1">Step 2: Select Room Type</h4>
+              <div className="mt-4">
+                {renderToggleGroup(roomTypes, selectedRoomType, setSelectedRoomType, "")}
+              </div>
+            </div>
+            
+            {/* Step 3: Designer Style */}
+            <div className="mb-8">
+              <h4 className="text-lg font-semibold text-gray-900 mb-1">Step 3: Choose Designer Style</h4>
+              <div className="mt-4">
+                {renderDesignerGroup(designers, selectedDesigner, setSelectedDesigner, "")}
+              </div>
+            </div>
+            
+            {/* Step 4: Color Scheme */}
+            <div className="mb-8">
+              <h4 className="text-lg font-semibold text-gray-900 mb-1">Step 4: Pick Color Scheme</h4>
+              <div className="mt-4">
+                {renderToggleGroup(colorSchemes, selectedColorScheme, setSelectedColorScheme, "")}
+              </div>
+            </div>
+            
+            {/* Step 5: Submit Button */}
+            <div className="text-center">
+              <button
+                onClick={handleSubmit}
+                disabled={!uploadedFile || processing}
+                className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
+                  !uploadedFile || processing
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 transform hover:scale-105'
+                }`}
               >
-                <input {...getInputProps()} />
-                <div className="space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
+                {processing ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>Processing...</span>
                   </div>
-                  <div>
-                    <p className="text-lg font-medium text-gray-900">
-                      {processing ? 'Processing...' : 'Drop your interior photo here'}
+                ) : (
+                  'Generate AI Design'
+                )}
+              </button>
+              {!uploadedFile && (
+                <p className="text-gray-500 text-sm mt-2">Please upload an image first</p>
+              )}
+            </div>
+          </div>
+
+          {/* Processing Status and Results */}
+          <div className="space-y-6">
+            {processing && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mt-0.5"></div>
+                  <div className="flex-1">
+                    <span className="text-blue-800 font-medium">AI Design Processing</span>
+                    <p className="text-blue-600 text-sm mt-1">
+                      {statusMessage || 'Creating your custom design with AI...'}
                     </p>
-                    <p className="text-gray-500">or click to browse</p>
                   </div>
                 </div>
               </div>
+            )}
 
-              {processing && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mt-0.5"></div>
-                    <div className="flex-1">
-                      <span className="text-blue-800 font-medium">AI Design Processing</span>
-                      <p className="text-blue-600 text-sm mt-1">
-                        {statusMessage || 'Creating your custom design with AI...'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-800">{error}</p>
-                </div>
-              )}
-            </div>
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-800">{error}</p>
+              </div>
+            )}
 
             {/* Results Area */}
-            <div className="space-y-6">
-              {processedImage ? (
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Custom Design</h3>
-                  <div className="space-y-4">
-                    <img
-                      src={processedImage.processed_image_url}
-                      alt="AI Enhanced Interior"
-                      className="w-full rounded-lg shadow-lg"
-                      onLoad={() => console.log('Image loaded successfully')}
-                      onError={() => console.error('Failed to load processed image')}
-                    />
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <div className="flex justify-between">
-                        <span>Original:</span>
-                        <span>{processedImage.original_filename}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Room Type:</span>
-                        <span>{roomTypes.find(r => r.id === processedImage.room_type)?.name || processedImage.room_type}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Designer:</span>
-                        <span>{designers.find(d => d.id === processedImage.designer)?.name || processedImage.designer}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Color Scheme:</span>
-                        <span>{colorSchemes.find(c => c.id === processedImage.color_scheme)?.name || processedImage.color_scheme}</span>
-                      </div>
-                      {processedImage.generated_prompt && (
-                        <div className="mt-4 p-3 bg-blue-50 rounded text-blue-800 text-xs">
-                          <strong>AI Prompt:</strong> {processedImage.generated_prompt.substring(0, 150)}...
-                        </div>
-                      )}
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Completed</span>
+            {processedImage && (
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Custom Design</h3>
+                <div className="space-y-4">
+                  <img
+                    src={processedImage.processed_image_url}
+                    alt="AI Enhanced Interior"
+                    className="w-full rounded-lg shadow-lg"
+                    onLoad={() => console.log('Image loaded successfully')}
+                    onError={() => console.error('Failed to load processed image')}
+                  />
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Original:</span>
+                      <span>{processedImage.original_filename}</span>
                     </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-gray-100 rounded-xl p-6 h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-gray-500 mb-2">Upload an image to see your custom AI design</p>
-                    {processing && (
-                      <p className="text-blue-600 text-sm">Your personalized design will appear here</p>
+                    <div className="flex justify-between">
+                      <span>Room Type:</span>
+                      <span>{roomTypes.find(r => r.id === processedImage.room_type)?.name || processedImage.room_type}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Designer:</span>
+                      <span>{designers.find(d => d.id === processedImage.designer)?.name || processedImage.designer}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Color Scheme:</span>
+                      <span>{colorSchemes.find(c => c.id === processedImage.color_scheme)?.name || processedImage.color_scheme}</span>
+                    </div>
+                    {processedImage.generated_prompt && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded text-blue-800 text-xs">
+                        <strong>AI Prompt:</strong> {processedImage.generated_prompt.substring(0, 150)}...
+                      </div>
                     )}
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Completed</span>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
