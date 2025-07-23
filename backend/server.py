@@ -842,11 +842,11 @@ async def check_design_status(design_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to check status: {str(e)}")
 
 @api_router.get("/interior-design/history")
-async def get_interior_design_history():
+async def get_interior_design_history(current_user: User = Depends(get_current_user)):
     """Get user's interior design processing history"""
     try:
         designs_list = []
-        async for design in db.interior_designs.find().sort("upload_timestamp", -1).limit(20):
+        async for design in db.interior_designs.find({"user_id": current_user.id}).sort("created_at", -1).limit(20):
             # Convert ObjectId to string for JSON serialization
             if '_id' in design:
                 design['_id'] = str(design['_id'])
