@@ -104,37 +104,48 @@ const InteriorDesignTool = () => {
   }, []);
 
   const onDrop = useCallback(async (acceptedFiles) => {
+    if (acceptedFiles.length === 0) return;
+
     const file = acceptedFiles[0];
-    if (!file) return;
+    setUploadedFile(file);
+    setError('');
+    setProcessedImage(null);
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!uploadedFile) {
+      setError('Please upload an image first');
+      return;
+    }
 
     setProcessing(true);
-    setError(null);
-    setProcessedImage(null);
-    setStatusMessage('Generating custom design prompt and processing image...');
+    setError('');
+    setStatusMessage('Uploading and processing your image...');
+
+    const formData = new FormData();
+    formData.append('file', uploadedFile);
+    formData.append('room_type', selectedRoomType);
+    formData.append('designer', selectedDesigner);
+    formData.append('color_scheme', selectedColorScheme);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('room_type', selectedRoomType);
-      formData.append('designer', selectedDesigner);
-      formData.append('color_scheme', selectedColorScheme);
-
       const response = await axios.post(`${API}/interior-design/process`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      setProcessedImage(response.data);
-      setProcessing(false);
-      setStatusMessage('');
-
+      if (response.data) {
+        setCurrentJobId(response.data.id);
+        // Start polling for status
+        pollJobStatus(response.data.id);
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to process image');
       setProcessing(false);
       setStatusMessage('');
     }
-  }, [selectedRoomType, selectedDesigner, selectedColorScheme]);
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
