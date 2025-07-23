@@ -169,8 +169,13 @@ async def generate_design_prompt_with_assistant(room_type: str, designer: str, c
         return f"A {designer} style {room_type} with {color_scheme} color scheme, featuring modern furniture and elegant lighting"
 
 @api_router.post("/interior-design/process")
-async def process_interior_design(file: UploadFile = File(...)):
-    """Process an interior image using the trained Replicate model - Async processing"""
+async def process_interior_design(
+    file: UploadFile = File(...),
+    room_type: str = "living_room",
+    designer: str = "minimalist_maven", 
+    color_scheme: str = "neutral_warm"
+):
+    """Process an interior image with custom design preferences"""
     try:
         # Validate file type
         if not file.content_type.startswith('image/'):
@@ -186,10 +191,19 @@ async def process_interior_design(file: UploadFile = File(...)):
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # Create database record with processing status
+        # Generate custom prompt using OpenAI Assistant
+        logger.info(f"Generating prompt for room_type={room_type}, designer={designer}, color_scheme={color_scheme}")
+        generated_prompt = await generate_design_prompt_with_assistant(room_type, designer, color_scheme)
+        logger.info(f"Generated prompt: {generated_prompt[:100]}...")
+        
+        # Create database record with preferences
         design_request = InteriorDesignRequest(
             original_filename=file.filename,
-            status="processing"
+            status="processing",
+            room_type=room_type,
+            designer=designer,
+            color_scheme=color_scheme,
+            generated_prompt=generated_prompt
         )
         
         await db.interior_designs.insert_one(design_request.dict())
@@ -199,12 +213,12 @@ async def process_interior_design(file: UploadFile = File(...)):
             import replicate
             
             with open(temp_file_path, "rb") as image_file:
-                # Use a working interior design model temporarily
+                # Use a working interior design model with custom prompt
                 output = replicate.run(
                     "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
                     input={
                         "image": image_file,
-                        "prompt": "modern, professionally designed interior space with stylish furniture and elegant decor"
+                        "prompt": generated_prompt  # Use the AI-generated prompt
                     }
                 )
                 
@@ -238,7 +252,11 @@ async def process_interior_design(file: UploadFile = File(...)):
                     "status": "completed",
                     "processed_image_url": processed_url,
                     "original_filename": file.filename,
-                    "message": "Image processed with fallback model while custom RunPod model is being fixed"
+                    "room_type": room_type,
+                    "designer": designer,
+                    "color_scheme": color_scheme,
+                    "generated_prompt": generated_prompt,
+                    "message": "Image processed with custom design preferences"
                 }
                 
         except Exception as replicate_error:
