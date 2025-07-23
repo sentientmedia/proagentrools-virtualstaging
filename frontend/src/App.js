@@ -140,6 +140,8 @@ const InteriorDesignTool = () => {
 
   const updateActiveJobs = async () => {
     try {
+      if (activeJobs.length === 0) return; // No need to update if no active jobs
+      
       // Update status for each active job
       const updatedJobs = await Promise.all(
         activeJobs.map(async (job) => {
@@ -158,9 +160,12 @@ const InteriorDesignTool = () => {
         job.status === 'queued' || job.status === 'processing'
       );
       
-      if (stillActive.length !== activeJobs.length) {
+      const completedJobs = updatedJobs.filter(job => job.status === 'completed');
+      
+      if (stillActive.length !== activeJobs.length || completedJobs.length > 0) {
         setActiveJobs(stillActive);
-        loadHistory();
+        // Refresh history when jobs complete
+        await loadHistory();
       }
     } catch (err) {
       console.error('Failed to update active jobs:', err);
