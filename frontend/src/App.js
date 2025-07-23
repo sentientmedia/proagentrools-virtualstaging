@@ -109,16 +109,23 @@ const InteriorDesignTool = () => {
     loadConfigData();
     loadHistory();
     loadQueueStatus();
-    
+  }, []);
+
+  // Separate useEffect for polling that depends on activeJobs
+  useEffect(() => {
     // Set up polling for queue status
     const queueInterval = setInterval(loadQueueStatus, 3000);
-    const jobsInterval = setInterval(updateActiveJobs, 2000);
+    const jobsInterval = setInterval(() => {
+      if (activeJobs.length > 0) {
+        updateActiveJobs();
+      }
+    }, 2000);
     
     return () => {
       clearInterval(queueInterval);
       clearInterval(jobsInterval);
     };
-  }, []); // Remove activeJobs dependency to prevent excessive re-renders
+  }, [activeJobs.length]); // Only re-run when the number of active jobs changes
 
   const loadHistory = async () => {
     try {
