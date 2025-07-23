@@ -66,6 +66,7 @@ const InteriorDesignTool = () => {
   const [dragActive, setDragActive] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [currentJobId, setCurrentJobId] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
   
   // New state for design preferences
   const [selectedRoomType, setSelectedRoomType] = useState('living_room');
