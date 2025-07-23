@@ -590,6 +590,18 @@ async def get_queue_status():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/images/{filename}")
+async def serve_processed_image(filename: str):
+    """Serve processed images"""
+    file_path = PROCESSED_IMAGES_DIR / filename
+    if file_path.exists() and file_path.is_file():
+        return FileResponse(
+            path=file_path,
+            media_type="image/jpeg",
+            headers={"Cache-Control": "public, max-age=31536000"}  # 1 year cache
+        )
+    raise HTTPException(status_code=404, detail="Image not found")
+
 @api_router.get("/interior-design/download/{design_id}")
 async def download_design_image(design_id: str):
     """Download processed design image"""
@@ -601,12 +613,26 @@ async def download_design_image(design_id: str):
         if design["status"] != "completed" or not design.get("processed_image_url"):
             raise HTTPException(status_code=400, detail="Design not completed or image not available")
         
-        # Return the image URL for download
-        return {
-            "download_url": design["processed_image_url"],
-            "filename": f"ai_design_{design_id}.jpg",
-            "original_filename": design.get("original_filename")
-        }
+        # Check if we have a local image file
+        local_url = design.get("processed_image_url", "")
+        if local_url.startswith("/api/images/"):
+            filename = local_url.split("/")[-1]
+            file_path = PROCESSED_IMAGES_DIR / filename
+            
+            if file_path.exists():
+                return FileResponse(
+                    path=file_path,
+                    media_type="image/jpeg",
+                    filename=f"ai_design_{design_id}.jpg",
+                    headers={"Content-Disposition": "attachment"}
+                )
+        
+        # Fallback to original URL if local file not found
+        original_url = design.get("original_replicate_url")
+        if original_url:
+            return {"download_url": original_url, "filename": f"ai_design_{design_id}.jpg"}
+        
+        raise HTTPException(status_code=404, detail="Image file not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
