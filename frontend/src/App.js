@@ -356,6 +356,72 @@ const InteriorDesignTool = () => {
   });
 
   // Helper function to render toggle buttons
+  // Image Viewer Modal Component
+  const ImageViewerModal = ({ image, isOpen, onClose }) => {
+    if (!isOpen || !image) return null;
+
+    return (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" 
+        onClick={onClose}
+      >
+        <div 
+          className="relative max-w-4xl max-h-full bg-white rounded-lg overflow-hidden shadow-2xl" 
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">{image.original_filename}</h3>
+              <div className="text-sm text-gray-600">
+                {roomTypes.find(r => r.id === image.room_type)?.name} • {designers.find(d => d.id === image.designer)?.name} • {colorSchemes.find(c => c.id === image.color_scheme)?.name}
+              </div>
+            </div>
+            <button 
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-2xl font-bold leading-none"
+            >
+              ×
+            </button>
+          </div>
+          
+          {/* Image */}
+          <div className="relative">
+            <img
+              src={image.processed_image_url}
+              alt="Generated Design"
+              className="w-full h-auto max-h-[70vh] object-contain"
+            />
+          </div>
+          
+          {/* Footer with actions */}
+          <div className="flex items-center justify-between p-4 border-t bg-gray-50">
+            <div className="text-sm text-gray-500">
+              Click outside to close or use the × button
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => downloadImage(image.id, image.original_filename)}
+                className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
+              >
+                Download
+              </button>
+              <button
+                onClick={() => {
+                  deleteImage(image.id, image.original_filename);
+                  onClose();
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Designer Modal Component
   const DesignerModal = ({ designer, isOpen, onClose }) => {
     if (!isOpen || !designer) return null;
