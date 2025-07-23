@@ -176,23 +176,39 @@ const InteriorDesignTool = () => {
     try {
       console.log(`Attempting to download image for design ID: ${designId}`);
       
-      // Create a direct download link to the backend endpoint
-      const downloadUrl = `${API}/interior-design/download/${designId}`;
-      console.log(`Download URL: ${downloadUrl}`);
+      // Use fetch API with blob to handle the download properly
+      const response = await fetch(`${API}/interior-design/download/${designId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/octet-stream, image/jpeg, */*'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+      
+      // Get the blob data
+      const blob = await response.blob();
+      
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
       
       // Create a temporary link and trigger download
       const link = document.createElement('a');
-      link.href = downloadUrl;
+      link.href = url;
       link.download = filename || `ai_design_${designId}.jpg`;
-      link.target = '_blank'; // Open in new tab if direct download fails
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
+      // Clean up the temporary URL
+      window.URL.revokeObjectURL(url);
+      
       console.log('Download triggered successfully');
     } catch (err) {
       console.error('Failed to download image:', err);
-      setError('Failed to download image');
+      setError(`Failed to download image: ${err.message}`);
     }
   };
 
