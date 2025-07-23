@@ -46,6 +46,86 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Authentication helper functions
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def generate_referral_code() -> str:
+    """Generate a unique referral code"""
+    return str(uuid.uuid4()).replace('-', '')[:8].upper()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current authenticated user"""
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except jwt.PyJSONError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    
+    user = await db.users.find_one({"id": user_id})
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    return User(**user)
+
+async def get_current_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current authenticated admin user"""
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except jwt.PyJSONError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    
+    admin = await db.admin_users.find_one({"id": user_id})
+    if admin is None:
+        raise HTTPException(status_code=401, detail="Admin access required")
+    
+    return AdminUser(**admin)
+
+async def deduct_credits(user_id: str, credits_to_deduct: int) -> bool:
+    """Deduct credits from user account"""
+    user = await db.users.find_one({"id": user_id})
+    if not user or user['credits'] < credits_to_deduct:
+        return False
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$inc": {"credits": -credits_to_deduct}}
+    )
+    return True
+
+async def get_tool_rate(tool_name: str) -> int:
+    """Get credit rate for a specific tool"""
+    tool_config = await db.tool_rates.find_one({"tool_name": tool_name})
+    if tool_config:
+        return tool_config['credits_per_use']
+    
+    # Default rates if not configured
+    default_rates = {
+        'interior_design': 5,
+        'gpt_concept': 1
+    }
+    return default_rates.get(tool_name, 1)
+
 # API Keys  
 RUNPOD_ENDPOINT = "https://api.runpod.ai/v2/kfi0ulqzkpuu5e"
 RUNPOD_API_KEY = os.environ.get('RUNPOD_API_KEY') or os.environ.get('REPLICATE_API_TOKEN')  # Try RunPod key first, fallback to existing
