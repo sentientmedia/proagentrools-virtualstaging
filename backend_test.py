@@ -299,6 +299,160 @@ class ProAgentToolsAPITester:
         
         return success
 
+    def test_process_endpoint_new_defaults(self):
+        """Test that process endpoint uses NEW default values (alessia_duval, glacial_muse)"""
+        # Create test image
+        test_image = self.create_test_image()
+        
+        files = {
+            'file': ('test_interior.jpg', test_image, 'image/jpeg')
+        }
+        
+        # Test without providing designer/color_scheme parameters - should use NEW defaults
+        success, response = self.run_test(
+            "Process Endpoint - NEW Default Values Test",
+            "POST",
+            "interior-design/process",
+            200,
+            files=files
+        )
+        
+        if success and response:
+            # Verify NEW default values are used
+            designer = response.get('designer')
+            color_scheme = response.get('color_scheme')
+            
+            print(f"   Default designer used: {designer}")
+            print(f"   Default color_scheme used: {color_scheme}")
+            
+            # Check for NEW defaults (NOT old ones)
+            if designer != "alessia_duval":
+                print(f"❌ Expected NEW default designer 'alessia_duval', got '{designer}'")
+                return False
+            
+            if color_scheme != "glacial_muse":
+                print(f"❌ Expected NEW default color_scheme 'glacial_muse', got '{color_scheme}'")
+                return False
+            
+            # Verify NO old placeholder values
+            old_designer = "minimalist_maven"
+            old_color_scheme = "neutral_warm"
+            
+            if designer == old_designer:
+                print(f"❌ CRITICAL: Still using OLD default designer '{old_designer}' - fix not applied!")
+                return False
+            
+            if color_scheme == old_color_scheme:
+                print(f"❌ CRITICAL: Still using OLD default color_scheme '{old_color_scheme}' - fix not applied!")
+                return False
+            
+            print("✅ NEW default values confirmed - old placeholder data removed")
+            return True
+        
+        return success
+
+    def test_process_endpoint_custom_parameters(self):
+        """Test that process endpoint accepts custom designer/color_scheme parameters"""
+        # Create test image
+        test_image = self.create_test_image()
+        
+        files = {
+            'file': ('test_interior.jpg', test_image, 'image/jpeg')
+        }
+        
+        # Test with custom parameters using NEW CSV-based IDs
+        data = {
+            'room_type': 'bedroom',
+            'designer': 'adrian_mercer',  # Different from default
+            'color_scheme': 'nomad_prism'  # Different from default
+        }
+        
+        success, response = self.run_test(
+            "Process Endpoint - Custom Parameters Test",
+            "POST",
+            "interior-design/process",
+            200,
+            data=data,
+            files=files
+        )
+        
+        if success and response:
+            # Verify custom values are used
+            designer = response.get('designer')
+            color_scheme = response.get('color_scheme')
+            room_type = response.get('room_type')
+            
+            print(f"   Custom designer used: {designer}")
+            print(f"   Custom color_scheme used: {color_scheme}")
+            print(f"   Custom room_type used: {room_type}")
+            
+            if designer != "adrian_mercer":
+                print(f"❌ Expected custom designer 'adrian_mercer', got '{designer}'")
+                return False
+            
+            if color_scheme != "nomad_prism":
+                print(f"❌ Expected custom color_scheme 'nomad_prism', got '{color_scheme}'")
+                return False
+            
+            if room_type != "bedroom":
+                print(f"❌ Expected custom room_type 'bedroom', got '{room_type}'")
+                return False
+            
+            print("✅ Custom parameters properly accepted and used")
+            return True
+        
+        return success
+
+    def test_no_old_placeholder_data(self):
+        """Comprehensive test to ensure NO old placeholder data exists anywhere"""
+        print("\n🔍 Comprehensive Old Data Cleanup Verification...")
+        
+        # Test all configuration endpoints for old data
+        endpoints_to_check = [
+            ("interior-design/room-types", "room_types"),
+            ("interior-design/designers", "designers"), 
+            ("interior-design/color-schemes", "color_schemes")
+        ]
+        
+        old_placeholder_terms = [
+            "minimalist_maven",
+            "neutral_warm", 
+            "placeholder",
+            "test_designer",
+            "test_color"
+        ]
+        
+        all_clean = True
+        
+        for endpoint, response_key in endpoints_to_check:
+            success, response = self.run_test(
+                f"Old Data Check - {endpoint}",
+                "GET",
+                endpoint,
+                200
+            )
+            
+            if success and response:
+                items = response.get(response_key, [])
+                response_text = json.dumps(response).lower()
+                
+                # Check for any old placeholder terms
+                for old_term in old_placeholder_terms:
+                    if old_term.lower() in response_text:
+                        print(f"❌ CRITICAL: Found old placeholder '{old_term}' in {endpoint}")
+                        all_clean = False
+                
+                print(f"✅ {endpoint} clean of old placeholder data")
+            else:
+                all_clean = False
+        
+        if all_clean:
+            print("✅ COMPREHENSIVE CLEANUP VERIFIED: No old placeholder data found")
+            return True
+        else:
+            print("❌ CLEANUP INCOMPLETE: Old placeholder data still exists")
+            return False
+
     def test_invalid_endpoints(self):
         """Test invalid endpoints return proper errors"""
         success, response = self.run_test(
