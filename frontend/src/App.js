@@ -69,8 +69,8 @@ const InteriorDesignTool = () => {
   
   // New state for design preferences
   const [selectedRoomType, setSelectedRoomType] = useState('living_room');
-  const [selectedDesigner, setSelectedDesigner] = useState('minimalist_maven');
-  const [selectedColorScheme, setSelectedColorScheme] = useState('neutral_warm');
+  const [selectedDesigner, setSelectedDesigner] = useState('alessia_duval');
+  const [selectedColorScheme, setSelectedColorScheme] = useState('glacial_muse');
   
   // Configuration data
   const [roomTypes, setRoomTypes] = useState([]);
