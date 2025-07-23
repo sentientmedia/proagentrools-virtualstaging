@@ -152,40 +152,44 @@ const InteriorDesignTool = () => {
 
     return (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+        className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50" 
         onClick={onClose}
       >
         <div 
-          className="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto m-4 shadow-2xl" 
+          className="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 max-h-96 flex flex-col" 
           onClick={e => e.stopPropagation()}
-          onMouseEnter={() => {
-            // Keep modal open when hovering over it
-          }}
         >
-          <div className="flex items-center mb-4">
+          {/* Header - Fixed */}
+          <div className="flex items-center p-4 border-b border-gray-200 flex-shrink-0">
             <img 
               src={designer.image_url} 
               alt={designer.name}
-              className="w-16 h-16 rounded-full object-cover mr-4 border-2 border-gray-200"
+              className="w-12 h-12 rounded-full object-cover mr-3 border-2 border-gray-200"
             />
-            <div className="flex-1">
-              <h3 className="text-2xl font-bold text-gray-900">{designer.name}</h3>
-              <p className="text-blue-600 font-medium">{designer.description}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-gray-900 truncate">{designer.name}</h3>
+              <p className="text-sm text-blue-600 font-medium truncate">{designer.description}</p>
             </div>
             <button 
               onClick={onClose}
-              className="ml-auto text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none"
+              className="ml-2 text-gray-400 hover:text-gray-600 text-2xl font-bold leading-none flex-shrink-0"
             >
               ×
             </button>
           </div>
-          <div className="text-gray-700 whitespace-pre-line leading-relaxed text-sm">
-            {designer.full_bio}
+          
+          {/* Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="text-gray-700 whitespace-pre-line leading-relaxed text-sm">
+              {designer.full_bio}
+            </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200 text-center">
+          
+          {/* Footer - Fixed */}
+          <div className="p-4 border-t border-gray-200 flex-shrink-0">
             <button 
               onClick={onClose}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
             >
               Close
             </button>
