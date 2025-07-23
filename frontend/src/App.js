@@ -198,25 +198,55 @@ const InteriorDesignTool = () => {
   const downloadImage = async (designId, filename) => {
     try {
       console.log(`Attempting to download image for design ID: ${designId}`);
-      console.log(`Backend API URL: ${API}`);
       
-      // Use the direct image URL instead of the download endpoint
+      // Use fetch to get the image as blob
       const imageUrl = `${API}/images/${designId}.jpg`;
-      console.log(`Trying image URL: ${imageUrl}`);
+      console.log(`Fetching image from: ${imageUrl}`);
       
-      // Create a temporary link and trigger download
+      const response = await fetch(imageUrl, {
+        method: 'GET',
+        credentials: 'same-origin'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+      
+      // Convert to blob
+      const blob = await response.blob();
+      console.log(`Image blob received, size: ${blob.size} bytes`);
+      
+      // Create blob URL and download
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Create download link
       const link = document.createElement('a');
-      link.href = imageUrl;
+      link.href = blobUrl;
       link.download = filename || `ai_design_${designId}.jpg`;
-      link.target = '_blank'; // Fallback to opening in new tab
+      link.style.display = 'none';
+      
+      // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      console.log('Download triggered successfully');
+      // Clean up blob URL
+      URL.revokeObjectURL(blobUrl);
+      
+      console.log('Image download completed successfully');
+      
     } catch (err) {
       console.error('Failed to download image:', err);
       setError(`Failed to download image: ${err.message}`);
+      
+      // Fallback: open image in new tab
+      try {
+        const fallbackUrl = `${API}/images/${designId}.jpg`;
+        window.open(fallbackUrl, '_blank');
+        console.log('Opened image in new tab as fallback');
+      } catch (fallbackErr) {
+        console.error('Fallback also failed:', fallbackErr);
+      }
     }
   };
 
