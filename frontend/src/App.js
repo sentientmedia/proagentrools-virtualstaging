@@ -202,23 +202,21 @@ const InteriorDesignTool = () => {
         <div className="max-w-6xl mx-auto">
           {/* Design Preferences */}
           <div className="bg-gray-50 rounded-xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Customize Your Design</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Customize Your Design</h3>
             
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Room Type */}
-              <div>
-                {renderToggleGroup(roomTypes, selectedRoomType, setSelectedRoomType, "Room Type")}
-              </div>
-              
-              {/* Designer */}
-              <div>
-                {renderToggleGroup(designers, selectedDesigner, setSelectedDesigner, "Designer Style")}
-              </div>
-              
-              {/* Color Scheme */}
-              <div>
-                {renderToggleGroup(colorSchemes, selectedColorScheme, setSelectedColorScheme, "Color Scheme")}
-              </div>
+            {/* Room Type Row */}
+            <div className="mb-8">
+              {renderToggleGroup(roomTypes, selectedRoomType, setSelectedRoomType, "Room Type")}
+            </div>
+            
+            {/* Designer Style Row */}
+            <div className="mb-8">
+              {renderToggleGroup(designers, selectedDesigner, setSelectedDesigner, "Designer Style")}
+            </div>
+            
+            {/* Color Scheme Row */}
+            <div>
+              {renderToggleGroup(colorSchemes, selectedColorScheme, setSelectedColorScheme, "Color Scheme")}
             </div>
           </div>
 
