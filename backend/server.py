@@ -24,6 +24,10 @@ import aiofiles
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Create storage directories
+PROCESSED_IMAGES_DIR = ROOT_DIR / "storage" / "processed_images"
+PROCESSED_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
