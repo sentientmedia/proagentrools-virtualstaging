@@ -322,6 +322,12 @@ def main():
     tester.test_root_endpoint()
     tester.test_available_concepts()
     
+    # Test Interior Design Configuration Endpoints (CSV Data Integration)
+    print("\n🎨 Testing Interior Design Configuration Endpoints (CSV Data)...")
+    tester.test_room_types_endpoint()
+    tester.test_designers_endpoint()
+    tester.test_color_schemes_endpoint()
+    
     # Test GPT Concept tools
     print("\n🤖 Testing GPT Concept Tools...")
     tester.test_property_description()
