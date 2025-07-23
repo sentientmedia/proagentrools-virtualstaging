@@ -68,6 +68,12 @@ const InteriorDesignTool = () => {
   const [currentJobId, setCurrentJobId] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   
+  // Queue and history state
+  const [activeJobs, setActiveJobs] = useState([]);
+  const [jobHistory, setJobHistory] = useState([]);
+  const [queueStatus, setQueueStatus] = useState({ queued: 0, processing: 0 });
+  const [showHistory, setShowHistory] = useState(false);
+  
   // New state for design preferences
   const [selectedRoomType, setSelectedRoomType] = useState('living_room');
   const [selectedDesigner, setSelectedDesigner] = useState('alessia_duval');
