@@ -263,7 +263,7 @@ const InteriorDesignTool = () => {
             
             {/* Designer Style Row */}
             <div className="mb-8">
-              {renderToggleGroup(designers, selectedDesigner, setSelectedDesigner, "Designer Style")}
+              {renderDesignerGroup(designers, selectedDesigner, setSelectedDesigner, "Designer Style")}
             </div>
             
             {/* Color Scheme Row */}
