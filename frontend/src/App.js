@@ -77,6 +77,10 @@ const InteriorDesignTool = () => {
   const [designers, setDesigners] = useState([]);
   const [colorSchemes, setColorSchemes] = useState([]);
   
+  // Modal state for designer bio
+  const [showDesignerModal, setShowDesignerModal] = useState(false);
+  const [selectedDesignerForModal, setSelectedDesignerForModal] = useState(null);
+  
   // Load configuration data on component mount
   useEffect(() => {
     const loadConfigData = async () => {
