@@ -165,6 +165,21 @@
           agent: "testing"
           comment: "✅ VERIFIED: All interior design configuration endpoints working perfectly. Room types (5), designers (12), and color schemes (20) all return correct CSV-based data with proper structure validation."
 
+  - task: "Fix hardcoded default values in process endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "pending"
+          agent: "main"
+          comment: "CRITICAL FIX: Updated hardcoded default values in POST /api/interior-design/process endpoint from old placeholder IDs (minimalist_maven, neutral_warm) to NEW CSV-based defaults (alessia_duval, glacial_muse). Also fixed FastAPI Form parameter handling for multipart form data."
+        - working: true
+          agent: "testing"
+          comment: "✅ CRITICAL FIX VERIFIED: Process endpoint now correctly uses NEW default values (alessia_duval, glacial_muse) when no parameters provided. Custom parameters also work correctly. Fixed FastAPI Form() declarations for proper multipart form data handling. NO old placeholder data remains anywhere in backend responses. Comprehensive cleanup confirmed successful."
+
 ## frontend:
   - task: "Update frontend to work with new data structure"
     implemented: true
