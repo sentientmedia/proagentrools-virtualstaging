@@ -253,7 +253,7 @@ const InteriorDesignTool = () => {
                 />
                 <div className="font-medium text-sm text-center">{designer.name}</div>
                 <div className="text-xs mt-1 opacity-75 text-center">{designer.description}</div>
-                <div className="text-xs mt-1 text-blue-600">Hover or double-click for full bio</div>
+                <div className="text-xs mt-1 text-blue-600">Click twice quickly for full bio</div>
               </div>
             </button>
           </div>
