@@ -30,6 +30,7 @@ db = client[os.environ['DB_NAME']]
 RUNPOD_ENDPOINT = "https://api.runpod.ai/v2/kfi0ulqzkpuu5e"
 RUNPOD_API_KEY = os.environ.get('RUNPOD_API_KEY') or os.environ.get('REPLICATE_API_TOKEN')  # Try RunPod key first, fallback to existing
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+OPENAI_ASSISTANT_ID = "asst_dosMuAyLnY9vqMvVnAtO5GHx"  # Your Interior Design Assistant
 
 # Create the main app without a prefix
 app = FastAPI(title="ProAgentTools", description="AI-powered tools for real estate agents")
