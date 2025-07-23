@@ -201,7 +201,10 @@ const InteriorDesignTool = () => {
 
   const renderDesignerGroup = (designers, selected, onSelect, title) => (
     <div className="space-y-3">
-      <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+      <div>
+        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+        <p className="text-sm text-blue-600 mt-1">Double-click for full bio</p>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {designers.map((designer) => (
           <div key={designer.id} className="relative">
@@ -231,7 +234,6 @@ const InteriorDesignTool = () => {
                 />
                 <div className="font-medium text-sm text-center">{designer.name}</div>
                 <div className="text-xs mt-1 opacity-75 text-center">{designer.description}</div>
-                <div className="text-xs mt-1 text-blue-600">Double-click for full bio</div>
               </div>
             </button>
           </div>
