@@ -66,33 +66,37 @@ const InteriorDesignTool = () => {
   const [dragActive, setDragActive] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [currentJobId, setCurrentJobId] = useState(null);
-
-  const pollStatus = async (jobId) => {
-    try {
-      const response = await axios.get(`${API}/interior-design/status/${jobId}`);
-      const status = response.data;
-      
-      if (status.status === 'completed') {
-        setProcessedImage(status);
-        setProcessing(false);
-        setStatusMessage('');
-        setCurrentJobId(null);
-      } else if (status.status === 'failed') {
-        setError(status.error_message || 'Processing failed');
-        setProcessing(false);
-        setStatusMessage('');
-        setCurrentJobId(null);
-      } else if (status.status === 'processing' || status.status === 'submitted') {
-        setStatusMessage(status.message || 'Processing in progress...');
-        // Poll again in 10 seconds
-        setTimeout(() => pollStatus(jobId), 10000);
+  
+  // New state for design preferences
+  const [selectedRoomType, setSelectedRoomType] = useState('living_room');
+  const [selectedDesigner, setSelectedDesigner] = useState('minimalist_maven');
+  const [selectedColorScheme, setSelectedColorScheme] = useState('neutral_warm');
+  
+  // Configuration data
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [designers, setDesigners] = useState([]);
+  const [colorSchemes, setColorSchemes] = useState([]);
+  
+  // Load configuration data on component mount
+  useEffect(() => {
+    const loadConfigData = async () => {
+      try {
+        const [roomTypesRes, designersRes, colorSchemesRes] = await Promise.all([
+          axios.get(`${API}/interior-design/room-types`),
+          axios.get(`${API}/interior-design/designers`),
+          axios.get(`${API}/interior-design/color-schemes`)
+        ]);
+        
+        setRoomTypes(roomTypesRes.data.room_types);
+        setDesigners(designersRes.data.designers);
+        setColorSchemes(colorSchemesRes.data.color_schemes);
+      } catch (err) {
+        console.error('Failed to load configuration data:', err);
       }
-    } catch (err) {
-      console.error('Status check failed:', err);
-      // Try again in 15 seconds if status check fails
-      setTimeout(() => pollStatus(jobId), 15000);
-    }
-  };
+    };
+    
+    loadConfigData();
+  }, []);
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -101,11 +105,14 @@ const InteriorDesignTool = () => {
     setProcessing(true);
     setError(null);
     setProcessedImage(null);
-    setStatusMessage('Uploading and starting AI processing...');
+    setStatusMessage('Generating custom design prompt and processing image...');
 
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('room_type', selectedRoomType);
+      formData.append('designer', selectedDesigner);
+      formData.append('color_scheme', selectedColorScheme);
 
       const response = await axios.post(`${API}/interior-design/process`, formData, {
         headers: {
@@ -113,20 +120,16 @@ const InteriorDesignTool = () => {
         },
       });
 
-      // Start polling for status
-      const jobId = response.data.id;
-      setCurrentJobId(jobId);
-      setStatusMessage('Image submitted! Processing started - this may take 2-3 minutes due to AI model startup...');
-      
-      // Start polling status
-      setTimeout(() => pollStatus(jobId), 5000); // Start checking after 5 seconds
+      setProcessedImage(response.data);
+      setProcessing(false);
+      setStatusMessage('');
 
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to process image');
       setProcessing(false);
       setStatusMessage('');
     }
-  }, []);
+  }, [selectedRoomType, selectedDesigner, selectedColorScheme]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -138,18 +141,88 @@ const InteriorDesignTool = () => {
     onDragLeave: () => setDragActive(false),
   });
 
+  // Helper function to render toggle buttons
+  const renderToggleGroup = (items, selected, onSelect, title) => (
+    <div className="space-y-3">
+      <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {items.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onSelect(item.id)}
+            className={`p-3 rounded-lg border-2 text-left transition-all ${
+              selected === item.id
+                ? 'border-blue-500 bg-blue-50 text-blue-900'
+                : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700'
+            }`}
+          >
+            <div className="font-medium text-sm">{item.name}</div>
+            <div className="text-xs mt-1 opacity-75">{item.description}</div>
+            {item.colors && (
+              <div className="flex space-x-1 mt-2">
+                {item.colors.slice(0, 4).map((color, idx) => (
+                  <div
+                    key={idx}
+                    className="w-3 h-3 rounded-full border"
+                    style={{
+                      backgroundColor: color.toLowerCase().includes('white') ? '#ffffff' :
+                                     color.toLowerCase().includes('black') ? '#000000' :
+                                     color.toLowerCase().includes('gray') ? '#9ca3af' :
+                                     color.toLowerCase().includes('blue') ? '#3b82f6' :
+                                     color.toLowerCase().includes('green') ? '#10b981' :
+                                     color.toLowerCase().includes('red') ? '#ef4444' :
+                                     color.toLowerCase().includes('pink') ? '#ec4899' :
+                                     color.toLowerCase().includes('purple') || color.toLowerCase().includes('lavender') ? '#8b5cf6' :
+                                     color.toLowerCase().includes('yellow') || color.toLowerCase().includes('gold') ? '#f59e0b' :
+                                     color.toLowerCase().includes('orange') ? '#f97316' :
+                                     color.toLowerCase().includes('brown') || color.toLowerCase().includes('wood') || color.toLowerCase().includes('beige') ? '#92400e' :
+                                     '#6b7280'
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <section id="interior-design" className="py-16 bg-white">
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">AI Interior Design Enhancement</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Upload any interior photo and watch our AI transform it into a stunning, professionally designed space.
-            Perfect for staging properties and showing potential to clients.
+            Upload any interior photo and customize your design with our AI-powered styling options.
+            Choose your room type, designer aesthetic, and color scheme for personalized results.
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
+          {/* Design Preferences */}
+          <div className="bg-gray-50 rounded-xl p-8 mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Customize Your Design</h3>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Room Type */}
+              <div>
+                {renderToggleGroup(roomTypes, selectedRoomType, setSelectedRoomType, "Room Type")}
+              </div>
+              
+              {/* Designer */}
+              <div>
+                {renderToggleGroup(designers, selectedDesigner, setSelectedDesigner, "Designer Style")}
+              </div>
+              
+              {/* Color Scheme */}
+              <div>
+                {renderToggleGroup(colorSchemes, selectedColorScheme, setSelectedColorScheme, "Color Scheme")}
+              </div>
+            </div>
+          </div>
+
+          {/* Image Upload and Processing */}
           <div className="grid md:grid-cols-2 gap-8">
             {/* Upload Area */}
             <div className="space-y-6">
@@ -182,12 +255,9 @@ const InteriorDesignTool = () => {
                   <div className="flex items-start space-x-3">
                     <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mt-0.5"></div>
                     <div className="flex-1">
-                      <span className="text-blue-800 font-medium">AI Processing in Progress</span>
+                      <span className="text-blue-800 font-medium">AI Design Processing</span>
                       <p className="text-blue-600 text-sm mt-1">
-                        {statusMessage || 'Your custom interior design AI is starting up and processing your image...'}
-                      </p>
-                      <p className="text-blue-500 text-xs mt-2">
-                        ⏱️ Estimated time: 2-3 minutes (due to AI model cold boot)
+                        {statusMessage || 'Creating your custom design with AI...'}
                       </p>
                     </div>
                   </div>
@@ -205,7 +275,7 @@ const InteriorDesignTool = () => {
             <div className="space-y-6">
               {processedImage ? (
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Enhanced Interior Design</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Custom Design</h3>
                   <div className="space-y-4">
                     <img
                       src={processedImage.processed_image_url}
@@ -214,18 +284,38 @@ const InteriorDesignTool = () => {
                       onLoad={() => console.log('Image loaded successfully')}
                       onError={() => console.error('Failed to load processed image')}
                     />
-                    <div className="flex justify-between items-center text-sm text-gray-600">
-                      <span>Original: {processedImage.original_filename}</span>
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">✅ Completed</span>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex justify-between">
+                        <span>Original:</span>
+                        <span>{processedImage.original_filename}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Room Type:</span>
+                        <span>{roomTypes.find(r => r.id === processedImage.room_type)?.name || processedImage.room_type}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Designer:</span>
+                        <span>{designers.find(d => d.id === processedImage.designer)?.name || processedImage.designer}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Color Scheme:</span>
+                        <span>{colorSchemes.find(c => c.id === processedImage.color_scheme)?.name || processedImage.color_scheme}</span>
+                      </div>
+                      {processedImage.generated_prompt && (
+                        <div className="mt-4 p-3 bg-blue-50 rounded text-blue-800 text-xs">
+                          <strong>AI Prompt:</strong> {processedImage.generated_prompt.substring(0, 150)}...
+                        </div>
+                      )}
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Completed</span>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="bg-gray-100 rounded-xl p-6 h-64 flex items-center justify-center">
                   <div className="text-center">
-                    <p className="text-gray-500 mb-2">Upload an image to see the AI-enhanced result</p>
+                    <p className="text-gray-500 mb-2">Upload an image to see your custom AI design</p>
                     {processing && (
-                      <p className="text-blue-600 text-sm">Your image will appear here when processing completes</p>
+                      <p className="text-blue-600 text-sm">Your personalized design will appear here</p>
                     )}
                   </div>
                 </div>
