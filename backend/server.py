@@ -191,9 +191,9 @@ async def generate_design_prompt_with_assistant(room_type: str, designer: str, c
 @api_router.post("/interior-design/process")
 async def process_interior_design(
     file: UploadFile = File(...),
-    room_type: str = "living_room",
-    designer: str = "alessia_duval", 
-    color_scheme: str = "glacial_muse"
+    room_type: str = Form("living_room"),
+    designer: str = Form("alessia_duval"), 
+    color_scheme: str = Form("glacial_muse")
 ):
     """Process an interior image with custom design preferences"""
     try:
