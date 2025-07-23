@@ -179,6 +179,31 @@ const InteriorDesignTool = () => {
     }
   };
 
+  const downloadImage = async (designId, filename) => {
+    try {
+      console.log(`Attempting to download image for design ID: ${designId}`);
+      console.log(`Backend API URL: ${API}`);
+      
+      // Use the direct image URL instead of the download endpoint
+      const imageUrl = `${API}/images/${designId}.jpg`;
+      console.log(`Trying image URL: ${imageUrl}`);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.download = filename || `ai_design_${designId}.jpg`;
+      link.target = '_blank'; // Fallback to opening in new tab
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('Download triggered successfully');
+    } catch (err) {
+      console.error('Failed to download image:', err);
+      setError(`Failed to download image: ${err.message}`);
+    }
+  };
+
   const deleteImage = async (designId, filename) => {
     if (!window.confirm(`Are you sure you want to delete "${filename}"? This action cannot be undone.`)) {
       return;
@@ -195,51 +220,11 @@ const InteriorDesignTool = () => {
         console.log('Design deleted successfully');
         
         // Refresh history to ensure it's up to date
-        await loadHistory();
+        setTimeout(() => loadHistory(), 500); // Small delay to ensure backend cleanup
       }
     } catch (err) {
       console.error('Failed to delete design:', err);
       setError(`Failed to delete design: ${err.response?.data?.detail || err.message}`);
-    }
-  };
-
-  const downloadImage = async (designId, filename) => {
-    try {
-      console.log(`Attempting to download image for design ID: ${designId}`);
-      
-      // Use fetch API with blob to handle the download properly
-      const response = await fetch(`${API}/interior-design/download/${designId}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/octet-stream, image/jpeg, */*'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`);
-      }
-      
-      // Get the blob data
-      const blob = await response.blob();
-      
-      // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
-      
-      // Create a temporary link and trigger download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename || `ai_design_${designId}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up the temporary URL
-      window.URL.revokeObjectURL(url);
-      
-      console.log('Download triggered successfully');
-    } catch (err) {
-      console.error('Failed to download image:', err);
-      setError(`Failed to download image: ${err.message}`);
     }
   };
 
