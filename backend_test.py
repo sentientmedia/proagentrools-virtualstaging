@@ -1108,13 +1108,36 @@ class ProAgentToolsAPITester:
 
 def main():
     print("🚀 Starting ProAgentTools API Testing...")
-    print("🔥 ENHANCED BACKEND TESTING: Permanent Image Storage & Queue System")
+    print("🔐 COMPREHENSIVE AUTHENTICATION & ADMIN SYSTEM TESTING")
     print("=" * 80)
     
     # Setup
     tester = ProAgentToolsAPITester()
     
-    # Run basic endpoint tests
+    # ========== AUTHENTICATION SYSTEM TESTS ==========
+    print("\n🔐 Testing User Authentication System...")
+    tester.test_user_registration()
+    tester.test_user_login()
+    tester.test_get_current_user()
+    tester.test_get_user_credits()
+    tester.test_protected_endpoint_without_auth()
+    
+    # ========== ADMIN AUTHENTICATION SYSTEM TESTS ==========
+    print("\n👑 Testing Admin Authentication System...")
+    tester.test_admin_login()
+    tester.test_admin_get_users()
+    tester.test_admin_analytics()
+    tester.test_admin_tool_rates()
+    tester.test_admin_update_tool_rate()
+    tester.test_admin_endpoint_without_admin_auth()
+    
+    # ========== CREDIT SYSTEM INTEGRATION TESTS ==========
+    print("\n💰 Testing Credit System Integration...")
+    tester.test_interior_design_requires_auth()
+    tester.test_credit_deduction_on_tool_usage()
+    tester.test_insufficient_credits_handling()
+    
+    # ========== EXISTING FUNCTIONALITY TESTS ==========
     print("\n📋 Testing Basic Endpoints...")
     tester.test_health_check()
     tester.test_root_endpoint()
@@ -1168,11 +1191,13 @@ def main():
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
-        print("✅ ENHANCED FEATURES VERIFIED: Image storage & queue system working")
+        print("✅ AUTHENTICATION & ADMIN SYSTEM: Fully functional")
+        print("✅ CREDIT SYSTEM: Working correctly")
+        print("✅ ENHANCED FEATURES: Image storage & queue system working")
         return 0
     else:
         print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
-        print("❌ ENHANCED FEATURES: Some tests failed - check results above")
+        print("❌ Some tests failed - check results above")
         return 1
 
 if __name__ == "__main__":
