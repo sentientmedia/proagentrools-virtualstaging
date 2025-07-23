@@ -146,6 +146,76 @@ const InteriorDesignTool = () => {
   });
 
   // Helper function to render toggle buttons
+  // Designer Modal Component
+  const DesignerModal = ({ designer, isOpen, onClose }) => {
+    if (!isOpen || !designer) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+        <div className="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto m-4" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center mb-4">
+            <img 
+              src={designer.image_url} 
+              alt={designer.name}
+              className="w-16 h-16 rounded-full object-cover mr-4"
+            />
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900">{designer.name}</h3>
+              <p className="text-gray-600">{designer.description}</p>
+            </div>
+            <button 
+              onClick={onClose}
+              className="ml-auto text-gray-400 hover:text-gray-600 text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+          <div className="text-gray-700 whitespace-pre-line leading-relaxed">
+            {designer.full_bio}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDesignerGroup = (designers, selected, onSelect, title) => (
+    <div className="space-y-3">
+      <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {designers.map((designer) => (
+          <div key={designer.id} className="relative">
+            <button
+              onClick={() => onSelect(designer.id)}
+              onMouseEnter={() => {
+                setSelectedDesignerForModal(designer);
+                setShowDesignerModal(true);
+              }}
+              onMouseLeave={() => {
+                setShowDesignerModal(false);
+                setSelectedDesignerForModal(null);
+              }}
+              className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                selected === designer.id
+                  ? 'border-blue-500 bg-blue-50 text-blue-900'
+                  : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700'
+              }`}
+            >
+              <div className="flex flex-col items-center">
+                <img 
+                  src={designer.image_url} 
+                  alt={designer.name}
+                  className="w-12 h-12 rounded-full object-cover mb-2 border-2 border-gray-200"
+                />
+                <div className="font-medium text-sm text-center">{designer.name}</div>
+                <div className="text-xs mt-1 opacity-75 text-center">{designer.description}</div>
+              </div>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   const renderToggleGroup = (items, selected, onSelect, title) => (
     <div className="space-y-3">
       <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
