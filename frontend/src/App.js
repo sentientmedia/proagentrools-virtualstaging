@@ -206,23 +206,38 @@ const InteriorDesignTool = () => {
         {designers.map((designer) => (
           <div key={designer.id} className="relative">
             <button
-              onClick={() => onSelect(designer.id)}
-              onDoubleClick={() => {
-                setSelectedDesignerForModal(designer);
-                setShowDesignerModal(true);
-              }}
-              onMouseEnter={() => {
-                setTimeout(() => {
+              onClick={(e) => {
+                if (e.detail === 1) {
+                  // Single click - select designer
+                  onSelect(designer.id);
+                } else if (e.detail === 2) {
+                  // Double click - show modal
+                  e.preventDefault();
                   setSelectedDesignerForModal(designer);
                   setShowDesignerModal(true);
-                }, 300); // Small delay before showing modal
+                }
               }}
-              onMouseLeave={() => {
-                // Delay to allow moving to modal
+              onMouseEnter={() => {
+                // Set timeout for hover modal
+                const timeoutId = setTimeout(() => {
+                  setSelectedDesignerForModal(designer);
+                  setShowDesignerModal(true);
+                }, 500);
+                // Store timeout ID to clear it on mouse leave
+                e.currentTarget.setAttribute('data-timeout', timeoutId);
+              }}
+              onMouseLeave={(e) => {
+                // Clear hover timeout
+                const timeoutId = e.currentTarget.getAttribute('data-timeout');
+                if (timeoutId) {
+                  clearTimeout(timeoutId);
+                  e.currentTarget.removeAttribute('data-timeout');
+                }
+                // Delay closing modal to allow moving to it
                 setTimeout(() => {
                   setShowDesignerModal(false);
                   setSelectedDesignerForModal(null);
-                }, 500);
+                }, 300);
               }}
               className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
                 selected === designer.id
