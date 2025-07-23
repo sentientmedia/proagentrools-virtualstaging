@@ -679,7 +679,7 @@ class ProAgentToolsAPITester:
 
 def main():
     print("🚀 Starting ProAgentTools API Testing...")
-    print("🔥 CRITICAL FIX VERIFICATION: Testing NEW default values after hardcoded fix")
+    print("🔥 ENHANCED BACKEND TESTING: Permanent Image Storage & Queue System")
     print("=" * 80)
     
     # Setup
@@ -702,6 +702,14 @@ def main():
     tester.test_process_endpoint_new_defaults()
     tester.test_process_endpoint_custom_parameters()
     tester.test_no_old_placeholder_data()
+    
+    # NEW ENHANCED FEATURES TESTING
+    print("\n🆕 ENHANCED FEATURES - Queue System & Image Storage...")
+    tester.test_queue_status_endpoint()
+    tester.test_process_endpoint_queued_status()
+    tester.test_storage_directory_structure()
+    tester.test_image_serving_endpoint()
+    tester.test_download_design_endpoint()
     
     # Test GPT Concept tools
     print("\n🤖 Testing GPT Concept Tools...")
@@ -731,11 +739,11 @@ def main():
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
-        print("✅ CRITICAL FIX VERIFIED: NEW default values working correctly")
+        print("✅ ENHANCED FEATURES VERIFIED: Image storage & queue system working")
         return 0
     else:
         print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
-        print("❌ CRITICAL FIX VERIFICATION: Some tests failed - check results above")
+        print("❌ ENHANCED FEATURES: Some tests failed - check results above")
         return 1
 
 if __name__ == "__main__":
