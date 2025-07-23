@@ -72,7 +72,6 @@ const InteriorDesignTool = () => {
   const [activeJobs, setActiveJobs] = useState([]);
   const [jobHistory, setJobHistory] = useState([]);
   const [queueStatus, setQueueStatus] = useState({ queued: 0, processing: 0 });
-  const [showHistory, setShowHistory] = useState(false);
   
   // New state for design preferences
   const [selectedRoomType, setSelectedRoomType] = useState('living_room');
