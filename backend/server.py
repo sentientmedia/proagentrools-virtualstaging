@@ -599,6 +599,44 @@ async def get_queue_status():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.delete("/interior-design/delete/{design_id}")
+async def delete_design(design_id: str):
+    """Delete a design and its associated image file"""
+    try:
+        design = await db.interior_designs.find_one({"id": design_id})
+        if not design:
+            raise HTTPException(status_code=404, detail="Design not found")
+        
+        # Delete the image file if it exists locally
+        local_url = design.get("processed_image_url", "")
+        if local_url.startswith("/api/images/"):
+            filename = local_url.split("/")[-1]
+            file_path = PROCESSED_IMAGES_DIR / filename
+            
+            if file_path.exists():
+                try:
+                    file_path.unlink()
+                    logger.info(f"Deleted image file: {filename}")
+                except Exception as e:
+                    logger.warning(f"Failed to delete image file {filename}: {str(e)}")
+        
+        # Delete the database record
+        result = await db.interior_designs.delete_one({"id": design_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Design not found in database")
+        
+        return {
+            "success": True,
+            "message": "Design deleted successfully",
+            "deleted_id": design_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting design: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/images/{filename}")
 async def serve_processed_image(filename: str):
     """Serve processed images"""
