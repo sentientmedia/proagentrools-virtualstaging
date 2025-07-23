@@ -8,7 +8,7 @@ import tempfile
 import os
 
 class ProAgentToolsAPITester:
-    def __init__(self, base_url="https://2ca17b98-221f-4e24-87ef-d6d1c173ac3f.preview.emergentagent.com"):
+    def __init__(self, base_url="https://7f9f2de6-2fb0-4a74-af1b-8d15dbd9c892.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
