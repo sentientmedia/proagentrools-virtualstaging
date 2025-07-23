@@ -796,6 +796,13 @@ const InteriorDesignTool = () => {
         </div>
       </div>
       
+      {/* Image Viewer Modal */}
+      <ImageViewerModal 
+        image={viewingImage} 
+        isOpen={!!viewingImage} 
+        onClose={() => setViewingImage(null)} 
+      />
+      
       {/* Designer Bio Modal */}
       <DesignerModal 
         designer={selectedDesignerForModal} 
