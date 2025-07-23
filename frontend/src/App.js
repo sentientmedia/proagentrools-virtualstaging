@@ -251,22 +251,34 @@ const InteriorDesignTool = () => {
   };
 
   const deleteImage = async (designId, filename) => {
+    console.log(`Delete button clicked for design: ${designId}, filename: ${filename}`);
+    
     if (!window.confirm(`Are you sure you want to delete "${filename}"? This action cannot be undone.`)) {
+      console.log('Delete cancelled by user');
       return;
     }
     
     try {
-      console.log(`Deleting design: ${designId}`);
+      console.log(`Proceeding with deletion of design: ${designId}`);
       
       const response = await axios.delete(`${API}/interior-design/delete/${designId}`);
+      console.log('Delete response:', response.data);
       
       if (response.data.success) {
+        console.log('Design deleted successfully from backend');
+        
         // Remove from history immediately for better UX
-        setJobHistory(prev => prev.filter(job => job.id !== designId));
-        console.log('Design deleted successfully');
+        setJobHistory(prev => {
+          const updated = prev.filter(job => job.id !== designId);
+          console.log(`Removed from history. New count: ${updated.length}`);
+          return updated;
+        });
         
         // Refresh history to ensure it's up to date
-        setTimeout(() => loadHistory(), 500); // Small delay to ensure backend cleanup
+        setTimeout(() => {
+          console.log('Refreshing history after delete...');
+          loadHistory();
+        }, 1000);
       }
     } catch (err) {
       console.error('Failed to delete design:', err);
