@@ -389,12 +389,18 @@ async def process_image_async(request_id: str, temp_file_path, generated_prompt:
             else:
                 processed_url = str(output)
             
+            # Download and store the image permanently
+            logger.info(f"Downloading and storing image from: {processed_url}")
+            local_image_url = await download_and_store_image(processed_url, request_id)
+            logger.info(f"Image stored locally at: {local_image_url}")
+            
             # Update database with success
             await db.interior_designs.update_one(
                 {"id": request_id},
                 {"$set": {
                     "status": "completed",
-                    "processed_image_url": processed_url,
+                    "processed_image_url": local_image_url,  # Use local URL
+                    "original_replicate_url": processed_url,  # Keep original URL for reference
                     "completed_at": datetime.utcnow()
                 }}
             )
