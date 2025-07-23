@@ -32,6 +32,15 @@ load_dotenv(ROOT_DIR / '.env')
 PROCESSED_IMAGES_DIR = ROOT_DIR / "storage" / "processed_images"
 PROCESSED_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
+# Authentication
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
