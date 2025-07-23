@@ -575,9 +575,18 @@ async def get_queue_status():
         queued_count = await db.interior_designs.count_documents({"status": "queued"})
         processing_count = await db.interior_designs.count_documents({"status": "processing"})
         
-        # Get recent queue items
-        queued_items = await db.interior_designs.find({"status": "queued"}).sort("created_at", 1).limit(10).to_list(length=10)
-        processing_items = await db.interior_designs.find({"status": "processing"}).sort("created_at", 1).limit(5).to_list(length=5)
+        # Get recent queue items and convert ObjectId to string
+        queued_items = []
+        async for item in db.interior_designs.find({"status": "queued"}).sort("upload_timestamp", 1).limit(10):
+            if '_id' in item:
+                item['_id'] = str(item['_id'])
+            queued_items.append(item)
+        
+        processing_items = []
+        async for item in db.interior_designs.find({"status": "processing"}).sort("upload_timestamp", 1).limit(5):
+            if '_id' in item:
+                item['_id'] = str(item['_id'])
+            processing_items.append(item)
         
         return {
             "queue_status": {
