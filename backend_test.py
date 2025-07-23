@@ -6,6 +6,7 @@ from datetime import datetime
 from PIL import Image
 import tempfile
 import os
+import uuid
 
 class ProAgentToolsAPITester:
     def __init__(self, base_url="https://7f9f2de6-2fb0-4a74-af1b-8d15dbd9c892.preview.emergentagent.com"):
@@ -13,6 +14,9 @@ class ProAgentToolsAPITester:
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
+        self.user_token = None
+        self.admin_token = None
+        self.test_user_id = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, files=None):
         """Run a single API test"""
