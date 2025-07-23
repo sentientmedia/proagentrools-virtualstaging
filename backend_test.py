@@ -737,6 +737,10 @@ class ProAgentToolsAPITester:
 
     def test_process_endpoint_new_defaults(self):
         """Test that process endpoint uses NEW default values (alessia_duval, glacial_muse)"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping authenticated test")
+            return False
+        
         # Create test image
         test_image = self.create_test_image()
         
@@ -744,13 +748,16 @@ class ProAgentToolsAPITester:
             'file': ('test_interior.jpg', test_image, 'image/jpeg')
         }
         
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
         # Test without providing designer/color_scheme parameters - should use NEW defaults
         success, response = self.run_test(
-            "Process Endpoint - NEW Default Values Test",
+            "Process Endpoint - NEW Default Values Test (Authenticated)",
             "POST",
             "interior-design/process",
             200,
-            files=files
+            files=files,
+            headers=headers
         )
         
         if success and response:
