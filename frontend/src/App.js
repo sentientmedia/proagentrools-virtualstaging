@@ -200,9 +200,8 @@ const InteriorDesignTool = () => {
       return;
     }
 
-    setProcessing(true);
     setError('');
-    setStatusMessage('Generating custom design prompt and processing image...');
+    setStatusMessage('Adding to queue...');
 
     const formData = new FormData();
     formData.append('file', uploadedFile);
@@ -217,12 +216,19 @@ const InteriorDesignTool = () => {
         },
       });
 
-      setProcessedImage(response.data);
-      setProcessing(false);
-      setStatusMessage('');
+      if (response.data) {
+        // Add to active jobs queue
+        setActiveJobs(prev => [...prev, response.data]);
+        setStatusMessage('Added to queue! You can submit more images.');
+        
+        // Clear the current upload to allow new submissions
+        setUploadedFile(null);
+        
+        // Update queue status
+        loadQueueStatus();
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to process image');
-      setProcessing(false);
+      setError(err.response?.data?.detail || 'Failed to add to queue');
       setStatusMessage('');
     }
   };
