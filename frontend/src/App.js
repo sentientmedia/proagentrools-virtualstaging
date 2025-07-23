@@ -120,7 +120,7 @@ const InteriorDesignTool = () => {
 
     setProcessing(true);
     setError('');
-    setStatusMessage('Uploading and processing your image...');
+    setStatusMessage('Generating custom design prompt and processing image...');
 
     const formData = new FormData();
     formData.append('file', uploadedFile);
@@ -135,11 +135,9 @@ const InteriorDesignTool = () => {
         },
       });
 
-      if (response.data) {
-        setCurrentJobId(response.data.id);
-        // Start polling for status
-        pollJobStatus(response.data.id);
-      }
+      setProcessedImage(response.data);
+      setProcessing(false);
+      setStatusMessage('');
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to process image');
       setProcessing(false);
