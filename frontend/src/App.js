@@ -374,6 +374,16 @@ const InteriorDesignTool = () => {
           </div>
         </div>
       </div>
+      
+      {/* Designer Bio Modal */}
+      <DesignerModal 
+        designer={selectedDesignerForModal} 
+        isOpen={showDesignerModal} 
+        onClose={() => {
+          setShowDesignerModal(false);
+          setSelectedDesignerForModal(null);
+        }} 
+      />
     </section>
   );
 };
