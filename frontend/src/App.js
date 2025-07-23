@@ -118,7 +118,7 @@ const InteriorDesignTool = () => {
       clearInterval(queueInterval);
       clearInterval(jobsInterval);
     };
-  }, []);
+  }, []); // Remove activeJobs dependency to prevent excessive re-renders
 
   const loadHistory = async () => {
     try {
