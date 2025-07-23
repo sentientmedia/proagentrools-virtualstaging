@@ -107,7 +107,83 @@ const InteriorDesignTool = () => {
     };
     
     loadConfigData();
+    loadHistory();
+    loadQueueStatus();
+    
+    // Set up polling for queue status
+    const queueInterval = setInterval(loadQueueStatus, 3000);
+    const jobsInterval = setInterval(updateActiveJobs, 2000);
+    
+    return () => {
+      clearInterval(queueInterval);
+      clearInterval(jobsInterval);
+    };
   }, []);
+
+  const loadHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/interior-design/history`);
+      setJobHistory(response.data.designs || []);
+    } catch (err) {
+      console.error('Failed to load history:', err);
+    }
+  };
+
+  const loadQueueStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/interior-design/queue`);
+      setQueueStatus(response.data.queue_status);
+    } catch (err) {
+      console.error('Failed to load queue status:', err);
+    }
+  };
+
+  const updateActiveJobs = async () => {
+    try {
+      // Update status for each active job
+      const updatedJobs = await Promise.all(
+        activeJobs.map(async (job) => {
+          if (job.status === 'queued' || job.status === 'processing') {
+            const response = await axios.get(`${API}/interior-design/status/${job.id}`);
+            return response.data;
+          }
+          return job;
+        })
+      );
+      
+      setActiveJobs(updatedJobs);
+      
+      // Remove completed jobs from active list and refresh history
+      const stillActive = updatedJobs.filter(job => 
+        job.status === 'queued' || job.status === 'processing'
+      );
+      
+      if (stillActive.length !== activeJobs.length) {
+        setActiveJobs(stillActive);
+        loadHistory();
+      }
+    } catch (err) {
+      console.error('Failed to update active jobs:', err);
+    }
+  };
+
+  const downloadImage = async (designId, filename) => {
+    try {
+      const response = await axios.get(`${API}/interior-design/download/${designId}`);
+      const downloadUrl = response.data.download_url;
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename || `ai_design_${designId}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to download image:', err);
+      setError('Failed to download image');
+    }
+  };
 
   const onDrop = useCallback(async (acceptedFiles) => {
     if (acceptedFiles.length === 0) return;
