@@ -52,12 +52,18 @@ ROOM_TYPES = [
 ]
 
 DESIGNERS = [
-    {"id": "minimalist_maven", "name": "Maya Chen", "description": "Minimalist maven who creates serene spaces with clean lines and functional beauty"},
-    {"id": "vintage_specialist", "name": "Oliver Thompson", "description": "Vintage specialist bringing timeless charm through antique finds and classic elegance"},
-    {"id": "modern_luxury", "name": "Sophia Rodriguez", "description": "Modern luxury expert crafting sophisticated spaces with premium materials and bold statements"},
-    {"id": "scandinavian_style", "name": "Lars Andersson", "description": "Scandinavian style guru creating cozy hygge through natural textures and warm simplicity"},
-    {"id": "bohemian_chic", "name": "Aria Patel", "description": "Bohemian chic artist weaving global influences into eclectic and soulful living spaces"},
-    {"id": "industrial_edge", "name": "Marcus Steel", "description": "Industrial edge designer exposing raw beauty through metal, concrete, and urban aesthetics"}
+    {"id": "alessia_duval", "name": "Alessia Duval", "description": "Infuses Parisian elegance with global eclecticism, layering vibrant textiles and refined antiques."},
+    {"id": "adrian_mercer", "name": "Adrian Mercer", "description": "Transforms post-industrial materials into poetic, sculptural interiors full of moody drama."},
+    {"id": "lucien_hart", "name": "Lucien Hart", "description": "Fuses runway glamour with architectural audacity, delivering bold, theatrical spaces saturated in jewel tones."},
+    {"id": "elinor_hartwell", "name": "Elinor Hartwell", "description": "Creates warm, soulful rooms where mindful living meets tactile, handcrafted comfort."},
+    {"id": "bianca_morelli", "name": "Bianca Morelli", "description": "Weaves fluid, organic forms and tactile layers into emotionally engaging, elegant interiors."},
+    {"id": "eleanor_reed", "name": "Eleanor Reed", "description": "Mixes vintage patina with contemporary comfort for richly textured, eclectic authenticity."},
+    {"id": "oliver_renard", "name": "Oliver Renard", "description": "Stages maximalist fantasies with jewel-tone palettes, luxe textures, and theatrical storytelling."},
+    {"id": "gabrielle_marlowe", "name": "Gabrielle Marlowe", "description": "Blends Southern graciousness with European classicism to craft airy, refined spaces of quiet luxury."},
+    {"id": "elise_marceau", "name": "Elise Marceau", "description": "Balances minimalist restraint with tactile warmth, creating zen-like sanctuaries of European elegance."},
+    {"id": "alexander_bennett", "name": "Alexander Bennett", "description": "Revives classical grandeur with tailored American sophistication and rich architectural detailing."},
+    {"id": "allegra_marquez", "name": "Allegra Marquez", "description": "Combines cultural authenticity with modern lines, marrying vibrant heritage motifs to Scandinavian restraint."},
+    {"id": "olivia_bennett", "name": "Olivia Bennett", "description": "Creates approachable elegance through thoughtful styling and sustainable, handcrafted details."}
 ]
 
 COLOR_SCHEMES = [
