@@ -42,6 +42,33 @@ api_router = APIRouter(prefix="/api")
 uploads_dir = Path("uploads")
 uploads_dir.mkdir(exist_ok=True)
 
+# Interior Design Configuration Data
+ROOM_TYPES = [
+    {"id": "living_room", "name": "Living Room", "description": "Main gathering space for relaxation and entertainment"},
+    {"id": "bedroom", "name": "Bedroom", "description": "Personal retreat for rest and relaxation"},
+    {"id": "kitchen", "name": "Kitchen", "description": "Heart of the home for cooking and dining"},
+    {"id": "dining_room", "name": "Dining Room", "description": "Formal space for meals and gatherings"},
+    {"id": "bathroom", "name": "Bathroom", "description": "Private space for daily routines and self-care"}
+]
+
+DESIGNERS = [
+    {"id": "minimalist_maven", "name": "Maya Chen", "description": "Minimalist maven who creates serene spaces with clean lines and functional beauty"},
+    {"id": "vintage_specialist", "name": "Oliver Thompson", "description": "Vintage specialist bringing timeless charm through antique finds and classic elegance"},
+    {"id": "modern_luxury", "name": "Sophia Rodriguez", "description": "Modern luxury expert crafting sophisticated spaces with premium materials and bold statements"},
+    {"id": "scandinavian_style", "name": "Lars Andersson", "description": "Scandinavian style guru creating cozy hygge through natural textures and warm simplicity"},
+    {"id": "bohemian_chic", "name": "Aria Patel", "description": "Bohemian chic artist weaving global influences into eclectic and soulful living spaces"},
+    {"id": "industrial_edge", "name": "Marcus Steel", "description": "Industrial edge designer exposing raw beauty through metal, concrete, and urban aesthetics"}
+]
+
+COLOR_SCHEMES = [
+    {"id": "neutral_warm", "name": "Warm Neutrals", "colors": ["Cream", "Beige", "Soft Gray", "Warm White"], "description": "Cozy and inviting earth tones"},
+    {"id": "coastal_blue", "name": "Coastal Blues", "colors": ["Navy", "Sky Blue", "Seafoam", "Pearl White"], "description": "Refreshing ocean-inspired palette"},
+    {"id": "forest_green", "name": "Forest Greens", "colors": ["Sage", "Forest Green", "Cream", "Natural Wood"], "description": "Nature-inspired calming greens"},
+    {"id": "monochrome", "name": "Monochrome", "colors": ["Pure White", "Charcoal", "Light Gray", "Black Accents"], "description": "Timeless black and white sophistication"},
+    {"id": "jewel_tones", "name": "Jewel Tones", "colors": ["Emerald", "Sapphire", "Ruby", "Gold Accents"], "description": "Rich and luxurious deep colors"},
+    {"id": "pastel_soft", "name": "Soft Pastels", "colors": ["Blush Pink", "Lavender", "Mint", "Ivory"], "description": "Gentle and romantic soft hues"}
+]
+
 # Models
 class InteriorDesignRequest(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
