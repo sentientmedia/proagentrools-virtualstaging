@@ -172,6 +172,30 @@ const InteriorDesignTool = () => {
     }
   };
 
+  const deleteImage = async (designId, filename) => {
+    if (!window.confirm(`Are you sure you want to delete "${filename}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      console.log(`Deleting design: ${designId}`);
+      
+      const response = await axios.delete(`${API}/interior-design/delete/${designId}`);
+      
+      if (response.data.success) {
+        // Remove from history immediately for better UX
+        setJobHistory(prev => prev.filter(job => job.id !== designId));
+        console.log('Design deleted successfully');
+        
+        // Refresh history to ensure it's up to date
+        await loadHistory();
+      }
+    } catch (err) {
+      console.error('Failed to delete design:', err);
+      setError(`Failed to delete design: ${err.response?.data?.detail || err.message}`);
+    }
+  };
+
   const downloadImage = async (designId, filename) => {
     try {
       console.log(`Attempting to download image for design ID: ${designId}`);
