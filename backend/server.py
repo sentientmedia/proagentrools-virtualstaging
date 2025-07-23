@@ -208,6 +208,58 @@ class GPTConceptResponse(BaseModel):
     response: str
     timestamp: datetime
 
+class StatusUpdate(BaseModel):
+    status: str
+    processed_image_url: Optional[str] = None
+    error_message: Optional[str] = None
+    prediction_id: Optional[str] = None
+
+# User Management Models
+class UserBase(BaseModel):
+    email: EmailStr
+    full_name: str
+    is_active: bool = True
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+    referral_code: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class User(UserBase):
+    id: str
+    credits: int = 100  # Free tier starts with 100 credits
+    subscription_status: str = "free"  # free, active, cancelled, expired
+    subscription_plan: Optional[str] = None  # basic, pro, agency
+    referral_code: str
+    referred_by: Optional[str] = None
+    total_referrals: int = 0
+    created_at: datetime
+    last_login: Optional[datetime] = None
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: User
+
+# Tool Configuration Models
+class ToolRate(BaseModel):
+    tool_name: str
+    credits_per_use: int
+    description: str
+
+# Admin Models
+class AdminUser(BaseModel):
+    id: str
+    email: EmailStr
+    full_name: str
+    role: str = "admin"
+    created_at: datetime
+
 # Interior Design Configuration Endpoints
 @api_router.get("/interior-design/room-types")
 async def get_room_types():
