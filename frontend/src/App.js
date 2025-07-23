@@ -589,12 +589,21 @@ const InteriorDesignTool = () => {
                         <div>Designer: {designers.find(d => d.id === job.designer)?.name}</div>
                         <div>Colors: {colorSchemes.find(c => c.id === job.color_scheme)?.name}</div>
                       </div>
-                      <button
-                        onClick={() => downloadImage(job.id, job.original_filename)}
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors"
-                      >
-                        Download
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => downloadImage(job.id, job.original_filename)}
+                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          Download
+                        </button>
+                        <button
+                          onClick={() => deleteImage(job.id, job.original_filename)}
+                          className="bg-red-600 text-white py-2 px-3 rounded text-sm hover:bg-red-700 transition-colors"
+                          title="Delete design"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
