@@ -73,6 +73,9 @@ const InteriorDesignTool = () => {
   const [jobHistory, setJobHistory] = useState([]);
   const [queueStatus, setQueueStatus] = useState({ queued: 0, processing: 0 });
   
+  // Image viewer modal state
+  const [viewingImage, setViewingImage] = useState(null);
+  
   // New state for design preferences
   const [selectedRoomType, setSelectedRoomType] = useState('living_room');
   const [selectedDesigner, setSelectedDesigner] = useState('alessia_duval');
