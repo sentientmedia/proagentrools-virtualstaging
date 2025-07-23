@@ -340,6 +340,121 @@ class AdminUser(BaseModel):
     role: str = "admin"
     created_at: datetime
 
+# Authentication endpoints
+@api_router.post("/auth/register", response_model=Token)
+async def register_user(user_data: UserCreate):
+    """Register a new user"""
+    try:
+        # Check if user already exists
+        existing_user = await db.users.find_one({"email": user_data.email})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Hash password
+        hashed_password = get_password_hash(user_data.password)
+        
+        # Generate unique referral code
+        referral_code = generate_referral_code()
+        while await db.users.find_one({"referral_code": referral_code}):
+            referral_code = generate_referral_code()
+        
+        # Create user
+        user = {
+            "id": str(uuid.uuid4()),
+            "email": user_data.email,
+            "full_name": user_data.full_name,
+            "hashed_password": hashed_password,
+            "is_active": True,
+            "credits": 100,  # Free tier starts with 100 credits
+            "subscription_status": "free",
+            "subscription_plan": None,
+            "referral_code": referral_code,
+            "referred_by": None,
+            "total_referrals": 0,
+            "created_at": datetime.utcnow(),
+            "last_login": None
+        }
+        
+        # Handle referral if provided
+        if user_data.referral_code:
+            referrer = await db.users.find_one({"referral_code": user_data.referral_code})
+            if referrer and referrer.get('subscription_status') in ['active']:  # Must be paying member
+                user["referred_by"] = referrer["id"]
+                user["credits"] += 100  # Extra 100 credits for being referred
+                
+                # Give referrer 100 credits
+                await db.users.update_one(
+                    {"id": referrer["id"]},
+                    {
+                        "$inc": {"credits": 100, "total_referrals": 1}
+                    }
+                )
+        
+        # Insert user
+        await db.users.insert_one(user)
+        
+        # Create access token
+        access_token = create_access_token(data={"sub": user["id"]})
+        
+        # Remove sensitive data for response
+        user_response = User(**{k: v for k, v in user.items() if k != 'hashed_password'})
+        
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            user=user_response
+        )
+        
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@api_router.post("/auth/login", response_model=Token)
+async def login_user(user_data: UserLogin):
+    """Login user"""
+    try:
+        # Find user
+        user = await db.users.find_one({"email": user_data.email})
+        if not user or not verify_password(user_data.password, user["hashed_password"]):
+            raise HTTPException(status_code=401, detail="Incorrect email or password")
+        
+        if not user.get("is_active", True):
+            raise HTTPException(status_code=401, detail="Account is disabled")
+        
+        # Update last login
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {"last_login": datetime.utcnow()}}
+        )
+        
+        # Create access token
+        access_token = create_access_token(data={"sub": user["id"]})
+        
+        # Remove sensitive data for response
+        user_response = User(**{k: v for k, v in user.items() if k != 'hashed_password'})
+        
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            user=user_response
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+@api_router.get("/auth/me", response_model=User)
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """Get current user information"""
+    return current_user
+
+@api_router.get("/auth/credits")
+async def get_user_credits(current_user: User = Depends(get_current_user)):
+    """Get user's current credit balance"""
+    return {"credits": current_user.credits, "subscription_status": current_user.subscription_status}
+
 # Interior Design Configuration Endpoints
 @api_router.get("/interior-design/room-types")
 async def get_room_types():
