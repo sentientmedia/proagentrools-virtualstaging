@@ -455,6 +455,176 @@ async def get_user_credits(current_user: User = Depends(get_current_user)):
     """Get user's current credit balance"""
     return {"credits": current_user.credits, "subscription_status": current_user.subscription_status}
 
+# Admin endpoints
+@api_router.post("/admin/login", response_model=Token)
+async def admin_login(user_data: UserLogin):
+    """Admin login"""
+    try:
+        # Find admin
+        admin = await db.admin_users.find_one({"email": user_data.email})
+        if not admin or not verify_password(user_data.password, admin["hashed_password"]):
+            raise HTTPException(status_code=401, detail="Incorrect email or password")
+        
+        # Create access token
+        access_token = create_access_token(data={"sub": admin["id"]})
+        
+        # Convert to user-like response for token compatibility
+        admin_as_user = User(
+            id=admin["id"],
+            email=admin["email"],
+            full_name=admin["full_name"],
+            is_active=True,
+            credits=0,  # Admins don't need credits
+            subscription_status="admin",
+            referral_code="ADMIN",
+            created_at=admin["created_at"]
+        )
+        
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            user=admin_as_user
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Admin login error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+@api_router.get("/admin/users")
+async def get_all_users(
+    skip: int = 0, 
+    limit: int = 50,
+    current_admin: AdminUser = Depends(get_current_admin_user)
+):
+    """Get all users with pagination"""
+    try:
+        users = []
+        async for user in db.users.find().skip(skip).limit(limit).sort("created_at", -1):
+            # Remove sensitive data
+            user_data = {k: v for k, v in user.items() if k != 'hashed_password'}
+            if '_id' in user_data:
+                user_data['_id'] = str(user_data['_id'])
+            users.append(user_data)
+        
+        total_users = await db.users.count_documents({})
+        
+        return {
+            "users": users,
+            "total": total_users,
+            "skip": skip,
+            "limit": limit
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving users: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve users")
+
+@api_router.put("/admin/users/{user_id}/credits")
+async def update_user_credits(
+    user_id: str,
+    credits: int,
+    current_admin: AdminUser = Depends(get_current_admin_user)
+):
+    """Update user's credit balance"""
+    try:
+        result = await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"credits": credits}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {"message": f"User credits updated to {credits}"}
+    except Exception as e:
+        logger.error(f"Error updating user credits: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update credits")
+
+@api_router.get("/admin/tool-rates")
+async def get_tool_rates(current_admin: AdminUser = Depends(get_current_admin_user)):
+    """Get all tool rates"""
+    try:
+        rates = []
+        async for rate in db.tool_rates.find():
+            if '_id' in rate:
+                rate['_id'] = str(rate['_id'])
+            rates.append(rate)
+        
+        # Add default rates if not in database
+        if not rates:
+            default_rates = [
+                {"tool_name": "interior_design", "credits_per_use": 5, "description": "AI Interior Design Generation"},
+                {"tool_name": "gpt_concept", "credits_per_use": 1, "description": "GPT Concept Generation"}
+            ]
+            await db.tool_rates.insert_many(default_rates)
+            return {"rates": default_rates}
+        
+        return {"rates": rates}
+    except Exception as e:
+        logger.error(f"Error retrieving tool rates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve tool rates")
+
+@api_router.put("/admin/tool-rates/{tool_name}")
+async def update_tool_rate(
+    tool_name: str,
+    credits_per_use: int,
+    description: str = "",
+    current_admin: AdminUser = Depends(get_current_admin_user)
+):
+    """Update tool credit rate"""
+    try:
+        result = await db.tool_rates.update_one(
+            {"tool_name": tool_name},
+            {"$set": {"credits_per_use": credits_per_use, "description": description}},
+            upsert=True
+        )
+        
+        return {"message": f"Tool rate updated: {tool_name} = {credits_per_use} credits"}
+    except Exception as e:
+        logger.error(f"Error updating tool rate: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update tool rate")
+
+@api_router.get("/admin/analytics")
+async def get_analytics(current_admin: AdminUser = Depends(get_current_admin_user)):
+    """Get platform analytics"""
+    try:
+        # User statistics
+        total_users = await db.users.count_documents({})
+        active_subscribers = await db.users.count_documents({"subscription_status": "active"})
+        free_users = await db.users.count_documents({"subscription_status": "free"})
+        
+        # Usage statistics
+        total_designs = await db.interior_designs.count_documents({})
+        designs_today = await db.interior_designs.count_documents({
+            "created_at": {"$gte": datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)}
+        })
+        
+        # Credit statistics
+        pipeline = [
+            {"$group": {"_id": None, "total_credits": {"$sum": "$credits"}}}
+        ]
+        credit_result = await db.users.aggregate(pipeline).to_list(1)
+        total_credits_in_circulation = credit_result[0]["total_credits"] if credit_result else 0
+        
+        return {
+            "users": {
+                "total": total_users,
+                "active_subscribers": active_subscribers,
+                "free_users": free_users
+            },
+            "usage": {
+                "total_designs": total_designs,
+                "designs_today": designs_today
+            },
+            "credits": {
+                "total_in_circulation": total_credits_in_circulation
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve analytics")
+
 # Interior Design Configuration Endpoints
 @api_router.get("/interior-design/room-types")
 async def get_room_types():
