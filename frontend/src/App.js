@@ -208,15 +208,17 @@ const InteriorDesignTool = () => {
                 setShowDesignerModal(true);
               }}
               onMouseEnter={() => {
-                setSelectedDesignerForModal(designer);
-                setShowDesignerModal(true);
+                setTimeout(() => {
+                  setSelectedDesignerForModal(designer);
+                  setShowDesignerModal(true);
+                }, 300); // Small delay before showing modal
               }}
               onMouseLeave={() => {
-                // Small delay to allow moving to modal
+                // Delay to allow moving to modal
                 setTimeout(() => {
                   setShowDesignerModal(false);
                   setSelectedDesignerForModal(null);
-                }, 200);
+                }, 500);
               }}
               className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
                 selected === designer.id
