@@ -532,12 +532,23 @@ async def process_interior_design(
     file: UploadFile = File(...),
     room_type: str = Form("living_room"),
     designer: str = Form("alessia_duval"), 
-    color_scheme: str = Form("glacial_muse")
+    color_scheme: str = Form("glacial_muse"),
+    current_user: User = Depends(get_current_user)
 ):
-    """Process an interior image with custom design preferences"""
+    """Process an interior image with custom design preferences (requires authentication)"""
     try:
+        # Check credits and deduct
+        credits_needed = await get_tool_rate('interior_design')
+        if not await deduct_credits(current_user.id, credits_needed):
+            raise HTTPException(status_code=402, detail=f"Insufficient credits. Need {credits_needed} credits.")
+        
         # Validate file type
         if not file.content_type.startswith('image/'):
+            # Refund credits if file validation fails
+            await db.users.update_one(
+                {"id": current_user.id},
+                {"$inc": {"credits": credits_needed}}
+            )
             raise HTTPException(status_code=400, detail="File must be an image")
         
         # Create unique filename and save temporarily
@@ -555,17 +566,22 @@ async def process_interior_design(
         generated_prompt = await generate_design_prompt_with_assistant(room_type, designer, color_scheme)
         logger.info(f"Generated prompt: {generated_prompt[:100]}...")
         
-        # Create database record with preferences
+        # Create database record with preferences and user ID
         design_request = InteriorDesignRequest(
             original_filename=file.filename,
-            status="queued",  # Changed from "processing" to "queued"
+            status="queued",
             room_type=room_type,
             designer=designer,
             color_scheme=color_scheme,
             generated_prompt=generated_prompt
         )
         
-        await db.interior_designs.insert_one(design_request.dict())
+        # Add user ID to the database record
+        design_dict = design_request.dict()
+        design_dict["user_id"] = current_user.id
+        design_dict["credits_used"] = credits_needed
+        
+        await db.interior_designs.insert_one(design_dict)
         
         # Return immediately with queue status - process asynchronously
         import asyncio
@@ -579,11 +595,24 @@ async def process_interior_design(
             "room_type": room_type,
             "designer": designer,
             "color_scheme": color_scheme,
-            "generated_prompt": generated_prompt
+            "generated_prompt": generated_prompt,
+            "credits_used": credits_needed,
+            "remaining_credits": current_user.credits - credits_needed
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
+        # Refund credits on error
+        try:
+            credits_needed = await get_tool_rate('interior_design')
+            await db.users.update_one(
+                {"id": current_user.id},
+                {"$inc": {"credits": credits_needed}}
+            )
+        except:
+            pass
         raise HTTPException(status_code=500, detail=str(e))
 
 async def download_and_store_image(image_url: str, request_id: str) -> str:
