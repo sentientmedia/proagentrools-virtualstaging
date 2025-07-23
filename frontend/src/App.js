@@ -217,7 +217,7 @@ const InteriorDesignTool = () => {
                   setShowDesignerModal(true);
                 }
               }}
-              onMouseEnter={() => {
+              onMouseEnter={(e) => {
                 // Set timeout for hover modal
                 const timeoutId = setTimeout(() => {
                   setSelectedDesignerForModal(designer);
