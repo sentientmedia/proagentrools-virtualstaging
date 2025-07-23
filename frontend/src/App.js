@@ -626,7 +626,9 @@ const InteriorDesignTool = () => {
                         <img
                           src={job.processed_image_url}
                           alt="Generated Design"
-                          className="w-full h-24 object-cover"
+                          className="w-full h-24 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => setViewingImage(job)}
+                          title="Click to view larger"
                         />
                       )}
                       <div className="p-3">
