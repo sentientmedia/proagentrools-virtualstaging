@@ -452,15 +452,18 @@
 
   - task: "Enhanced Authentication Function"
     implemented: true
-    working: "pending"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "pending"
           agent: "main"
           comment: "Created get_current_user_enhanced function that supports both JWT tokens and Google OAuth session tokens. Checks session_token in user_sessions collection first, then falls back to JWT validation."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Enhanced authentication function working correctly. get_current_user_enhanced successfully supports both JWT and session token authentication. Session tokens are checked first against user_sessions collection with expiry validation, then falls back to JWT validation. Both authentication methods work simultaneously on all protected endpoints including /api/auth/me, /api/auth/credits, and /api/interior-design/process."
 
   - task: "Logout Endpoint"
     implemented: true
