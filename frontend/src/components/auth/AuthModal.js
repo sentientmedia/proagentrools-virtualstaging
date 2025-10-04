@@ -100,7 +100,13 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         <div className="p-6">
           {/* Google OAuth Button */}
           <button
-            onClick={loginWithGoogle}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Google OAuth button clicked');
+              loginWithGoogle();
+            }}
+            type="button"
             className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors mb-4 font-medium text-gray-700"
           >
             <svg className="w-5 h-5 mr-3 flex-shrink-0" viewBox="0 0 24 24">
