@@ -922,12 +922,27 @@ const GPTTools = () => {
   ];
 
   const handleSubmit = async (toolId) => {
+    if (!isAuthenticated) {
+      setResponse({ error: 'Please sign in to use AI tools' });
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await axios.post(`${API}/gpt-concepts/${toolId.replace('_', '-')}`, formData);
+      const response = await axios.post(`${API}/gpt-concepts/${toolId.replace('_', '-')}`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setResponse(response.data);
     } catch (err) {
-      setResponse({ error: err.response?.data?.detail || 'Failed to generate response' });
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setResponse({ error: 'Please sign in to use AI tools' });
+      } else if (err.response?.status === 402) {
+        setResponse({ error: 'Insufficient credits. Please purchase more credits to continue.' });
+      } else {
+        setResponse({ error: err.response?.data?.detail || 'Failed to generate response' });
+      }
     } finally {
       setLoading(false);
     }
