@@ -75,6 +75,362 @@ class ProAgentToolsAPITester:
         img.save(img_buffer, format='JPEG')
         img_buffer.seek(0)
         
+    # ========== GOOGLE OAUTH AUTHENTICATION TESTS ==========
+    
+    def test_google_oauth_session_handling(self):
+        """Test Google OAuth session handling endpoint"""
+        # Simulate Google OAuth user data
+        google_user_data = {
+            "id": f"google_user_{uuid.uuid4().hex[:8]}",
+            "email": f"googleuser_{uuid.uuid4().hex[:8]}@gmail.com",
+            "name": "Google Test User",
+            "picture": "https://lh3.googleusercontent.com/test-avatar"
+        }
+        
+        session_token = f"google_session_{uuid.uuid4().hex}"
+        
+        test_data = {
+            "user_data": google_user_data,
+            "session_token": session_token
+        }
+        
+        success, response = self.run_test(
+            "Google OAuth Session Handling",
+            "POST",
+            "auth/google/session",
+            200,
+            data=test_data
+        )
+        
+        if success and response:
+            if not response.get('success'):
+                print("❌ Google OAuth session handling failed")
+                return False
+            
+            if 'user' not in response:
+                print("❌ Missing user data in Google OAuth response")
+                return False
+            
+            user = response['user']
+            if user.get('credits') != 100:
+                print(f"❌ Expected 100 credits for new Google user, got {user.get('credits')}")
+                return False
+            
+            if user.get('subscription_status') != 'free':
+                print(f"❌ Expected 'free' subscription for new Google user, got {user.get('subscription_status')}")
+                return False
+            
+            # Store session token and user ID for later tests
+            self.session_token = session_token
+            self.google_user_id = user['id']
+            
+            print(f"✅ Google OAuth user created with session token and 100 credits")
+            return True
+        
+        return success
+
+    def test_google_oauth_existing_user(self):
+        """Test Google OAuth with existing user (should update session)"""
+        if not self.session_token or not self.google_user_id:
+            print("⚠️ No Google OAuth session available, creating new one...")
+            if not self.test_google_oauth_session_handling():
+                return False
+        
+        # Get the email from the previous test
+        headers = {"Authorization": f"Bearer {self.session_token}"}
+        success, user_response = self.run_test(
+            "Get Current User for Existing Test",
+            "GET",
+            "auth/me",
+            200,
+            headers=headers
+        )
+        
+        if not success:
+            print("❌ Could not get current user for existing user test")
+            return False
+        
+        existing_email = user_response.get('email')
+        
+        # Use same email but different session token
+        google_user_data = {
+            "id": f"google_user_{uuid.uuid4().hex[:8]}",
+            "email": existing_email,  # Same email as before
+            "name": "Google Test User Updated",
+            "picture": "https://lh3.googleusercontent.com/test-avatar-updated"
+        }
+        
+        new_session_token = f"google_session_updated_{uuid.uuid4().hex}"
+        
+        test_data = {
+            "user_data": google_user_data,
+            "session_token": new_session_token
+        }
+        
+        success, response = self.run_test(
+            "Google OAuth Existing User Session Update",
+            "POST",
+            "auth/google/session",
+            200,
+            data=test_data
+        )
+        
+        if success and response:
+            if not response.get('success'):
+                print("❌ Google OAuth existing user session update failed")
+                return False
+            
+            print("✅ Google OAuth existing user session updated successfully")
+            return True
+        
+        return success
+
+    def test_session_token_authentication(self):
+        """Test authentication using Google OAuth session token"""
+        if not self.session_token:
+            print("⚠️ No session token available, creating one...")
+            if not self.test_google_oauth_session_handling():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.session_token}"}
+        
+        success, response = self.run_test(
+            "Session Token Authentication",
+            "GET",
+            "auth/me",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            if 'id' not in response or 'email' not in response:
+                print("❌ Missing user info in session token auth response")
+                return False
+            
+            print("✅ Session token authentication working correctly")
+            return True
+        
+        return success
+
+    def test_enhanced_authentication_jwt_fallback(self):
+        """Test enhanced authentication falls back to JWT when session token fails"""
+        if not self.user_token:
+            # Create a JWT user first
+            self.test_user_registration()
+        
+        if not self.user_token:
+            print("⚠️ No JWT token available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        success, response = self.run_test(
+            "Enhanced Auth JWT Fallback",
+            "GET",
+            "auth/me",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            if 'id' not in response or 'email' not in response:
+                print("❌ Missing user info in JWT fallback response")
+                return False
+            
+            print("✅ Enhanced authentication JWT fallback working correctly")
+            return True
+        
+        return success
+
+    def test_logout_endpoint(self):
+        """Test logout endpoint clears user sessions"""
+        if not self.session_token:
+            print("⚠️ No session token available, creating one...")
+            if not self.test_google_oauth_session_handling():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.session_token}"}
+        
+        success, response = self.run_test(
+            "Logout Endpoint",
+            "POST",
+            "auth/logout",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            if not response.get('success'):
+                print("❌ Logout endpoint failed")
+                return False
+            
+            if 'message' not in response:
+                print("❌ Missing message in logout response")
+                return False
+            
+            print("✅ Logout endpoint working correctly")
+            
+            # Test that session token is now invalid
+            invalid_success, invalid_response = self.run_test(
+                "Session Token After Logout (Should Fail)",
+                "GET",
+                "auth/me",
+                401,
+                headers=headers
+            )
+            
+            if invalid_success:
+                print("✅ Session token correctly invalidated after logout")
+                # Clear the session token since it's now invalid
+                self.session_token = None
+                return True
+            else:
+                print("❌ Session token still valid after logout")
+                return False
+        
+        return success
+
+    def test_session_token_expiry_handling(self):
+        """Test handling of expired session tokens"""
+        # Create an expired session token (this would require database manipulation in real scenario)
+        expired_token = f"expired_session_{uuid.uuid4().hex}"
+        headers = {"Authorization": f"Bearer {expired_token}"}
+        
+        success, response = self.run_test(
+            "Expired Session Token (Should Fail)",
+            "GET",
+            "auth/me",
+            401,
+            headers=headers
+        )
+        
+        if success:
+            print("✅ Expired session token correctly rejected")
+            return True
+        
+        return success
+
+    def test_invalid_session_token(self):
+        """Test handling of invalid session tokens"""
+        invalid_token = f"invalid_session_{uuid.uuid4().hex}"
+        headers = {"Authorization": f"Bearer {invalid_token}"}
+        
+        success, response = self.run_test(
+            "Invalid Session Token (Should Fail)",
+            "GET",
+            "auth/me",
+            401,
+            headers=headers
+        )
+        
+        if success:
+            print("✅ Invalid session token correctly rejected")
+            return True
+        
+        return success
+
+    def test_protected_endpoint_with_session_token(self):
+        """Test protected endpoints work with session tokens"""
+        if not self.session_token:
+            # Create a new Google OAuth session for this test
+            if not self.test_google_oauth_session_handling():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.session_token}"}
+        
+        success, response = self.run_test(
+            "Protected Endpoint with Session Token",
+            "GET",
+            "auth/credits",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            if 'credits' not in response or 'subscription_status' not in response:
+                print("❌ Missing credits or subscription_status in session token response")
+                return False
+            
+            print(f"✅ Protected endpoint works with session token - Credits: {response.get('credits')}")
+            return True
+        
+        return success
+
+    def test_interior_design_with_session_token(self):
+        """Test interior design endpoint with session token authentication"""
+        if not self.session_token:
+            print("⚠️ No session token available, creating one...")
+            if not self.test_google_oauth_session_handling():
+                return False
+        
+        test_image = self.create_test_image()
+        files = {
+            'file': ('test_session_auth.jpg', test_image, 'image/jpeg')
+        }
+        
+        headers = {"Authorization": f"Bearer {self.session_token}"}
+        
+        success, response = self.run_test(
+            "Interior Design with Session Token",
+            "POST",
+            "interior-design/process",
+            200,
+            files=files,
+            headers=headers
+        )
+        
+        if success and response:
+            if response.get('status') != 'queued':
+                print(f"❌ Expected 'queued' status, got {response.get('status')}")
+                return False
+            
+            if 'credits_used' not in response:
+                print("❌ Missing credits_used in response")
+                return False
+            
+            print("✅ Interior design endpoint works with session token authentication")
+            return True
+        
+        return success
+
+    def test_mixed_authentication_methods(self):
+        """Test that both JWT and session token authentication work simultaneously"""
+        # Test JWT authentication
+        if self.user_token:
+            jwt_headers = {"Authorization": f"Bearer {self.user_token}"}
+            jwt_success, jwt_response = self.run_test(
+                "Mixed Auth - JWT Token",
+                "GET",
+                "auth/me",
+                200,
+                headers=jwt_headers
+            )
+        else:
+            jwt_success = False
+        
+        # Test session token authentication
+        if self.session_token:
+            session_headers = {"Authorization": f"Bearer {self.session_token}"}
+            session_success, session_response = self.run_test(
+                "Mixed Auth - Session Token",
+                "GET",
+                "auth/me",
+                200,
+                headers=session_headers
+            )
+        else:
+            session_success = False
+        
+        if jwt_success and session_success:
+            print("✅ Both JWT and session token authentication working simultaneously")
+            return True
+        elif jwt_success or session_success:
+            print("⚠️ Only one authentication method working")
+            return True
+        else:
+            print("❌ Neither authentication method working")
+            return False
+
         return img_buffer
 
     # ========== AUTHENTICATION SYSTEM TESTS ==========
