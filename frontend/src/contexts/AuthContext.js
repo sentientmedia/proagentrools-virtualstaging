@@ -167,8 +167,11 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = () => {
     // Redirect to Emergent Google OAuth
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    // Use the current origin as redirect URL (not /dashboard)
+    const redirectUrl = `${window.location.origin}`;
     const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    console.log('Redirecting to Google OAuth:', authUrl);
+    console.log('Redirect URL will be:', redirectUrl);
     window.location.href = authUrl;
   };
 
