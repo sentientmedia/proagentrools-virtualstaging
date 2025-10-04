@@ -889,8 +889,9 @@ const InteriorDesignTool = () => {
   );
 };
 
-// GPT Tools Component
+// GPT Tools Component  
 const GPTTools = () => {
+  const { token, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('property_description');
   const [formData, setFormData] = useState({});
   const [response, setResponse] = useState(null);
