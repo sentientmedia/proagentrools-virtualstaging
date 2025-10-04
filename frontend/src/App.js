@@ -365,6 +365,12 @@ const InteriorDesignTool = () => {
       return;
     }
 
+    const { token } = useAuth();
+    if (!token) {
+      setError('Please sign in to use AI tools');
+      return;
+    }
+
     setError('');
     setStatusMessage('Adding to queue...');
 
@@ -378,6 +384,7 @@ const InteriorDesignTool = () => {
       const response = await axios.post(`${API}/interior-design/process`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
         },
       });
 
@@ -389,11 +396,19 @@ const InteriorDesignTool = () => {
         // Clear the current upload to allow new submissions
         setUploadedFile(null);
         
-        // Update queue status
+        // Update queue status and refresh user data
         loadQueueStatus();
+        const { refreshUserData } = useAuth();
+        refreshUserData();
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to add to queue');
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError('Please sign in to use AI tools');
+      } else if (err.response?.status === 402) {
+        setError('Insufficient credits. Please purchase more credits to continue.');
+      } else {
+        setError(err.response?.data?.detail || 'Failed to add to queue');
+      }
       setStatusMessage('');
     }
   };
