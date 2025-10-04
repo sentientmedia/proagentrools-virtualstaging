@@ -1249,15 +1249,7 @@ const AppRouter = () => {
     }
   }
 
-  // Demo route for loading pages (temporary)
-  if (path === '/demo-loading') {
-    const LoadingDemo = React.lazy(() => import('./components/demo/LoadingDemo'));
-    return (
-      <React.Suspense fallback={<AuthLoadingPage isOAuthFlow={false} />}>
-        <LoadingDemo />
-      </React.Suspense>
-    );
-  }
+  // Demo route removed - beautiful loading pages are now integrated
 
   // Main app with tools
   return (
