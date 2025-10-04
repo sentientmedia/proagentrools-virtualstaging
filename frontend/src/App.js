@@ -198,7 +198,13 @@ const InteriorDesignTool = () => {
 
   const loadHistory = async () => {
     try {
-      const response = await axios.get(`${API}/interior-design/history`);
+      if (!token) return; // Don't load history if not authenticated
+      
+      const response = await axios.get(`${API}/interior-design/history`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setJobHistory(response.data.designs || []);
     } catch (err) {
       console.error('Failed to load history:', err);
