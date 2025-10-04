@@ -17,6 +17,8 @@ class ProAgentToolsAPITester:
         self.user_token = None
         self.admin_token = None
         self.test_user_id = None
+        self.session_token = None
+        self.google_user_id = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, files=None, headers=None):
         """Run a single API test"""
