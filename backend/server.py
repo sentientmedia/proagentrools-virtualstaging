@@ -570,6 +570,103 @@ async def handle_google_session(session_data: GoogleSessionRequest):
         logger.error(f"Google session handling error: {str(e)}")
         raise HTTPException(status_code=500, detail="Session handling failed")
 
+@api_router.post("/auth/google/process-session")
+async def process_google_oauth_session(session_request: ProcessSessionRequest):
+    """Process Google OAuth session by calling Emergent OAuth service and storing user"""
+    try:
+        session_id = session_request.session_id
+        logger.info(f"Processing Google OAuth session ID: {session_id}")
+        
+        # Call Emergent OAuth service to get session data
+        import aiohttp
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={'X-Session-ID': session_id}
+            ) as response:
+                if response.status != 200:
+                    logger.error(f"Emergent OAuth service error: {response.status}")
+                    raise HTTPException(status_code=400, detail="Invalid session ID or OAuth service error")
+                
+                session_data = await response.json()
+                
+        logger.info(f"Retrieved OAuth session data for user: {session_data.get('email')}")
+        
+        # Extract user data and session token
+        session_token = session_data.get('session_token')
+        user_data = {k: v for k, v in session_data.items() if k != 'session_token'}
+        
+        if not session_token:
+            raise HTTPException(status_code=400, detail="No session token in OAuth data")
+        
+        # Check if user exists by email
+        existing_user = await db.users.find_one({"email": user_data["email"]})
+        
+        if existing_user:
+            # User exists, update session
+            user_id = existing_user["id"]
+            user_response = User(**{k: v for k, v in existing_user.items() if k != 'hashed_password'})
+        else:
+            # Create new user for Google OAuth
+            user_id = str(uuid.uuid4())
+            referral_code = generate_referral_code()
+            
+            # Ensure unique referral code
+            while await db.users.find_one({"referral_code": referral_code}):
+                referral_code = generate_referral_code()
+            
+            new_user = {
+                "id": user_id,
+                "email": user_data["email"],
+                "full_name": user_data.get("name", ""),
+                "is_active": True,
+                "credits": 100,  # Free tier starts with 100 credits
+                "subscription_status": "free",
+                "subscription_plan": None,
+                "referral_code": referral_code,
+                "referred_by": None,
+                "total_referrals": 0,
+                "created_at": datetime.utcnow(),
+                "last_login": datetime.utcnow(),
+                "google_id": user_data.get("id"),
+                "profile_picture": user_data.get("picture")
+            }
+            
+            await db.users.insert_one(new_user)
+            user_response = User(**{k: v for k, v in new_user.items() if k not in ['hashed_password', 'google_id', 'profile_picture']})
+            logger.info(f"Created new user via Google OAuth: {user_data['email']}")
+        
+        # Store session token with 7-day expiry
+        session_expires = datetime.utcnow() + timedelta(days=7)
+        
+        # Remove any existing sessions for this user
+        await db.user_sessions.delete_many({"user_id": user_id})
+        
+        # Create new session
+        session_doc = {
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": session_expires,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.user_sessions.insert_one(session_doc)
+        
+        logger.info(f"Google OAuth processing complete for user: {user_data['email']}")
+        
+        return {
+            "success": True, 
+            "user": user_response,
+            "session_token": session_token
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OAuth session processing error: {str(e)}")
+        raise HTTPException(status_code=500, detail="OAuth session processing failed")
+
 @api_router.post("/auth/logout")
 async def logout_user(current_user: User = Depends(get_current_user_enhanced)):
     """Logout user and clear session"""
