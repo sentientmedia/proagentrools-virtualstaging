@@ -1176,7 +1176,7 @@ async def check_design_status(design_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to check status: {str(e)}")
 
 @api_router.get("/interior-design/history")
-async def get_interior_design_history(current_user: User = Depends(get_current_user)):
+async def get_interior_design_history(current_user: User = Depends(get_current_user_enhanced)):
     """Get user's interior design processing history"""
     try:
         designs_list = []
