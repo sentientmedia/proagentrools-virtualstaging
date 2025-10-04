@@ -124,6 +124,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
             <div className="border-t border-gray-300 w-full"></div>
           </div>
 
+          {/* Help text for Google OAuth */}
+          <div className="mb-4 p-2 bg-blue-50 rounded text-xs text-blue-700">
+            <strong>Note:</strong> If Google login opens a page asking to "Open in new tab", click that button to continue the login process.
+          </div>
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
