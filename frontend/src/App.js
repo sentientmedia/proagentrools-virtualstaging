@@ -113,6 +113,7 @@ const HeroSection = () => (
 
 // Interior Design Tool Component
 const InteriorDesignTool = () => {
+  const { token, refreshUserData } = useAuth();
   const [processing, setProcessing] = useState(false);
   const [processedImage, setProcessedImage] = useState(null);
   const [error, setError] = useState(null);
