@@ -375,7 +375,6 @@ class ProAgentToolsAPITester:
             "POST",
             "interior-design/process",
             200,
-            data={},  # Empty data dict for multipart form
             files=files,
             headers=headers
         )
