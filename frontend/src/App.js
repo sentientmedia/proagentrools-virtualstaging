@@ -1209,23 +1209,51 @@ const Footer = () => (
 
 // App Router Component
 const AppRouter = () => {
-  const { loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated, user } = useAuth();
+  const [hasProcessedAuth, setHasProcessedAuth] = useState(false);
+
+  useEffect(() => {
+    // After authentication is processed, redirect to dashboard if needed
+    if (!loading && isAuthenticated && !hasProcessedAuth) {
+      setHasProcessedAuth(true);
+      
+      // Check if this was a Google OAuth redirect (session_id in URL)
+      const fragment = window.location.hash.substring(1);
+      const params = new URLSearchParams(fragment);
+      const sessionId = params.get('session_id');
+      
+      if (sessionId) {
+        // This was a Google OAuth redirect, go to dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000); // Small delay to show success
+      }
+    }
+  }, [loading, isAuthenticated, hasProcessedAuth]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-medium text-gray-900">Loading...</h2>
+          <h2 className="text-xl font-medium text-gray-900">
+            {window.location.hash.includes('session_id') ? 'Completing sign in...' : 'Loading...'}
+          </h2>
         </div>
       </div>
     );
   }
 
-  // Check for dashboard redirect URL (Google OAuth)
+  // Handle dashboard route
   const path = window.location.pathname;
-  if (path === '/dashboard' && isAuthenticated) {
-    return <UserDashboard />;
+  if (path === '/dashboard') {
+    if (isAuthenticated) {
+      return <UserDashboard />;
+    } else {
+      // Redirect to main page if not authenticated
+      window.location.href = '/';
+      return null;
+    }
   }
 
   // Main app with tools
