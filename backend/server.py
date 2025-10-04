@@ -455,6 +455,129 @@ async def get_user_credits(current_user: User = Depends(get_current_user)):
     """Get user's current credit balance"""
     return {"credits": current_user.credits, "subscription_status": current_user.subscription_status}
 
+# Google OAuth Session Models
+class GoogleSessionRequest(BaseModel):
+    user_data: Dict[str, Any]
+    session_token: str
+
+class UserSession(BaseModel):
+    user_id: str
+    session_token: str
+    expires_at: datetime
+    created_at: datetime
+
+# Google OAuth endpoints
+@api_router.post("/auth/google/session")
+async def handle_google_session(session_data: GoogleSessionRequest):
+    """Handle Google OAuth session and store user"""
+    try:
+        user_data = session_data.user_data
+        session_token = session_data.session_token
+        
+        # Check if user exists by email
+        existing_user = await db.users.find_one({"email": user_data["email"]})
+        
+        if existing_user:
+            # User exists, update session
+            user_id = existing_user["id"]
+            user_response = User(**{k: v for k, v in existing_user.items() if k != 'hashed_password'})
+        else:
+            # Create new user for Google OAuth
+            user_id = str(uuid.uuid4())
+            referral_code = generate_referral_code()
+            
+            # Ensure unique referral code
+            while await db.users.find_one({"referral_code": referral_code}):
+                referral_code = generate_referral_code()
+            
+            new_user = {
+                "id": user_id,
+                "email": user_data["email"],
+                "full_name": user_data.get("name", ""),
+                "is_active": True,
+                "credits": 100,  # Free tier starts with 100 credits
+                "subscription_status": "free",
+                "subscription_plan": None,
+                "referral_code": referral_code,
+                "referred_by": None,
+                "total_referrals": 0,
+                "created_at": datetime.utcnow(),
+                "last_login": datetime.utcnow(),
+                "google_id": user_data.get("id"),
+                "profile_picture": user_data.get("picture")
+            }
+            
+            await db.users.insert_one(new_user)
+            user_response = User(**{k: v for k, v in new_user.items() if k not in ['hashed_password', 'google_id', 'profile_picture']})
+        
+        # Store session token with 7-day expiry
+        session_expires = datetime.utcnow() + timedelta(days=7)
+        
+        # Remove any existing sessions for this user
+        await db.user_sessions.delete_many({"user_id": user_id})
+        
+        # Create new session
+        session_doc = {
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": session_expires,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.user_sessions.insert_one(session_doc)
+        
+        return {"success": True, "user": user_response}
+        
+    except Exception as e:
+        logger.error(f"Google session handling error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Session handling failed")
+
+@api_router.post("/auth/logout")
+async def logout_user(current_user: User = Depends(get_current_user)):
+    """Logout user and clear session"""
+    try:
+        # Delete all sessions for this user
+        await db.user_sessions.delete_many({"user_id": current_user.id})
+        return {"success": True, "message": "Logged out successfully"}
+    except Exception as e:
+        logger.error(f"Logout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Logout failed")
+
+# Enhanced authentication function to support both JWT and session tokens
+async def get_current_user_enhanced(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current authenticated user with support for both JWT and session tokens"""
+    try:
+        token = credentials.credentials
+        
+        # First, try session token
+        session = await db.user_sessions.find_one({
+            "session_token": token,
+            "expires_at": {"$gt": datetime.utcnow()}
+        })
+        
+        if session:
+            user = await db.users.find_one({"id": session["user_id"]})
+            if user:
+                return User(**{k: v for k, v in user.items() if k != 'hashed_password'})
+        
+        # Fall back to JWT token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        
+        user = await db.users.find_one({"id": user_id})
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        return User(**{k: v for k, v in user.items() if k != 'hashed_password'})
+        
+    except jwt.PyJSONError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except Exception as e:
+        logger.error(f"Authentication error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
+
 # Admin endpoints
 @api_router.post("/admin/login", response_model=Token)
 async def admin_login(user_data: UserLogin):
