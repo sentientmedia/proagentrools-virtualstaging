@@ -398,7 +398,6 @@ const InteriorDesignTool = () => {
         
         // Update queue status and refresh user data
         loadQueueStatus();
-        const { refreshUserData } = useAuth();
         refreshUserData();
       }
     } catch (err) {
