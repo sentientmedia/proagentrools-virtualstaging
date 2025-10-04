@@ -533,7 +533,7 @@ async def handle_google_session(session_data: GoogleSessionRequest):
         raise HTTPException(status_code=500, detail="Session handling failed")
 
 @api_router.post("/auth/logout")
-async def logout_user(current_user: User = Depends(get_current_user)):
+async def logout_user(current_user: User = Depends(get_current_user_enhanced)):
     """Logout user and clear session"""
     try:
         # Delete all sessions for this user
