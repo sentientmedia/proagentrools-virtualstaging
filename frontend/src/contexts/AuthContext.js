@@ -60,6 +60,8 @@ export const AuthProvider = ({ children }) => {
         }
       });
 
+      console.log('OAuth session data response:', response.data);
+
       const { session_token, ...userData } = response.data;
 
       // Store session token
