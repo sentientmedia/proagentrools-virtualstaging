@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import AuthModal from './AuthModal';
+import AuthLoadingPage from './AuthLoadingPage';
 
 const ProtectedRoute = ({ children, showAuthModal = false }) => {
   const { isAuthenticated, loading } = useAuth();
