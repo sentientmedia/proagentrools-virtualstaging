@@ -75,7 +75,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         user_id: str = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-    except jwt.PyJSONError:
+    except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     
     user = await db.users.find_one({"id": user_id})
@@ -92,7 +92,7 @@ async def get_current_admin_user(credentials: HTTPAuthorizationCredentials = Dep
         user_id: str = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-    except jwt.PyJSONError:
+    except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     
     admin = await db.admin_users.find_one({"id": user_id})
@@ -474,7 +474,7 @@ async def get_current_user_enhanced(credentials: HTTPAuthorizationCredentials = 
         
         return User(**{k: v for k, v in user.items() if k != 'hashed_password'})
         
-    except jwt.PyJSONError:
+    except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     except Exception as e:
         logger.error(f"Authentication error: {str(e)}")
