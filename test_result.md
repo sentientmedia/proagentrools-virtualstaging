@@ -588,7 +588,13 @@
 
 ## test_plan:
   current_focus:
-    - "Authentication and admin system comprehensive testing completed"
+    - "Google OAuth Session Handling"
+    - "Enhanced Authentication Function"
+    - "Frontend Authentication Context"
+    - "Authentication Modal Component"
+    - "User Dashboard Component"
+    - "Interior Design Tool Authentication"
+    - "GPT Tools Authentication"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
