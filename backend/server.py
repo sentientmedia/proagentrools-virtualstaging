@@ -445,6 +445,41 @@ async def login_user(user_data: UserLogin):
         logger.error(f"Login error: {str(e)}")
         raise HTTPException(status_code=500, detail="Login failed")
 
+# Enhanced authentication function to support both JWT and session tokens
+async def get_current_user_enhanced(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current authenticated user with support for both JWT and session tokens"""
+    try:
+        token = credentials.credentials
+        
+        # First, try session token
+        session = await db.user_sessions.find_one({
+            "session_token": token,
+            "expires_at": {"$gt": datetime.utcnow()}
+        })
+        
+        if session:
+            user = await db.users.find_one({"id": session["user_id"]})
+            if user:
+                return User(**{k: v for k, v in user.items() if k != 'hashed_password'})
+        
+        # Fall back to JWT token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        
+        user = await db.users.find_one({"id": user_id})
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        return User(**{k: v for k, v in user.items() if k != 'hashed_password'})
+        
+    except jwt.PyJSONError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except Exception as e:
+        logger.error(f"Authentication error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
+
 @api_router.get("/auth/me", response_model=User)
 async def get_current_user_info(current_user: User = Depends(get_current_user_enhanced)):
     """Get current user information"""
