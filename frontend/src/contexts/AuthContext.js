@@ -173,15 +173,8 @@ export const AuthProvider = ({ children }) => {
     console.log('Redirecting to Google OAuth:', authUrl);
     console.log('Redirect URL will be:', redirectUrl);
     
-    // Force redirect in same tab to avoid iframe issues
-    try {
-      // Try window.open with _self to ensure same tab
-      window.open(authUrl, '_self');
-    } catch (error) {
-      console.error('Window.open failed, falling back to location.href:', error);
-      // Fallback to direct location change
-      window.location.assign(authUrl);
-    }
+    // Use location.replace to avoid iframe detection issues
+    window.location.replace(authUrl);
   };
 
   const logout = async () => {
