@@ -446,12 +446,12 @@ async def login_user(user_data: UserLogin):
         raise HTTPException(status_code=500, detail="Login failed")
 
 @api_router.get("/auth/me", response_model=User)
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
+async def get_current_user_info(current_user: User = Depends(get_current_user_enhanced)):
     """Get current user information"""
     return current_user
 
 @api_router.get("/auth/credits")
-async def get_user_credits(current_user: User = Depends(get_current_user)):
+async def get_user_credits(current_user: User = Depends(get_current_user_enhanced)):
     """Get user's current credit balance"""
     return {"credits": current_user.credits, "subscription_status": current_user.subscription_status}
 
