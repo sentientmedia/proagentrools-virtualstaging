@@ -26,12 +26,19 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
+      console.log('=== AUTH CHECK STARTED ===');
+      console.log('Current URL:', window.location.href);
+      console.log('Hash fragment:', window.location.hash);
+      
       // Check URL fragment for session_id (Google OAuth)
       const fragment = window.location.hash.substring(1);
       const params = new URLSearchParams(fragment);
       const sessionId = params.get('session_id');
 
+      console.log('Extracted session_id:', sessionId);
+
       if (sessionId) {
+        console.log('Found session_id, processing Google OAuth session...');
         // Process Google OAuth session
         await processGoogleSession(sessionId);
         return;
@@ -39,13 +46,19 @@ export const AuthProvider = ({ children }) => {
 
       // Check for existing session token in cookies or localStorage
       const existingToken = getCookie('session_token') || localStorage.getItem('auth_token');
+      console.log('Existing token found:', !!existingToken);
+      
       if (existingToken) {
+        console.log('Validating existing token...');
         await validateToken(existingToken);
+      } else {
+        console.log('No existing authentication found');
       }
     } catch (error) {
       console.error('Auth check failed:', error);
     } finally {
       setLoading(false);
+      console.log('=== AUTH CHECK COMPLETED ===');
     }
   };
 
