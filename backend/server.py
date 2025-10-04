@@ -867,7 +867,7 @@ async def process_interior_design(
     room_type: str = Form("living_room"),
     designer: str = Form("alessia_duval"), 
     color_scheme: str = Form("glacial_muse"),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_enhanced)
 ):
     """Process an interior image with custom design preferences (requires authentication)"""
     try:
