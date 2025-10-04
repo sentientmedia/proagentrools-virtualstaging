@@ -12,25 +12,73 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 // Header Component
-const Header = () => (
-  <header className="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
-    <div className="container mx-auto px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-400 rounded-lg flex items-center justify-center">
-            <span className="text-xl font-bold">PA</span>
+const Header = () => {
+  const { user, logout, isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  return (
+    <header className="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-400 rounded-lg flex items-center justify-center">
+              <span className="text-xl font-bold">PA</span>
+            </div>
+            <h1 className="text-2xl font-bold">ProAgentTools</h1>
           </div>
-          <h1 className="text-2xl font-bold">ProAgentTools</h1>
+          
+          <div className="flex items-center space-x-6">
+            <nav className="hidden md:flex space-x-6">
+              <a href="#interior-design" className="hover:text-blue-300 transition-colors">Interior Design</a>
+              <a href="#ai-tools" className="hover:text-blue-300 transition-colors">AI Tools</a>
+              {isAuthenticated ? (
+                <button
+                  onClick={() => window.location.href = '/dashboard'}
+                  className="hover:text-blue-300 transition-colors"
+                >
+                  Dashboard
+                </button>
+              ) : (
+                <a href="#pricing" className="hover:text-blue-300 transition-colors">Pricing</a>
+              )}
+            </nav>
+            
+            <div className="flex items-center space-x-4">
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm">
+                    <div className="font-medium">{user?.full_name}</div>
+                    <div className="text-blue-200">{user?.credits} credits</div>
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="text-blue-200 hover:text-white transition-colors text-sm"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-        <nav className="hidden md:flex space-x-6">
-          <a href="#interior-design" className="hover:text-blue-300 transition-colors">Interior Design</a>
-          <a href="#ai-tools" className="hover:text-blue-300 transition-colors">AI Tools</a>
-          <a href="#pricing" className="hover:text-blue-300 transition-colors">Pricing</a>
-        </nav>
+        
+        {showAuthModal && (
+          <AuthModal 
+            isOpen={showAuthModal} 
+            onClose={() => setShowAuthModal(false)} 
+          />
+        )}
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 // Hero Section Component
 const HeroSection = () => (
