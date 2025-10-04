@@ -467,15 +467,18 @@
 
   - task: "Logout Endpoint"
     implemented: true
-    working: "pending"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "pending"
           agent: "main"
           comment: "Added logout endpoint (/api/auth/logout) that clears user sessions from the database when users log out, supporting both JWT and Google OAuth session cleanup."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Logout endpoint working perfectly. POST /api/auth/logout successfully clears user sessions from user_sessions collection. After logout, session tokens are immediately invalidated and return 401 Unauthorized when used. Supports both JWT and Google OAuth session cleanup as designed."
 
   - task: "User Sessions Database Schema"
     implemented: true
