@@ -578,7 +578,7 @@ async def logout_user(current_user: User = Depends(get_current_user_enhanced)):
         logger.error(f"Logout error: {str(e)}")
         raise HTTPException(status_code=500, detail="Logout failed")
 
-# This function has been moved to before its first use
+# Authentication functions complete
 
 # Admin endpoints
 @api_router.post("/admin/login", response_model=Token)
