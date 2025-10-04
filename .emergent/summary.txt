@@ -1,33 +1,42 @@
 <analysis>
-The AI engineer successfully built the ProAgentTools MVP, prioritizing the AI Interior Design feature as the core aha moment. Initial development involved setting up a React frontend, FastAPI backend, and MongoDB, integrating with Replicate for interior design and OpenAI for GPT tools. Critical issues like a non-existent Replicate model, database history failures, and cold boot timeouts were meticulously debugged and resolved, leading to a 100% test pass rate. A significant pivot occurred when the user requested switching from Replicate to a RunPod endpoint. This migration, though technically complete, uncovered a fundamental issue: the user's RunPod  was a mock, causing worker crashes. A temporary fallback to Replicate was implemented to maintain functionality. The latest development involved adding advanced UI features for interior design: room type, designer, and color scheme selection, integrating with an OpenAI Assistant for dynamic prompt generation. The immediate challenge is extracting the specific designer and color scheme data from user-provided CSVs. The engineer's approach demonstrates strong debugging capabilities and incremental feature delivery.
+The AI engineer successfully guided the ProAgentTools application from an MVP to a feature-rich platform. Initial efforts focused on debugging and enhancing the AI Interior Design tool, addressing issues like Replicate integration, cold boot timeouts, and a non-functional RunPod endpoint. A major pivot involved migrating to RunPod, then temporarily reverting to Replicate due to  issues. The engineer meticulously integrated CSV data for designers and color schemes, implementing a Midjourney-style UI with queue management, permanent image storage, download, and delete functionalities. The latest work established robust backend business infrastructure, including JWT authentication, a credit system, and foundational admin features, setting the stage for frontend UI and payment integration.
 </analysis>
 
 <product_requirements>
-The goal is to build ProAgentTools, an AI-powered platform for real estate agents. The application comprises:
-1.  An interface for an AI Interior Design Model (initially Replicate, later RunPod).
-2.  Wrappers for 20-30 GPT concepts (e.g., property descriptions, market analysis, email templates).
+The goal is to build ProAgentTools, an AI-powered platform for real estate agents. The application's core features are:
+1.  An AI Interior Design Model interface, initially using Replicate, later migrating to RunPod.
+2.  Wrappers for 20-30 GPT concepts (e.g., property descriptions).
 3.  A tiered/credit-based revenue model.
 4.  Referral bonuses for new agents.
 
-The initial MVP focused on the Interior Design Model interface. The application, built with React frontend, FastAPI backend, and MongoDB, progressed through several iterations:
--   **Initial Build**: Basic UI for image upload, processing via Replicate, and GPT tool integration.
--   **Stability Fixes**: Resolved Replicate model access (404), database history issues, and Replicate output format handling.
--   **Performance Enhancement**: Implemented async processing and status polling to address Replicate cold boot timeouts.
--   **Model Switching**: Migrated from Replicate to a custom RunPod serverless endpoint.
--   **Advanced Interior Design**: Added user selections for Room Type (Living Room, Bedroom, Kitchen, Dining Room, Bathroom), Fictitious Interior Designers (name + 1-sentence description), and Color Schemes. This data is to be used by an OpenAI Assistant to generate custom image prompts for the AI interior design model. The UI layout for these selections was refined to be row-based.
+The MVP focused on the Interior Design Model:
+-   **Initial Build**: Basic UI for image upload and processing via Replicate.
+-   **Stability & Performance**: Resolved Replicate model access, database issues, output format, and implemented async processing for cold boot timeouts.
+-   **Model Switching**: Migrated from Replicate to a custom RunPod serverless endpoint, with a temporary fallback to Replicate due to RunPod  issues.
+-   **Advanced Interior Design UI**: Added user selections for Room Type (Living Room, Bedroom, Kitchen, Dining Room, Bathroom), Fictitious Interior Designers (name + 1-sentence description), and Color Schemes. This data is used by an OpenAI Assistant to generate custom image prompts. The UI layout for these selections was refined to be row-based.
+-   **Designer and Color Scheme Data Integration**: Replace placeholder data with actual values from  and .
+-   **Designer Images & Bios**: Display designer images in small circles and show full bios in a hover/click modal.
+-   **UI Flow Redesign**: Restructure the interior design process to be sequential: upload, select room, select designer, select colors, then submit.
+-   **Midjourney-style Features**: Implement higher resolution image output, a download button, image history, and a queue system allowing multiple requests.
+-   **Permanent Image Storage**: Store generated images permanently on the server instead of temporary Replicate URLs.
+-   **Layout Refinement**: Create a two-column layout with a left sidebar for queue/history and a right column for settings, featuring scrollable designer/color sections.
+-   **Thumbnail Click-to-Enlarge**: Add a modal to view larger versions of history thumbnails.
+-   **Business Infrastructure (Admin & Payments)**: Build an admin backend for user/payment/analytics management, a credit system (configurable rates, rollover, subscription-based), and a referral system (100/100 credits, permanent, redeemable by paying members). Authentication using email/password is the initial focus.
 </product_requirements>
 
 <key_technical_concepts>
 -   **FastAPI**: Python web framework for backend APIs.
--   **React**: JavaScript library for building interactive user interfaces.
+-   **React**: JavaScript library for interactive user interfaces.
 -   **MongoDB**: NoSQL database for data storage.
--   **Replicate API**: Platform for running AI models; initially used for interior design.
--   **OpenAI API/Assistants API**: Used for GPT-powered tools and generating image prompts.
--   **RunPod Serverless**: Alternative platform for hosting custom AI models.
--   **Tailwind CSS**: Utility-first CSS framework for styling.
--   **Supervisor**: Process control system for managing backend and frontend services.
--   **Asynchronous Processing**: Handling long-running AI model inference without timeouts.
--   **Base64 Encoding**: For image data transfer, especially to RunPod.
+-   **Replicate API**: AI model platform (initial/fallback).
+-   **OpenAI API/Assistants API**: GPT tools and prompt generation.
+-   **RunPod Serverless**: Custom AI model hosting (intended).
+-   **Tailwind CSS**: Utility-first CSS framework.
+-   **Supervisor**: Process control system.
+-   **Asynchronous Processing & Polling**: For long-running AI tasks.
+-   **Base64 Encoding**: For image data transfer.
+-   **JWT (JSON Web Tokens)**: For secure user authentication.
+-   **Bcrypt**: For password hashing.
 </key_technical_concepts>
 
 <code_architecture>
@@ -35,58 +44,72 @@ The application has a standard full-stack architecture:
 
 
 -   ****:
-    -   **Importance**: This is the core of the backend, handling all API routes, business logic, and integrations.
+    -   **Importance**: The core backend, handling all API routes, business logic, and integrations.
     -   **Changes Made**:
         -   Initial setup for GPT tools () and interior design ().
-        -   Added database models and CRUD operations for designs and concepts.
-        -   Integrated with Replicate API for image processing, including error handling for 404s, output format, and cold boot timeouts (async polling).
-        -   Migrated interior design integration from Replicate to RunPod, replacing  with  for direct API calls.
-        -   Implemented base64 encoding for image payloads sent to RunPod.
-        -   Added  environment variable usage.
-        -   Introduced new endpoints (, , ) to serve configuration options to the frontend.
-        -   Integrated with OpenAI Assistant API to generate image prompts based on user selections.
-        -   Modified the main image processing function to accept , , and .
-        -   Updated error handling for RunPod failures.
-        -   Currently uses a working Replicate model as a fallback due to ongoing RunPod  issues.
+        -   Database models and CRUD for designs, concepts, users, admin users, and tool rates.
+        -   Integrated with Replicate API; later migrated to RunPod (with fallback).
+        -   Added base64 encoding for image payloads.
+        -   Introduced endpoints for , ,  to serve config.
+        -   OpenAI Assistant integration for dynamic prompt generation.
+        -   Updated image processing to accept , , .
+        -   Replaced placeholder designer and color scheme data with parsed CSV data.
+        -   Added  for designers from CSV.
+        -   Implemented  for permanent image storage.
+        -   Added  function to save generated images locally.
+        -   New endpoints: , , , .
+        -   **Authentication & Admin**: Integrated  tokens,  for password hashing, user registration (), login (),  login ().
+        -   Protected endpoints (, ) requiring authentication.
+        -   Credit deduction logic integrated into .
+        -   Admin endpoints for user management (), analytics (), and tool rate modification ().
+        -   Error handling for RunPod failures, insufficient credits, and authentication.
 
 -   ****:
     -   **Importance**: The main React component rendering the UI and handling client-side logic.
     -   **Changes Made**:
-        -   Initial UI for image upload (using ) and display of results.
-        -   Implemented frontend logic for interacting with backend API endpoints.
-        -   Added loading indicators and messages, particularly for long-running AI processes (e.g., Processing 1-2 minutes due to cold boot).
-        -   Implemented status polling logic for async job updates from the backend.
-        -   Integrated new UI elements: toggle-based selection for Room Type, Designer Style, and Color Scheme.
-        -   Refined the layout to display these selection categories in separate rows.
-        -   Fixed  import issue.
+        -   Initial UI for image upload () and result display.
+        -   Loading indicators, async status polling for AI processes.
+        -   Toggle-based selection for Room Type, Designer Style, Color Scheme.
+        -   Fixed  import.
+        -   Updated  and  data structures to reflect CSV content, including  and  for designers.
+        -   Implemented a  component for displaying designer images and full bios on click.
+        -   Redesigned UI layout into a two-column structure (left: queue/history, right: settings).
+        -   Implemented a Midjourney-style queue system with real-time status, history display, and download/delete buttons.
+        -   Added  for enlarging history thumbnails.
+        -   Refined polling logic for real-time history updates.
+        -   Fixed download functionality using blob-based approach.
+        -   Implemented delete functionality for designs.
+        -   Removed  from designer modal for better usability.
+        -   Restructured UI flow: 1) Upload, 2) Room, 3) Designer, 4) Color, 5) Submit button.
 
 -   ****:
-    -   **Importance**: Provides custom CSS styles, likely leveraging Tailwind CSS.
-    -   **Changes Made**: Initial base styling for the application.
+    -   **Importance**: Global CSS styles, leveraging Tailwind CSS.
+    -   **Changes Made**: Added  utility for text truncation in compact layouts.
+
+-   ****:
+    -   **Importance**: Stores actual designer profile images provided by the user.
+    -   **Changes Made**: Directory created, placeholder images downloaded, then replaced with user-provided  images, renamed to match uid=0(root) gid=0(root) groups=0(root) in  data.
 
 -   ** & **:
     -   **Importance**: Stores environment variables like API keys and backend URLs.
-    -   **Changes Made**: Updated  to include  (later ) and .  contains .
+    -   **Changes Made**:  updated to include  (and , ).  contains . New keys for authentication (e.g.,  for JWT) were added.
 </code_architecture>
 
 <pending_tasks>
--   Extract and integrate specific designer names and descriptions from the provided  file into the backend.
--   Extract and integrate specific color scheme names and color palettes from the provided  file into the backend.
--   Debug and fix the user's  file on RunPod, which is currently a mock implementation, causing worker crashes and preventing actual image processing on RunPod.
--   Re-integrate with the RunPod endpoint once the user's model is functional.
+- Frontend authentication (login/register, user dashboard).
+- Admin Dashboard UI.
+- Stripe payment integration.
+- Referral system UI.
+- Debug and fix the user's  file on RunPod and re-integrate once functional.
+- Add additional GPT-powered real estate tools (apart from interior design).
 </pending_tasks>
 
 <current_work>
-Currently, the application, ProAgentTools, is largely functional, providing AI-powered tools for real estate agents. The core interior design feature is working by temporarily falling back to a working Replicate model. This fallback was necessary because the user's custom RunPod model (via ) has a  file that is a mock implementation, leading to worker crashes and jobs getting stuck in the  state. The backend has been updated to send the correct payload (including , , ) to the RunPod endpoint, and it handles async processing with status polling and graceful error messages for RunPod failures.
+The ProAgentTools application is currently a highly functional AI interior design platform, featuring a professional Midjourney-style interface. The UI is structured into a two-column layout: a compact left sidebar displays real-time queue status and an always-visible history of designs with clickable thumbnails (which open a modal to view larger images, download, or delete). The right column hosts the design settings, following a logical step-by-step flow (upload, room type, designer style, color scheme) with compact, scrollable sections for designers and color schemes. Designers now feature real images and bios, and generated images are high-resolution, stored permanently on the server, and automatically refresh in the history.
 
-In parallel, the UI for the interior design tool has been enhanced significantly. It now includes toggle-based selection options for:
--   **Room Type**: Living Room, Bedroom, Kitchen, Dining Room, Bathroom.
--   **Designer Style**: Placeholders like Maya Chen (Minimalist maven), Oliver Thompson (Vintage specialist), etc.
--   **Color Scheme**: Placeholders like Warm Neutrals, Coastal Blues, etc.
-
-These selections are intended to be sent to an OpenAI Assistant for generating a tailored image prompt, which then feeds into the interior design model. The backend API endpoints for these configurations and the OpenAI Assistant integration are in place. However, the designer and color scheme data currently being used in the application are placeholders. The last action taken by the previous AI engineer was to attempt to extract the actual designer and color scheme data from CSV files provided by the user, as previous attempts with PDF and Excel files failed.
+Crucially, the backend has been fortified with a complete business infrastructure. This includes a robust JWT-based user authentication system, a credit system that deducts credits for AI tool usage, and a foundational admin backend that allows for user management, analytics tracking, and configurable tool rates. Protected endpoints ensure secure access, and new users are automatically granted initial credits with referral code generation. All core business logic is in place on the backend, ready for the corresponding frontend UI to be built.
 </current_work>
 
 <optional_next_step>
-Extract designer and color scheme data from the recently provided CSV files and update the backend's static data for these features.
+The next step is to build the Frontend Authentication UI to enable user access and credit management.
 </optional_next_step>
