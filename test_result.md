@@ -600,8 +600,6 @@
 
 ## test_plan:
   current_focus:
-    - "Google OAuth Session Handling"
-    - "Enhanced Authentication Function"
     - "Frontend Authentication Context"
     - "Authentication Modal Component"
     - "User Dashboard Component"
