@@ -1493,6 +1493,19 @@ def main():
     # Setup
     tester = ProAgentToolsAPITester()
     
+    # ========== GOOGLE OAUTH AUTHENTICATION TESTS ==========
+    print("\n🔐 Testing Google OAuth Authentication System...")
+    tester.test_google_oauth_session_handling()
+    tester.test_google_oauth_existing_user()
+    tester.test_session_token_authentication()
+    tester.test_enhanced_authentication_jwt_fallback()
+    tester.test_logout_endpoint()
+    tester.test_session_token_expiry_handling()
+    tester.test_invalid_session_token()
+    tester.test_protected_endpoint_with_session_token()
+    tester.test_interior_design_with_session_token()
+    tester.test_mixed_authentication_methods()
+    
     # ========== AUTHENTICATION SYSTEM TESTS ==========
     print("\n🔐 Testing User Authentication System...")
     tester.test_user_registration()
