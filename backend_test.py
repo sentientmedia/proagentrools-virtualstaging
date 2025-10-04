@@ -75,6 +75,8 @@ class ProAgentToolsAPITester:
         img.save(img_buffer, format='JPEG')
         img_buffer.seek(0)
         
+        return img_buffer
+        
     # ========== GOOGLE OAUTH AUTHENTICATION TESTS ==========
     
     def test_google_oauth_session_handling(self):
