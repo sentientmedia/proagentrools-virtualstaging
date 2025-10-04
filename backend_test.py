@@ -370,43 +370,29 @@ class ProAgentToolsAPITester:
         
         headers = {"Authorization": f"Bearer {self.session_token}"}
         
-        # Use the run_test method with files parameter
-        self.tests_run += 1
-        print(f"\n🔍 Testing Interior Design with Session Token...")
-        url = f"{self.api_url}/interior-design/process"
-        print(f"   URL: {url}")
+        success, response = self.run_test(
+            "Interior Design with Session Token",
+            "POST",
+            "interior-design/process",
+            200,
+            data={},  # Empty data dict for multipart form
+            files=files,
+            headers=headers
+        )
         
-        try:
-            response = requests.post(url, files=files, headers=headers)
-            
-            success = response.status_code == 200
-            if success:
-                self.tests_passed += 1
-                print(f"✅ Passed - Status: {response.status_code}")
-                try:
-                    response_data = response.json()
-                    print(f"   Response: {json.dumps(response_data, indent=2)[:200]}...")
-                    
-                    if response_data.get('status') != 'queued':
-                        print(f"❌ Expected 'queued' status, got {response_data.get('status')}")
-                        return False
-                    
-                    if 'credits_used' not in response_data:
-                        print("❌ Missing credits_used in response")
-                        return False
-                    
-                    print("✅ Interior design endpoint works with session token authentication")
-                    return True
-                except:
-                    print(f"   Response: {response.text[:200]}...")
-            else:
-                print(f"❌ Failed - Expected 200, got {response.status_code}")
-                print(f"   Response: {response.text[:200]}...")
+        if success and response:
+            if response.get('status') != 'queued':
+                print(f"❌ Expected 'queued' status, got {response.get('status')}")
                 return False
-                
-        except Exception as e:
-            print(f"❌ Failed - Error: {str(e)}")
-            return False
+            
+            if 'credits_used' not in response:
+                print("❌ Missing credits_used in response")
+                return False
+            
+            print("✅ Interior design endpoint works with session token authentication")
+            return True
+        
+        return success
 
     def test_mixed_authentication_methods(self):
         """Test that both JWT and session token authentication work simultaneously"""
