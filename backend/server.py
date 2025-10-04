@@ -495,6 +495,9 @@ class GoogleSessionRequest(BaseModel):
     user_data: Dict[str, Any]
     session_token: str
 
+class ProcessSessionRequest(BaseModel):
+    session_id: str
+
 class UserSession(BaseModel):
     user_id: str
     session_token: str
