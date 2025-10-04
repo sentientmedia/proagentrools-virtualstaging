@@ -366,7 +366,6 @@ const InteriorDesignTool = () => {
       return;
     }
 
-    const { token } = useAuth();
     if (!token) {
       setError('Please sign in to use AI tools');
       return;
