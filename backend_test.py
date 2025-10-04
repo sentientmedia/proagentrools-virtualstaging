@@ -955,12 +955,27 @@ class ProAgentToolsAPITester:
         return success
 
     def test_interior_design_history(self):
-        """Test interior design history endpoint"""
+        """Test interior design history endpoint with authentication"""
+        if not self.user_token and not self.session_token:
+            print("⚠️ No authentication token available, testing without auth...")
+            success, response = self.run_test(
+                "Interior Design History (No Auth)",
+                "GET",
+                "interior-design/history",
+                401  # Should require authentication
+            )
+            if success:
+                print("✅ Interior design history correctly requires authentication")
+            return success
+        
+        # Test with authentication
+        headers = {"Authorization": f"Bearer {self.user_token or self.session_token}"}
         success, response = self.run_test(
-            "Interior Design History",
+            "Interior Design History (Authenticated)",
             "GET",
             "interior-design/history",
-            200
+            200,
+            headers=headers
         )
         return success
 
