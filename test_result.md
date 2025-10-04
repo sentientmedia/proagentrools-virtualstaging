@@ -623,12 +623,7 @@
   run_ui: false
 
 ## test_plan:
-  current_focus:
-    - "Frontend Authentication Context"
-    - "Authentication Modal Component"
-    - "User Dashboard Component"
-    - "Interior Design Tool Authentication"
-    - "GPT Tools Authentication"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
