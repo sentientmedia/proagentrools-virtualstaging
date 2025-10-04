@@ -67,27 +67,29 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       console.log('Processing Google OAuth session...');
 
-      const response = await axios.get(`https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data`, {
-        headers: {
-          'X-Session-ID': sessionId
-        }
+      // Call our backend to process the OAuth session
+      // Our backend will handle the CORS request to Emergent OAuth service
+      const response = await axios.post(`${API}/auth/google/process-session`, {
+        session_id: sessionId
       });
 
-      console.log('OAuth session data response:', response.data);
+      console.log('OAuth session processing response:', response.data);
 
-      const { session_token, ...userData } = response.data;
+      if (response.data.success) {
+        const { session_token, user } = response.data;
 
-      // Store session token
-      setCookie('session_token', session_token, 7); // 7 days
-      setToken(session_token);
+        // Store session token
+        setCookie('session_token', session_token, 7); // 7 days
+        setToken(session_token);
+        setUser(user);
 
-      // Store user in backend database
-      await storeUserInBackend(userData, session_token);
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
 
-      // Clean URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-
-      console.log('Google OAuth authentication successful');
+        console.log('Google OAuth authentication successful');
+      } else {
+        throw new Error('OAuth session processing failed');
+      }
     } catch (error) {
       console.error('Google OAuth session processing failed:', error);
       throw error;
