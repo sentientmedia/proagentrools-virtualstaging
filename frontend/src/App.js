@@ -1209,7 +1209,7 @@ const Footer = () => (
 
 // App Router Component
 const AppRouter = () => {
-  const { loading } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
 
   if (loading) {
     return (
@@ -1222,37 +1222,18 @@ const AppRouter = () => {
     );
   }
 
-  // Simple routing based on pathname
+  // Check for dashboard redirect URL (Google OAuth)
   const path = window.location.pathname;
-
-  if (path === '/dashboard') {
-    return (
-      <ProtectedRoute>
-        <UserDashboard />
-      </ProtectedRoute>
-    );
+  if (path === '/dashboard' && isAuthenticated) {
+    return <UserDashboard />;
   }
 
-  if (path === '/tools') {
-    return (
-      <div>
-        <Header />
-        <ProtectedRoute>
-          <InteriorDesignTool />
-          <GPTTools />
-        </ProtectedRoute>
-      </div>
-    );
-  }
-
-  // Default landing page
+  // Main app with tools
   return (
     <div className="App">
       <Header />
       <HeroSection />
-      <ProtectedRoute showAuthModal={true}>
-        <InteriorDesignTool />
-      </ProtectedRoute>
+      <InteriorDesignTool />
       <GPTTools />
       <FeaturesSection />
       <PricingSection />
