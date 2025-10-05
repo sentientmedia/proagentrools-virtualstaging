@@ -2937,6 +2937,29 @@ async def process_image_async(request_id: str, temp_file_path, generated_prompt:
                 {"$set": update_data}
             )
             
+            # CRITICAL FIX: Also update the listing's interior_design_variants array
+            # Get the design record to find the listing_id
+            design_record = await db.interior_designs.find_one({"id": request_id})
+            if design_record and design_record.get("listing_id"):
+                listing_id = design_record["listing_id"]
+                
+                # Update the corresponding variant in the listing
+                await db.listings.update_one(
+                    {
+                        "id": listing_id,
+                        "interior_design_variants.design_request_id": request_id
+                    },
+                    {
+                        "$set": {
+                            "interior_design_variants.$.status": "completed",
+                            "interior_design_variants.$.processed_image_url": local_image_url,
+                            "interior_design_variants.$.watermarked_image_url": watermarked_url,
+                            "interior_design_variants.$.completed_at": datetime.utcnow()
+                        }
+                    }
+                )
+                logger.info(f"Updated listing {listing_id} variant status to completed")
+            
     except Exception as e:
         logger.error(f"Error processing image async: {str(e)}")
         # Update database with error
