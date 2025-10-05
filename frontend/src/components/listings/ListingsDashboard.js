@@ -365,12 +365,26 @@ const ListingsDashboard = () => {
                           Process AI ({listing.selected_ai_tools.reduce((sum, tool) => sum + tool.credits_cost, 0)} credits)
                         </button>
                       )}
+                      {listing.ai_processing_status === 'processing' && (
+                        <span className="text-sm text-blue-600 font-medium flex items-center space-x-1">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-600"></div>
+                          <span>Processing AI...</span>
+                        </span>
+                      )}
                       {listing.ai_processing_status === 'completed' && (
                         <button 
                           onClick={() => handleViewAIResults(listing.id)}
                           className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                         >
                           View AI Results
+                        </button>
+                      )}
+                      {listing.ai_processing_status === 'failed' && (
+                        <button 
+                          onClick={() => handleProcessAI(listing.id)}
+                          className="text-sm text-red-600 hover:text-red-700 font-medium"
+                        >
+                          Retry AI Processing
                         </button>
                       )}
                     </div>
