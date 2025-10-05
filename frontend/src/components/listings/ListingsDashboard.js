@@ -367,7 +367,18 @@ const ListingsDashboard = () => {
         )}
       </div>
     </div>
-  );
+
+      {/* AI Results Modal */}
+      {showAIResults && selectedListingForResults && (
+        <AIResultsModal 
+          listingId={selectedListingForResults}
+          onClose={() => {
+            setShowAIResults(false);
+            setSelectedListingForResults(null);
+          }}
+        />
+      )}
+    );
 };
 
 export default ListingsDashboard;
