@@ -167,15 +167,18 @@
 
   - task: "NEW: Generate Module Content - POST /api/listings/{listing_id}/modules/{module_name}/generate"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Generates AI content for listing modules (listing_copy, marketing_copy, social_media, email_template, market_intel, virtual_tour_script) using GPT-5 via emergentintegrations. Costs 1 credit. Needs testing."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL ISSUE: GPT-5 content generation fails with authentication error 'Incorrect API key provided: sk-emerg******************eFd7'. The endpoint structure is correct, authentication works, credit deduction logic implemented, but AI generation fails due to invalid/expired Emergent LLM API key. This blocks all module content generation functionality."
 
   - task: "NEW: Update Module Content - PUT /api/listings/{listing_id}/modules/{module_name}"
     implemented: true
