@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import CreditConfirmationModal from '../common/CreditConfirmationModal';
 import axios from 'axios';
 
 const CreateListingPage = ({ onClose, onListingCreated }) => {
