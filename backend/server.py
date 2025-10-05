@@ -332,6 +332,78 @@ class ToolRate(BaseModel):
     credits_per_use: int
     description: str
 
+# Listing/Property Models
+class PropertyDetails(BaseModel):
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    beds: int
+    baths: float
+    sqft: Optional[int] = None
+    lot_size_sqft: Optional[int] = None
+    year_built: Optional[int] = None
+    property_type: str  # Single Family, Condo, Townhouse, etc.
+    listing_price: Optional[float] = None
+    mls_number: Optional[str] = None
+
+class ListingPhoto(BaseModel):
+    id: str
+    filename: str
+    url: str
+    caption: Optional[str] = None
+    is_primary: bool = False
+    room_type: Optional[str] = None
+    watermarked: bool = False
+
+class AIToolSelection(BaseModel):
+    tool_id: str
+    tool_name: str
+    category: str
+    credits_cost: int
+    selected: bool = False
+    completed: bool = False
+    output_data: Optional[Dict[str, Any]] = None
+
+class Listing(BaseModel):
+    id: str
+    user_id: str
+    property_details: PropertyDetails
+    description: Optional[str] = None
+    photos: List[ListingPhoto] = []
+    selected_ai_tools: List[AIToolSelection] = []
+    interior_designs: List[str] = []  # IDs of associated interior designs
+    status: str = "draft"  # draft, active, pending, sold
+    ai_processing_status: str = "pending"  # pending, processing, completed, failed
+    ai_output: Optional[Dict[str, Any]] = None
+    agent_notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+class CreateListingRequest(BaseModel):
+    property_details: PropertyDetails
+    description: Optional[str] = None
+    selected_tool_ids: List[str] = []
+    agent_notes: Optional[str] = None
+
+class UpdateListingRequest(BaseModel):
+    property_details: Optional[PropertyDetails] = None
+    description: Optional[str] = None
+    selected_tool_ids: Optional[List[str]] = None
+    status: Optional[str] = None
+    agent_notes: Optional[str] = None
+
+# Agent Branding Models
+class AgentBranding(BaseModel):
+    id: str
+    user_id: str
+    logo_url: Optional[str] = None
+    watermark_position: str = "bottom-right"  # bottom-right, bottom-left, top-right, top-left, center
+    watermark_opacity: float = 0.7
+    brand_colors: Dict[str, str] = {}  # primary, secondary colors
+    created_at: datetime
+    updated_at: datetime
+
 # Admin Models
 class AdminUser(BaseModel):
     id: str
