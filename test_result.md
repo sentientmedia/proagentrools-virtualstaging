@@ -152,15 +152,18 @@
 
   - task: "NEW: Delete Listing Image - DELETE /api/listings/{listing_id}/images/{image_id}"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Deletes image file and removes from database. Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Image deletion working correctly. Successfully deletes both file from storage and database record. Authentication required and user isolation enforced. Returns proper success response."
 
   - task: "NEW: Generate Module Content - POST /api/listings/{listing_id}/modules/{module_name}/generate"
     implemented: true
