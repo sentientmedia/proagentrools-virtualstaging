@@ -423,6 +423,23 @@ class UpdateListingRequest(BaseModel):
     status: Optional[str] = None
     agent_notes: Optional[str] = None
 
+class GenerateModuleRequest(BaseModel):
+    module_name: str
+    additional_context: Optional[str] = None
+
+class UpdateModuleRequest(BaseModel):
+    content: str
+
+class ChatImproveRequest(BaseModel):
+    message: str
+    module_name: str
+
+class ProcessInteriorDesignRequest(BaseModel):
+    image_ids: List[str]
+    room_type: Optional[str] = None
+    designer: Optional[str] = None
+    color_scheme: Optional[str] = None
+
 # Agent Branding Models
 class AgentBranding(BaseModel):
     id: str
