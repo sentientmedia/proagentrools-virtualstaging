@@ -731,8 +731,10 @@
   run_ui: false
 
 ## test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Listing CRUD Operations - DELETE /api/listings/{id}"
+  stuck_tasks:
+    - "Listing CRUD Operations - DELETE /api/listings/{id}"
   test_all: false
   test_priority: "high_first"
 
