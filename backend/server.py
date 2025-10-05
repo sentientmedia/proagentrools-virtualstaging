@@ -1239,16 +1239,16 @@ async def update_agent_branding(
     try:
         # Validate inputs
         valid_positions = ["bottom-right", "bottom-left", "top-right", "top-left", "center"]
-        if position not in valid_positions:
+        if update_data.position not in valid_positions:
             raise HTTPException(status_code=400, detail="Invalid watermark position")
         
-        if not 0 <= opacity <= 1:
+        if not 0 <= update_data.opacity <= 1:
             raise HTTPException(status_code=400, detail="Opacity must be between 0 and 1")
         
-        update_data = {
-            "watermark_position": position,
-            "watermark_opacity": opacity,
-            "brand_colors": brand_colors,
+        update_doc = {
+            "watermark_position": update_data.position,
+            "watermark_opacity": update_data.opacity,
+            "brand_colors": update_data.brand_colors,
             "updated_at": datetime.utcnow()
         }
         
