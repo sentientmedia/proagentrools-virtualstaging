@@ -183,6 +183,38 @@ const UserDashboard = () => {
               </button>
             </div>
 
+            {/* Account Settings */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Account Settings</h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-gray-700 font-medium">Credit Confirmations</span>
+                    <p className="text-sm text-gray-500">Show confirmation before processing AI tools</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const isDisabled = localStorage.getItem('creditConfirmationDisabled') === 'true';
+                      if (isDisabled) {
+                        localStorage.removeItem('creditConfirmationDisabled');
+                        alert('Credit confirmations have been re-enabled.');
+                      } else {
+                        localStorage.setItem('creditConfirmationDisabled', 'true');
+                        alert('Credit confirmations have been disabled.');
+                      }
+                    }}
+                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                      localStorage.getItem('creditConfirmationDisabled') === 'true'
+                        ? 'bg-gray-100 text-gray-600'
+                        : 'bg-green-100 text-green-600'
+                    }`}
+                  >
+                    {localStorage.getItem('creditConfirmationDisabled') === 'true' ? 'Disabled' : 'Enabled'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Tools Usage */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Tool Costs</h2>
