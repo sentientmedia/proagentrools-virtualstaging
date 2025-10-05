@@ -809,10 +809,17 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={onBack}
+                onClick={() => {
+                  if (activeView === 'module') {
+                    setActiveView('overview');
+                    setActiveModule(null);
+                  } else {
+                    onBack();
+                  }
+                }}
                 className="text-gray-600 hover:text-gray-900"
               >
-                ← Back
+                ← {activeView === 'module' ? 'Back to Tools' : 'Back to Listings'}
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -831,43 +838,21 @@ const IndividualListingPage = ({ listingId, onBack }) => {
         </div>
       </div>
 
-      {/* Module Navigation */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex space-x-1 overflow-x-auto">
-            {modules.map(module => (
-              <button
-                key={module.id}
-                onClick={() => setActiveModule(module.id)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeModule === module.id
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <span className="mr-1">{module.icon}</span>
-                {module.name}
-                {module.ai && moduleContent[module.id] && (
-                  <span className="ml-1 text-green-600">✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Module Content */}
+      {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {currentModule?.icon} {currentModule?.name}
-          </h2>
-          
-          {activeModule === 'details' && renderDetails()}
-          {activeModule === 'images' && renderImages()}
-          {activeModule === 'interior_design' && renderInteriorDesign()}
-          {currentModule?.ai && renderModuleContent(currentModule)}
-        </div>
+        {activeView === 'overview' && renderOverview()}
+        
+        {activeView === 'module' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              {currentModule?.icon} {currentModule?.name}
+            </h2>
+            
+            {activeModule === 'images' && renderImages()}
+            {activeModule === 'interior_design' && renderInteriorDesign()}
+            {currentModule?.ai && renderModuleContent(currentModule)}
+          </div>
+        )}
       </div>
     </div>
   );
