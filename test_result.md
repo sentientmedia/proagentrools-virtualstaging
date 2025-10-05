@@ -107,15 +107,18 @@
 ## backend:
   - task: "NEW: Image Upload - POST /api/listings/{listing_id}/images/upload"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Implemented batch image upload endpoint. Supports multiple file uploads, creates listing-specific directories, validates image types, stores metadata (file_size, uploaded_at). Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Image upload working perfectly. Successfully uploaded 2 test images with proper validation, metadata storage (id, filename, url, uploaded_at, file_size), and listing-specific directory creation. Authentication required and enforced. File validation working correctly."
 
   - task: "NEW: Get Listing Images - GET /api/listings/{listing_id}/images"
     implemented: true
