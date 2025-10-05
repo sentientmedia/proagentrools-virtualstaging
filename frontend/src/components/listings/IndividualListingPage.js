@@ -296,7 +296,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               disabled={generatingModule === module.id}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400"
             >
-              {generatingModule === module.id ? 'Generating...' : `Generate Content (1 credit)`}
+              {generatingModule === module.id ? 'Generating...' : `Generate Content (${module.credits || 1} credit${module.credits > 1 ? 's' : ''})`}
             </button>
           </div>
         );
@@ -305,14 +305,14 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Content Display/Edit */}
         {editingModule === module.id ? (
           <div>
             <textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              className="w-full h-64 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-64 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
             />
             <div className="flex items-center space-x-2 mt-2">
               <button
@@ -341,44 +341,96 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                 {content.is_ai_generated ? '🤖 AI Generated' : '✏️ Manually Edited'} • 
                 Last updated: {new Date(content.last_edited || content.generated_at).toLocaleString()}
               </div>
-              <button
-                onClick={() => {
-                  setEditingModule(module.id);
-                  setEditContent(content.content);
-                }}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Edit Content
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleDownloadContent(module.id, content.content)}
+                  className="text-sm text-green-600 hover:text-green-700 font-medium"
+                >
+                  Download
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingModule(module.id);
+                    setEditContent(content.content);
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleGenerateContent(module.id)}
+                  disabled={generatingModule === module.id}
+                  className="text-sm text-purple-600 hover:text-purple-700 font-medium disabled:text-gray-400"
+                >
+                  Regenerate
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Chat to Improve (only for AI modules) */}
+        {/* Inline Chat Interface */}
         {module.ai && !editingModule && (
-          <div className="border-t border-gray-200 pt-4 mt-6">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">💬 Chat to Improve (1 credit per message)</h4>
-            <div className="flex items-start space-x-2">
+          <div className="border-t border-gray-200 pt-6">
+            <h4 className="text-base font-semibold text-gray-900 mb-4">💬 Chat to Improve (1 credit per message)</h4>
+            
+            {/* Chat Input */}
+            <div className="flex items-start space-x-2 mb-4">
               <input
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleChatImprove(module.id)}
-                placeholder="Ask AI to refine the content..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleChatImprove(module.id)}
+                placeholder="e.g., Make it more engaging, Add emphasis on the backyard, Shorten to 150 words..."
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={chatLoading}
               />
               <button
                 onClick={() => handleChatImprove(module.id)}
                 disabled={chatLoading || !chatInput.trim()}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 font-semibold whitespace-nowrap"
               >
-                {chatLoading ? '...' : 'Send'}
+                {chatLoading ? 'Thinking...' : 'Send'}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Example: "Make it more engaging" or "Add emphasis on the backyard"
-            </p>
+
+            {/* AI Suggestion with Action Buttons */}
+            {chatSuggestion && (
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <h5 className="font-semibold text-gray-900">AI Suggestion:</h5>
+                  <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">New Version</span>
+                </div>
+                <div className="bg-white rounded-lg p-4 mb-4 max-h-64 overflow-y-auto">
+                  <div className="whitespace-pre-wrap text-gray-900 leading-relaxed">
+                    {chatSuggestion.replace(/\*\*/g, '')}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => handleReplaceSuggestion(module.id)}
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold"
+                  >
+                    Replace Current
+                  </button>
+                  <button
+                    onClick={() => {
+                      setChatInput('');
+                      handleChatImprove(module.id);
+                    }}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={handleRejectSuggestion}
+                    className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
