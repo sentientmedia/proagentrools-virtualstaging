@@ -111,6 +111,7 @@ const ListingsDashboard = () => {
   };
 
   const handleCreditConfirmation = () => {
+    console.log('Credit confirmation accepted, processing...', pendingProcessListing?.id);
     setShowCreditConfirmation(false);
     if (pendingProcessListing) {
       processAIForListing(pendingProcessListing.id);
