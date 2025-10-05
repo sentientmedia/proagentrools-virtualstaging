@@ -495,6 +495,114 @@
           agent: "testing"
           comment: "✅ VERIFIED: User sessions database schema working correctly. user_sessions collection properly stores session tokens with user_id, session_token, expires_at (7-day expiry), and created_at fields. Session expiry validation works correctly - expired sessions are rejected with 401. Session cleanup on logout removes sessions from database. Database integration with enhanced authentication function is seamless."
 
+  - task: "AI Tools Catalog Endpoint - GET /api/ai-tools"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: AI Tools Catalog endpoint working perfectly. Returns exactly 30 AI tools organized across 5 categories (Marketing & Creative, Staging & Design, Due-Diligence & Compliance, Market Intel & Strategy, Process & Productivity). All tools have correct structure with id, name, category, description, and credits_cost fields. Required tools 'listing_luxe_gpt' and 'social_snippets_studio' confirmed present. Credits calculation accurate."
+
+  - task: "Listing CRUD Operations - POST /api/listings"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Create listing endpoint working correctly. Requires authentication (returns 403 without auth), creates listings with proper property details, AI tool selections, and credits calculation. Test listing created successfully with ID, selected tools (listing_luxe_gpt, social_snippets_studio), total credits cost of 5. Data validation working - rejects invalid property details with 422 status."
+
+  - task: "Listing CRUD Operations - GET /api/listings"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Get user listings endpoint working correctly. Requires authentication (returns 403 without auth), returns array of user's listings with proper structure validation. User isolation working - users can only access their own listings."
+
+  - task: "Listing CRUD Operations - GET /api/listings/{id}"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Get specific listing endpoint working correctly. Returns correct listing by ID with proper structure validation. Returns 404 for non-existent listings. User isolation enforced."
+
+  - task: "Listing CRUD Operations - PUT /api/listings/{id}"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Update listing endpoint working correctly. Successfully updates description, status, selected AI tools, and agent notes. AI tools selection properly updated from 2 to 3 tools (listing_luxe_gpt, social_snippets_studio, photofix_wizard). Status changed from draft to active."
+
+  - task: "Listing CRUD Operations - DELETE /api/listings/{id}"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ ISSUE: Delete listing endpoint has a bug - 'cannot access local variable 'response' where it is not associated with a value'. The endpoint logic needs to be fixed to properly handle the DELETE request and response."
+
+  - task: "Listing Authentication Requirements"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: All listing endpoints properly require authentication. POST, GET, PUT, DELETE operations return 403 'Not authenticated' when no token provided. Authentication integration working correctly with both JWT and session tokens."
+
+  - task: "Listing Data Models Validation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Data models validation working correctly. Property details validation enforces required fields (address, city, state, zip_code, beds, baths, property_type). AI tool selection and credits calculation accurate. Listing status tracking (draft, active) and AI processing status (pending, processing, completed, failed) implemented correctly."
+
+  - task: "Listing User Isolation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: User isolation working correctly. Users can only access their own listings. Attempts to access non-existent or other users' listings return 404 'Listing not found'. Database queries properly filter by user_id."
+
 ## frontend:
   - task: "Update frontend to work with new data structure"
     implemented: true
