@@ -8,7 +8,8 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeModule, setActiveModule] = useState('details');
+  const [activeView, setActiveView] = useState('overview'); // 'overview' or 'module'
+  const [activeModule, setActiveModule] = useState(null);
   const [moduleContent, setModuleContent] = useState({});
   const [generatingModule, setGeneratingModule] = useState(null);
   const [editingModule, setEditingModule] = useState(null);
