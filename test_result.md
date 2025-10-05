@@ -1024,7 +1024,14 @@
   run_ui: false
 
 ## test_plan:
-  current_focus: []
+  current_focus:
+    - "NEW: Image Upload - POST /api/listings/{listing_id}/images/upload"
+    - "NEW: Get Listing Images - GET /api/listings/{listing_id}/images"
+    - "NEW: Generate Module Content - POST /api/listings/{listing_id}/modules/{module_name}/generate"
+    - "NEW: Update Module Content - PUT /api/listings/{listing_id}/modules/{module_name}"
+    - "NEW: Chat Improve Module - POST /api/listings/{listing_id}/modules/{module_name}/chat"
+    - "NEW: Process Listing Interior Design - POST /api/listings/{listing_id}/interior-design/process"
+    - "NEW: Individual Listing Page - All Components"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
