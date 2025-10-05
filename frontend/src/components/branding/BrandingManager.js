@@ -95,15 +95,15 @@ const BrandingManager = ({ onClose }) => {
     try {
       const response = await axios.put(
         `${BACKEND_URL}/api/branding/settings`,
-        null,
+        {
+          position: branding.watermark_position,
+          opacity: branding.watermark_opacity,
+          brand_colors: branding.brand_colors
+        },
         {
           headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          params: {
-            position: branding.watermark_position,
-            opacity: branding.watermark_opacity,
-            brand_colors: JSON.stringify(branding.brand_colors)
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
