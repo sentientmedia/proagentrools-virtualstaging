@@ -707,9 +707,18 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                               }}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                             >
-                              <option value="alessia_duval">Alessia Duval</option>
-                              <option value="adrian_mercer">Adrian Mercer</option>
-                              <option value="lucien_hart">Lucien Hart</option>
+                              <option value="alessia_duval">Alessia Duval - Parisian Eclectic</option>
+                              <option value="adrian_mercer">Adrian Mercer - Industrial Poetry</option>
+                              <option value="lucien_hart">Lucien Hart - Couture Glamour</option>
+                              <option value="elinor_hartwell">Elinor Hartwell - Mindful Comfort</option>
+                              <option value="bianca_morelli">Bianca Morelli - Organic Elegance</option>
+                              <option value="eleanor_reed">Eleanor Reed - Vintage Eclectic</option>
+                              <option value="oliver_renard">Oliver Renard - Maximalist Theater</option>
+                              <option value="gabrielle_marlowe">Gabrielle Marlowe - Southern Refinement</option>
+                              <option value="elise_marceau">Elise Marceau - Zen Minimalism</option>
+                              <option value="alexander_bennett">Alexander Bennett - Classical Grandeur</option>
+                              <option value="allegra_marquez">Allegra Marquez - Cultural Fusion</option>
+                              <option value="olivia_bennett">Olivia Bennett - Approachable Elegance</option>
                             </select>
                           </div>
 
@@ -730,9 +739,23 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                               <option value="glacial_muse">Glacial Muse</option>
                               <option value="nomad_prism">Nomad Prism</option>
                               <option value="urban_alloy">Urban Alloy</option>
-                              <option value="sage_whisper">Sage Whisper</option>
-                              <option value="terracotta_dream">Terracotta Dream</option>
-                              <option value="midnight_navy">Midnight Navy</option>
+                              <option value="aegean_whisper">Aegean Whisper</option>
+                              <option value="velvet_deco">Velvet Deco</option>
+                              <option value="desert_modern">Desert Modern</option>
+                              <option value="enchanted_forest">Enchanted Forest</option>
+                              <option value="savannah_bloom">Savannah Bloom</option>
+                              <option value="canyon_clay">Canyon Clay</option>
+                              <option value="lunar_drift">Lunar Drift</option>
+                              <option value="sienna_smoke">Sienna Smoke</option>
+                              <option value="retro_zest">Retro Zest</option>
+                              <option value="twilight_grove">Twilight Grove</option>
+                              <option value="citrus_pop">Citrus Pop</option>
+                              <option value="oxblood_study">Oxblood Study</option>
+                              <option value="sunken_studio">Sunken Studio</option>
+                              <option value="charred_cotton">Charred Cotton</option>
+                              <option value="silken_ember">Silken Ember</option>
+                              <option value="mineral_tonic">Mineral Tonic</option>
+                              <option value="bauhaus_dusk">Bauhaus Dusk</option>
                             </select>
                           </div>
                         </>
