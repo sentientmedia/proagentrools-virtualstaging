@@ -984,63 +984,78 @@
 
   - task: "NEW: Individual Listing Page - Module Navigation"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/listings/IndividualListingPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Created comprehensive individual listing page with flexible module-based navigation (8 modules: Details, AI Copy, Marketing, Social Media, Email, Market Intel, Images, Interior Design). Tab-based interface with completion indicators. Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Individual listing page module navigation working correctly. All 8 modules accessible via tab interface (Details, AI Copy, Marketing, Social Media, Email Template, Market Intel, Images, Interior Design). Tab switching functional, module content areas render properly. Back navigation preserves state and returns to listings dashboard."
 
   - task: "NEW: Individual Listing Page - AI Content Generation"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/listings/IndividualListingPage.js"
-    stuck_count: 0
+    stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Implemented AI content generation for modules using GPT-5. 1 credit per generation. Shows loading states, displays formatted content. Needs testing."
+        - working: false
+          agent: "testing"
+          comment: "❌ BLOCKED BY BACKEND: AI content generation frontend UI working correctly (generate buttons, credit display, loading states), but backend API calls fail with GPT-5 authentication error 'Incorrect API key provided: sk-emerg******************eFd7'. Frontend properly handles API errors and displays error messages. Issue is backend API key configuration, not frontend implementation."
 
   - task: "NEW: Individual Listing Page - Content Editing"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/listings/IndividualListingPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Implemented inline editing for all module content. Users can edit AI-generated content directly. Save/Cancel functionality. Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Content editing functionality working correctly. Edit buttons present on all AI modules, textarea appears for editing, Save/Cancel buttons functional. Frontend properly handles content updates and displays success/error states. Manual content editing works independently of AI generation issues."
 
   - task: "NEW: Individual Listing Page - Chat Improvement"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/listings/IndividualListingPage.js"
-    stuck_count: 0
+    stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Implemented chat interface for improving module content. 1 credit per message. Input field with send button. Needs better chat history display. Needs testing."
+        - working: false
+          agent: "testing"
+          comment: "❌ BLOCKED BY BACKEND: Chat improvement frontend UI working correctly (input field, send button, credit cost display), but backend API calls fail with same GPT-5 authentication error. Frontend properly handles API errors and shows error messages via alert. Issue is backend API key configuration, not frontend chat interface implementation."
 
   - task: "NEW: ListingsDashboard - Navigation to Individual Listing"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/listings/ListingsDashboard.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Updated 'View Details' button to navigate to individual listing page. Back navigation implemented with listing refresh. Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Navigation to individual listing working correctly. 'View Details' button navigates to individual listing page with proper listing ID. Back navigation returns to listings dashboard and refreshes listing data. State preservation working correctly throughout navigation flow."
 
     status_history:
         - working: "pending"
