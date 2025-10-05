@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import CreditConfirmationModal from '../common/CreditConfirmationModal';
 import axios from 'axios';
 
 const CreateListingPage = ({ onClose, onListingCreated }) => {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   
   const [formData, setFormData] = useState({
@@ -23,32 +22,16 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
     mls_number: '',
     // Listing Details
     description: '',
-    agent_notes: '',
-    selected_tool_ids: []
+    agent_notes: ''
   });
 
-  const [aiTools, setAiTools] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showCreditConfirmation, setShowCreditConfirmation] = useState(false);
 
   const propertyTypes = [
     'Single Family', 'Condo', 'Townhouse', 'Multi-Family', 
     'Land', 'Commercial', 'Mobile Home'
   ];
-
-  useEffect(() => {
-    loadAiTools();
-  }, []);
-
-  const loadAiTools = async () => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/api/ai-tools`);
-      setAiTools(response.data.tools_by_category);
-    } catch (err) {
-      console.error('Failed to load AI tools:', err);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
@@ -58,40 +41,16 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
     }));
   };
 
-  const handleToolSelection = (toolId, isSelected) => {
-    setFormData(prev => ({
-      ...prev,
-      selected_tool_ids: isSelected 
-        ? [...prev.selected_tool_ids, toolId]
-        : prev.selected_tool_ids.filter(id => id !== toolId)
-    }));
-  };
-
-  const calculateTotalCredits = () => {
-    let total = 0;
-    Object.values(aiTools).flat().forEach(tool => {
-      if (formData.selected_tool_ids.includes(tool.id)) {
-        total += tool.credits_cost;
-      }
-    });
-    return total;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Check if user has disabled credit confirmations
-    const confirmationDisabled = localStorage.getItem('creditConfirmationDisabled') === 'true';
-    const totalCredits = calculateTotalCredits();
-
-    // If tools are selected and confirmations are enabled, show confirmation modal
-    if (formData.selected_tool_ids.length > 0 && !confirmationDisabled && totalCredits > 0) {
-      setShowCreditConfirmation(true);
+    // Check if user has enough credits
+    if (user.credits < 20) {
+      setError('You need at least 20 credits to create a listing with foundation content.');
       return;
     }
 
-    // Proceed with creation
     await createListing();
   };
 
@@ -115,7 +74,7 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
           mls_number: formData.mls_number || null,
         },
         description: formData.description || null,
-        selected_tool_ids: formData.selected_tool_ids,
+        selected_tool_ids: [],
         agent_notes: formData.agent_notes || null
       };
 
@@ -129,43 +88,12 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
       if (onListingCreated) {
         onListingCreated(response.data);
       }
-      
-      // Reset form
-      setFormData({
-        address: '', city: '', state: '', zip_code: '', beds: 1, baths: 1,
-        sqft: '', lot_size_sqft: '', year_built: '', property_type: 'Single Family',
-        listing_price: '', mls_number: '', description: '', agent_notes: '', selected_tool_ids: []
-      });
 
     } catch (err) {
+      console.error('Create listing error:', err);
       setError(err.response?.data?.detail || 'Failed to create listing');
-    } finally {
       setLoading(false);
     }
-  };
-
-  const handleCreditConfirmation = () => {
-    setShowCreditConfirmation(false);
-    createListing();
-  };
-
-  const handleCreditCancel = () => {
-    setShowCreditConfirmation(false);
-  };
-
-  const getSelectedToolsForModal = () => {
-    const selectedTools = [];
-    Object.values(aiTools).flat().forEach(tool => {
-      if (formData.selected_tool_ids.includes(tool.id)) {
-        selectedTools.push({
-          tool_id: tool.id,
-          tool_name: tool.name,
-          category: tool.category,
-          credits_cost: tool.credits_cost
-        });
-      }
-    });
-    return selectedTools;
   };
 
   return (
