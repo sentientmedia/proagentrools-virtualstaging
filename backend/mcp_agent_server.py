@@ -448,8 +448,8 @@ Please provide:
 Focus on actionable insights that help the agent succeed with this listing.
 """
             
-            response = await self.client.achat.completions.create(
-                model="openai/gpt-4o",
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a senior real estate strategist creating executive summaries."},
                     {"role": "user", "content": summary_prompt}
