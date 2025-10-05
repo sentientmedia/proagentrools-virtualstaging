@@ -105,7 +105,7 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Create New Listing</h1>
-              <p className="text-gray-600 mt-1">Add a property and select AI tools to enhance your listing</p>
+              <p className="text-gray-600 mt-1">Enter property details to generate foundation content (20 credits)</p>
             </div>
             {onClose && (
               <button
