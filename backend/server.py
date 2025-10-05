@@ -1254,7 +1254,7 @@ async def update_agent_branding(
         
         result = await db.agent_branding.update_one(
             {"user_id": current_user.id},
-            {"$set": update_data}
+            {"$set": update_doc}
         )
         
         if result.modified_count == 0:
