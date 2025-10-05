@@ -15,6 +15,8 @@ const ListingsDashboard = () => {
   const [selectedListing, setSelectedListing] = useState(null);
   const [showAIResults, setShowAIResults] = useState(false);
   const [selectedListingForResults, setSelectedListingForResults] = useState(null);
+  const [showCreditConfirmation, setShowCreditConfirmation] = useState(false);
+  const [pendingProcessListing, setPendingProcessListing] = useState(null);
 
   useEffect(() => {
     loadListings();
