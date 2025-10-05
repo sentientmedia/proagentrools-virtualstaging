@@ -11,7 +11,8 @@ import uuid
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import aiohttp
-from emergentintegrations import get_client
+import openai
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
