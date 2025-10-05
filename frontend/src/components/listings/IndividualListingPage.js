@@ -451,24 +451,134 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   };
 
   const renderImages = () => {
+    const designers = [
+      {
+        id: 'alessia_duval',
+        name: 'Alessia Duval',
+        style: 'Modern Minimalist',
+        bio: 'Known for clean lines and neutral palettes, Alessia creates serene spaces that breathe elegance.',
+        image: '/images/designers/alessia_duval.jpg'
+      },
+      {
+        id: 'adrian_mercer',
+        name: 'Adrian Mercer',
+        style: 'Contemporary Luxe',
+        bio: 'Bold textures and statement pieces define Adrian\'s sophisticated, modern aesthetic.',
+        image: '/images/designers/adrian_mercer.jpg'
+      },
+      {
+        id: 'lucien_hart',
+        name: 'Lucien Hart',
+        style: 'Classic Elegance',
+        bio: 'Traditional craftsmanship meets timeless design in Lucien\'s refined interiors.',
+        image: '/images/designers/lucien_hart.jpg'
+      }
+    ];
+
+    const colorSchemes = [
+      {
+        id: 'glacial_muse',
+        name: 'Glacial Muse',
+        colors: ['#E8F4F8', '#B8D8E8', '#7BA8C0'],
+        description: 'Cool, calming blues and whites create a serene, spa-like atmosphere'
+      },
+      {
+        id: 'nomad_prism',
+        name: 'Nomad Prism',
+        colors: ['#D4A574', '#8B7355', '#E6D5C3'],
+        description: 'Warm earth tones and desert-inspired hues for a bohemian feel'
+      },
+      {
+        id: 'urban_alloy',
+        name: 'Urban Alloy',
+        colors: ['#4A4A4A', '#7D7D7D', '#A8A8A8'],
+        description: 'Industrial grays and metallics for a modern, sophisticated look'
+      },
+      {
+        id: 'sage_whisper',
+        name: 'Sage Whisper',
+        colors: ['#B8C5B0', '#8FA888', '#6B8E6B'],
+        description: 'Soft greens and natural tones bring the outdoors in'
+      },
+      {
+        id: 'terracotta_dream',
+        name: 'Terracotta Dream',
+        colors: ['#E07856', '#C65D3B', '#A0522D'],
+        description: 'Warm, inviting oranges and browns for a cozy Mediterranean vibe'
+      },
+      {
+        id: 'midnight_navy',
+        name: 'Midnight Navy',
+        colors: ['#1C3A57', '#2C5F8D', '#4A7BA7'],
+        description: 'Deep, rich blues create drama and sophistication'
+      }
+    ];
+
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
+        {/* Designer Gallery */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Choose Your Designer</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {designers.map(designer => (
+              <div key={designer.id} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 transition-all">
+                <div className="h-64 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-32 h-32 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <span className="text-5xl">👤</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">{designer.name}</h3>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="text-sm font-semibold text-blue-600 mb-2">{designer.style}</div>
+                  <p className="text-sm text-gray-600">{designer.bio}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Color Schemes */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Color Schemes</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {colorSchemes.map(scheme => (
+              <div key={scheme.id} className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-all">
+                <div className="flex space-x-2 mb-3">
+                  {scheme.colors.map((color, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 h-16 rounded"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">{scheme.name}</h3>
+                <p className="text-xs text-gray-600">{scheme.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Upload Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Images</h3>
-          <div className="flex items-center space-x-4">
-            <label className="cursor-pointer bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={uploadingImages}
-              />
-              {uploadingImages ? 'Uploading...' : '📤 Upload Images'}
-            </label>
-            <span className="text-sm text-gray-600">Select multiple images to upload at once</span>
+        <div className="border-t border-gray-200 pt-8">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Property Photos</h3>
+            <div className="flex items-center space-x-4">
+              <label className="cursor-pointer bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploadingImages}
+                />
+                {uploadingImages ? 'Uploading...' : '📤 Upload Images'}
+              </label>
+              <span className="text-sm text-gray-600">Select multiple images to upload at once</span>
+            </div>
           </div>
         </div>
 
