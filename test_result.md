@@ -105,6 +105,103 @@
 ## user_problem_statement: "Major restructure: Listing-centric platform with individual listing pages, module-based content generation (GPT-5), chat improvements (1 credit), image upload, and interior design integration. Test all new endpoints and functionality."
 
 ## backend:
+  - task: "NEW: Image Upload - POST /api/listings/{listing_id}/images/upload"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented batch image upload endpoint. Supports multiple file uploads, creates listing-specific directories, validates image types, stores metadata (file_size, uploaded_at). Needs testing."
+
+  - task: "NEW: Get Listing Images - GET /api/listings/{listing_id}/images"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Returns all photos and interior design variants for a listing. Needs testing."
+
+  - task: "NEW: Serve Listing Image - GET /api/listings/{listing_id}/images/{filename}"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Serves image files from listing-specific directories with caching headers. Needs testing."
+
+  - task: "NEW: Delete Listing Image - DELETE /api/listings/{listing_id}/images/{image_id}"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Deletes image file and removes from database. Needs testing."
+
+  - task: "NEW: Generate Module Content - POST /api/listings/{listing_id}/modules/{module_name}/generate"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Generates AI content for listing modules (listing_copy, marketing_copy, social_media, email_template, market_intel, virtual_tour_script) using GPT-5 via emergentintegrations. Costs 1 credit. Needs testing."
+
+  - task: "NEW: Update Module Content - PUT /api/listings/{listing_id}/modules/{module_name}"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Allows manual editing of module content. Increments version, marks as not AI-generated. Needs testing."
+
+  - task: "NEW: Chat Improve Module - POST /api/listings/{listing_id}/modules/{module_name}/chat"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Chat with GPT-5 to improve existing module content. Costs 1 credit per message. Stores chat history. Uses emergentintegrations. Needs testing."
+
+  - task: "NEW: Process Listing Interior Design - POST /api/listings/{listing_id}/interior-design/process"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Processes selected listing images through interior design AI. Validates images, calculates credits (5 per image), creates variants. Needs actual Replicate integration. Needs testing."
+
+
   - task: "PHASE 2: MCP Mega-Agent AI Tools Processing - POST /api/listings/{listing_id}/process-ai"
     implemented: true
     working: false
