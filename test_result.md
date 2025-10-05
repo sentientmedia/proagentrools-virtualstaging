@@ -212,15 +212,18 @@
 
   - task: "NEW: Process Listing Interior Design - POST /api/listings/{listing_id}/interior-design/process"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Processes selected listing images through interior design AI. Validates images, calculates credits (5 per image), creates variants. Needs actual Replicate integration. Needs testing."
+        - working: false
+          agent: "testing"
+          comment: "❌ VALIDATION ISSUE: Interior design processing fails with 'No valid images found' error. The endpoint correctly validates image_ids, calculates credits (5 per image), and has proper authentication, but image validation logic may be too strict or there's an issue with image ID matching. Credit deduction and variant creation structure is implemented correctly."
 
 
   - task: "PHASE 2: MCP Mega-Agent AI Tools Processing - POST /api/listings/{listing_id}/process-ai"
