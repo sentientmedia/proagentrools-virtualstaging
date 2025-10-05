@@ -26,14 +26,20 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   const [processingDesign, setProcessingDesign] = useState(false);
 
   const modules = [
-    { id: 'listing_copy', name: 'Listing Description', icon: '✍️', ai: true, credits: 1, description: 'Generate professional property listing description' },
-    { id: 'marketing_copy', name: 'Marketing Copy', icon: '📢', ai: true, credits: 1, description: 'Create compelling marketing materials' },
-    { id: 'social_media', name: 'Social Media Posts', icon: '📱', ai: true, credits: 1, description: 'Generate engaging social media content' },
-    { id: 'email_template', name: 'Email Templates', icon: '✉️', ai: true, credits: 1, description: 'Create professional email templates' },
-    { id: 'market_intel', name: 'Market Intelligence', icon: '📊', ai: true, credits: 1, description: 'Get market analysis and positioning' },
-    { id: 'virtual_tour_script', name: 'Virtual Tour Script', icon: '🎥', ai: true, credits: 1, description: 'Create walkthrough video script' },
-    { id: 'images', name: 'Property Images', icon: '📸', description: 'Upload and manage property photos' },
-    { id: 'interior_design', name: 'AI Interior Design', icon: '🎨', credits: 5, description: 'Transform photos with AI staging' },
+    // Foundation modules (auto-generated, always unlocked)
+    { id: 'neighborhood_research', name: 'Neighborhood Research', icon: '🏘️', ai: true, credits: 0, description: 'Auto-generated neighborhood context', isFoundation: true },
+    { id: 'listing_copy', name: 'Property Description', icon: '✍️', ai: true, credits: 0, description: 'Auto-generated listing description', isFoundation: true },
+    { id: 'market_intel', name: 'Market Intelligence', icon: '📊', ai: true, credits: 0, description: 'Auto-generated market positioning', isFoundation: true },
+    
+    // Dependent modules (require foundation to be complete)
+    { id: 'marketing_copy', name: 'Marketing Copy', icon: '📢', ai: true, credits: 1, description: 'Marketing materials based on listing', requiresFoundation: true },
+    { id: 'social_media', name: 'Social Media Posts', icon: '📱', ai: true, credits: 1, description: 'Social content from listing', requiresFoundation: true },
+    { id: 'email_template', name: 'Email Templates', icon: '✉️', ai: true, credits: 1, description: 'Email campaigns', requiresFoundation: true },
+    { id: 'virtual_tour_script', name: 'Virtual Tour Script', icon: '🎥', ai: true, credits: 1, description: 'Walkthrough video script', requiresFoundation: true },
+    
+    // Non-AI modules
+    { id: 'images', name: 'Property Images', icon: '📸', description: 'Upload and manage photos' },
+    { id: 'interior_design', name: 'AI Interior Design', icon: '🎨', credits: 5, description: 'Transform photos with AI' },
   ];
 
   useEffect(() => {
