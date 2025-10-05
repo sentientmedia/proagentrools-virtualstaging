@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-## user_problem_statement: "Major restructure: Listing-centric platform with individual listing pages, module-based content generation (GPT-5), chat improvements (1 credit), image upload, and interior design integration. Test all new endpoints and functionality."
+## user_problem_statement: "Major restructure: Listing-centric flow. Main page redirects authenticated users to /listings. Remove standalone tools. Flow: Create listing → Upload images → Generate AI content → Interior design. Test complete E2E flow."
 
 ## backend:
   - task: "NEW: Image Upload - POST /api/listings/{listing_id}/images/upload"
