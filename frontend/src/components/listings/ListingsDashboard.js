@@ -62,12 +62,22 @@ const ListingsDashboard = () => {
 
   const handleProcessAI = async (listingId) => {
     const listing = listings.find(l => l.id === listingId);
-    const totalCredits = listing.selected_ai_tools.reduce((sum, tool) => sum + tool.credits_cost, 0);
     
-    if (!window.confirm(`Process ${listing.selected_ai_tools.length} AI tools for ${totalCredits} credits?`)) {
+    // Check if confirmations are disabled
+    const confirmationDisabled = localStorage.getItem('creditConfirmationDisabled') === 'true';
+    
+    if (!confirmationDisabled) {
+      // Show confirmation modal
+      setPendingProcessListing(listing);
+      setShowCreditConfirmation(true);
       return;
     }
 
+    // Proceed directly if confirmations are disabled
+    await processAIForListing(listingId);
+  };
+
+  const processAIForListing = async (listingId) => {
     try {
       // Update UI to show processing
       setListings(prev => prev.map(l => 
@@ -85,7 +95,8 @@ const ListingsDashboard = () => {
       if (response.data.success) {
         // Refresh listings to get updated status
         await loadListings();
-        alert(`AI processing completed! Used ${response.data.credits_used} credits.`);
+        // You can add a toast notification here instead of alert
+        console.log(`AI processing completed! Used ${response.data.credits_used} credits.`);
       }
     } catch (err) {
       console.error('Failed to process AI:', err);
@@ -97,6 +108,19 @@ const ListingsDashboard = () => {
           : l
       ));
     }
+  };
+
+  const handleCreditConfirmation = () => {
+    setShowCreditConfirmation(false);
+    if (pendingProcessListing) {
+      processAIForListing(pendingProcessListing.id);
+      setPendingProcessListing(null);
+    }
+  };
+
+  const handleCreditCancel = () => {
+    setShowCreditConfirmation(false);
+    setPendingProcessListing(null);
   };
 
   const handleViewAIResults = (listingId) => {
