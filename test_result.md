@@ -182,15 +182,18 @@
 
   - task: "NEW: Update Module Content - PUT /api/listings/{listing_id}/modules/{module_name}"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Allows manual editing of module content. Increments version, marks as not AI-generated. Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Manual content update working perfectly. Successfully updates module content, increments version number, marks as not AI-generated (is_ai_generated: false), and updates last_edited timestamp. Authentication required and user isolation enforced."
 
   - task: "NEW: Chat Improve Module - POST /api/listings/{listing_id}/modules/{module_name}/chat"
     implemented: true
