@@ -1068,58 +1068,174 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   }
 
   const currentModule = modules.find(m => m.id === activeModule);
+  const foundationComplete = listing.foundation_status === 'completed';
+  const foundationProcessing = listing.foundation_status === 'processing';
+  
+  // Group modules by category
+  const modulesByCategory = modules.reduce((acc, module) => {
+    if (!acc[module.category]) acc[module.category] = [];
+    acc[module.category].push(module);
+    return acc;
+  }, {});
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="bg-white shadow z-10">
+        <div className="max-w-full px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => {
-                  if (activeView === 'module') {
-                    setActiveView('overview');
-                    setActiveModule(null);
-                  } else {
-                    onBack();
-                  }
-                }}
+                onClick={onBack}
                 className="text-gray-600 hover:text-gray-900"
               >
-                ← {activeView === 'module' ? 'Back to Tools' : 'Back to Listings'}
+                ← Back to Listings
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-xl font-bold text-gray-900">
                   {listing.property_details.address}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   {listing.property_details.city}, {listing.property_details.state}
                 </p>
               </div>
             </div>
             <div className="text-sm">
-              <div className="text-gray-600">Available Credits</div>
+              <div className="text-gray-600">Credits</div>
               <div className="text-2xl font-bold text-blue-600">{user?.credits || 0}</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {activeView === 'overview' && renderOverview()}
-        
-        {activeView === 'module' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {currentModule?.icon} {currentModule?.name}
-            </h2>
+      {/* Sidebar + Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar - Tools */}
+        <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
+          <div className="p-4">
+            {/* Foundation Status */}
+            {foundationProcessing && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm text-blue-800 font-medium">Generating foundation...</span>
+                </div>
+              </div>
+            )}
             
-            {activeModule === 'images' && renderImages()}
-            {currentModule?.ai && renderModuleContent(currentModule)}
+            {/* Tool Categories */}
+            {Object.entries(modulesByCategory).map(([category, categoryModules]) => (
+              <div key={category} className="mb-6">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">
+                  {category}
+                </h3>
+                <div className="space-y-1">
+                  {categoryModules.map(module => {
+                    const isCompleted = moduleContent[module.id];
+                    const isLocked = module.requiresFoundation && !foundationComplete;
+                    const isActive = activeModule === module.id;
+                    
+                    return (
+                      <button
+                        key={module.id}
+                        onClick={() => {
+                          if (!isLocked) {
+                            setActiveModule(module.id);
+                            setActiveView('module');
+                          }
+                        }}
+                        disabled={isLocked}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-blue-50 border-2 border-blue-500 text-blue-700'
+                            : isLocked
+                            ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                            : isCompleted
+                            ? 'hover:bg-green-50 text-gray-900'
+                            : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <span className="text-lg flex-shrink-0">{module.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium truncate">{module.name}</div>
+                              {module.credits > 0 && !isLocked && (
+                                <div className="text-xs text-gray-500">{module.credits} credit</div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 ml-2">
+                            {isLocked ? (
+                              <span className="text-gray-400">🔒</span>
+                            ) : isCompleted ? (
+                              <span className="text-green-600">✓</span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+
+        {/* Right Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-8">
+            {!activeModule ? (
+              <div className="text-center py-20">
+                <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-6xl">🏠</span>
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  {listing.property_details.address}
+                </h2>
+                <p className="text-lg text-gray-600 mb-2">
+                  {listing.property_details.beds} bed • {listing.property_details.baths} bath • 
+                  {listing.property_details.sqft && ` ${listing.property_details.sqft.toLocaleString()} sq ft`}
+                </p>
+                {listing.property_details.listing_price && (
+                  <p className="text-3xl font-bold text-blue-600 mb-8">
+                    ${listing.property_details.listing_price.toLocaleString()}
+                  </p>
+                )}
+                <p className="text-gray-600 mb-4">
+                  Select a tool from the left sidebar to get started
+                </p>
+                {foundationProcessing && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
+                    <p className="text-sm text-blue-800">
+                      Foundation content is being generated. This takes 1-2 minutes.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-4xl">{currentModule?.icon}</span>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">{currentModule?.name}</h2>
+                      <p className="text-sm text-gray-600">{currentModule?.description}</p>
+                    </div>
+                  </div>
+                  {currentModule?.credits > 0 && (
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500">Cost</div>
+                      <div className="text-lg font-bold text-blue-600">{currentModule.credits} credit{currentModule.credits > 1 ? 's' : ''}</div>
+                    </div>
+                  )}
+                </div>
+                
+                {activeModule === 'images' ? renderImages() : renderModuleContent(currentModule)}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
