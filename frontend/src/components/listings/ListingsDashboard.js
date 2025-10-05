@@ -14,6 +14,7 @@ const ListingsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedListing, setSelectedListing] = useState(null);
+  const [showIndividualListing, setShowIndividualListing] = useState(false);
   const [showAIResults, setShowAIResults] = useState(false);
   const [selectedListingForResults, setSelectedListingForResults] = useState(null);
   const [showCreditConfirmation, setShowCreditConfirmation] = useState(false);
