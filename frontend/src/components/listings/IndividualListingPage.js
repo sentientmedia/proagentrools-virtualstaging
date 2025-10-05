@@ -407,10 +407,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   const renderInteriorDesign = () => {
     return (
       <div className="space-y-6">
-        {/* Selection Info */}
+        {/* Info Banner */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
-            💡 Select images from your property photos, choose design settings, and process them with AI interior design (5 credits per image)
+            💡 Select images, configure room type and design settings for each, then process with AI (5 credits per image)
           </p>
         </div>
 
@@ -419,7 +419,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             <span className="text-4xl mb-2 block">🎨</span>
             <p className="text-gray-600 mb-4">Upload images first to use interior design</p>
             <button
-              onClick={() => setActiveModule('images')}
+              onClick={() => {
+                setActiveModule('images');
+                setActiveView('module');
+              }}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
             >
               Go to Images
@@ -427,115 +430,188 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         ) : (
           <>
-            {/* Design Settings */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Design Settings</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Room Type</label>
-                  <select
-                    value={designSettings.room_type}
-                    onChange={(e) => setDesignSettings({...designSettings, room_type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="living_room">Living Room</option>
-                    <option value="bedroom">Bedroom</option>
-                    <option value="kitchen">Kitchen</option>
-                    <option value="bathroom">Bathroom</option>
-                    <option value="dining_room">Dining Room</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Designer Style</label>
-                  <select
-                    value={designSettings.designer}
-                    onChange={(e) => setDesignSettings({...designSettings, designer: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="alessia_duval">Alessia Duval</option>
-                    <option value="adrian_mercer">Adrian Mercer</option>
-                    <option value="lucien_hart">Lucien Hart</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
-                  <select
-                    value={designSettings.color_scheme}
-                    onChange={(e) => setDesignSettings({...designSettings, color_scheme: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="glacial_muse">Glacial Muse</option>
-                    <option value="nomad_prism">Nomad Prism</option>
-                    <option value="urban_alloy">Urban Alloy</option>
-                  </select>
-                </div>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Select Images & Configure ({selectedImages.length} selected)
+              </h3>
+              <button
+                onClick={handleProcessInteriorDesign}
+                disabled={selectedImages.length === 0 || processingDesign}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 font-semibold"
+              >
+                {processingDesign ? 'Processing...' : `Process ${selectedImages.length} Image${selectedImages.length !== 1 ? 's' : ''} (${selectedImages.length * 5} credits)`}
+              </button>
             </div>
 
-            {/* Image Selection */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Select Images to Process ({selectedImageIds.length} selected)
-                </h3>
-                <button
-                  onClick={handleProcessInteriorDesign}
-                  disabled={selectedImageIds.length === 0 || processingDesign}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-                >
-                  {processingDesign ? 'Processing...' : `Process Selected (${selectedImageIds.length * 5} credits)`}
-                </button>
-              </div>
+            {/* Image Grid with Per-Image Settings */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {images.map(image => {
+                const imageSettings = selectedImages.find(s => s.image_id === image.id);
+                const isSelected = !!imageSettings;
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {images.map(image => (
+                return (
                   <div
                     key={image.id}
-                    onClick={() => {
-                      setSelectedImageIds(prev =>
-                        prev.includes(image.id)
-                          ? prev.filter(id => id !== image.id)
-                          : [...prev, image.id]
-                      );
-                    }}
-                    className={`relative cursor-pointer border-4 rounded-lg transition-all ${
-                      selectedImageIds.includes(image.id)
-                        ? 'border-blue-600 shadow-lg'
-                        : 'border-transparent hover:border-gray-300'
+                    className={`border-2 rounded-lg overflow-hidden transition-all ${
+                      isSelected
+                        ? 'border-blue-600 shadow-lg bg-blue-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
                     }`}
                   >
-                    <img
-                      src={`${BACKEND_URL}${image.url}`}
-                      alt={image.filename}
-                      className="w-full h-48 object-cover rounded"
-                    />
-                    {selectedImageIds.includes(image.id) && (
-                      <div className="absolute top-2 right-2 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                        ✓
+                    {/* Image */}
+                    <div className="relative">
+                      <img
+                        src={`${BACKEND_URL}${image.url}`}
+                        alt={image.filename}
+                        className="w-full h-64 object-cover"
+                      />
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded-full font-semibold">
+                          ✓ Selected
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Settings */}
+                    <div className="p-4 space-y-3">
+                      {/* Room Type */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
+                        <select
+                          value={imageSettings?.room_type || 'living_room'}
+                          onChange={(e) => {
+                            const newSettings = {
+                              image_id: image.id,
+                              room_type: e.target.value,
+                              designer: imageSettings?.designer || 'alessia_duval',
+                              color_scheme: imageSettings?.color_scheme || 'glacial_muse'
+                            };
+                            
+                            if (isSelected) {
+                              // Update existing
+                              setSelectedImages(prev => 
+                                prev.map(s => s.image_id === image.id ? newSettings : s)
+                              );
+                            } else {
+                              // Add new
+                              setSelectedImages(prev => [...prev, newSettings]);
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        >
+                          <option value="living_room">Living Room</option>
+                          <option value="bedroom">Bedroom</option>
+                          <option value="kitchen">Kitchen</option>
+                          <option value="bathroom">Bathroom</option>
+                          <option value="dining_room">Dining Room</option>
+                          <option value="office">Office</option>
+                          <option value="exterior">Exterior</option>
+                        </select>
                       </div>
-                    )}
+
+                      {/* Designer & Color Scheme (only show if selected) */}
+                      {isSelected && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Designer Style</label>
+                            <select
+                              value={imageSettings.designer}
+                              onChange={(e) => {
+                                setSelectedImages(prev =>
+                                  prev.map(s => s.image_id === image.id 
+                                    ? {...s, designer: e.target.value}
+                                    : s
+                                  )
+                                );
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            >
+                              <option value="alessia_duval">Alessia Duval</option>
+                              <option value="adrian_mercer">Adrian Mercer</option>
+                              <option value="lucien_hart">Lucien Hart</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Color Scheme</label>
+                            <select
+                              value={imageSettings.color_scheme}
+                              onChange={(e) => {
+                                setSelectedImages(prev =>
+                                  prev.map(s => s.image_id === image.id 
+                                    ? {...s, color_scheme: e.target.value}
+                                    : s
+                                  )
+                                );
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            >
+                              <option value="glacial_muse">Glacial Muse</option>
+                              <option value="nomad_prism">Nomad Prism</option>
+                              <option value="urban_alloy">Urban Alloy</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Select/Remove Button */}
+                      <button
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedImages(prev => prev.filter(s => s.image_id !== image.id));
+                          } else {
+                            setSelectedImages(prev => [...prev, {
+                              image_id: image.id,
+                              room_type: 'living_room',
+                              designer: 'alessia_duval',
+                              color_scheme: 'glacial_muse'
+                            }]);
+                          }
+                        }}
+                        className={`w-full py-2 rounded-lg font-medium transition-colors ${
+                          isSelected
+                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        {isSelected ? 'Remove from Selection' : 'Select for Processing'}
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            {/* Interior Design Variants */}
+            {/* Processed Designs */}
             {listing?.interior_design_variants?.length > 0 && (
-              <div>
+              <div className="border-t border-gray-200 pt-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Processed Designs ({listing.interior_design_variants.length})
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {listing.interior_design_variants.map(variant => (
                     <div key={variant.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                      <img
-                        src={`${BACKEND_URL}${variant.processed_image_url}`}
-                        alt="Interior Design"
-                        className="w-full h-48 object-cover"
-                      />
+                      {variant.processed_image_url ? (
+                        <img
+                          src={`${BACKEND_URL}${variant.processed_image_url}`}
+                          alt="Interior Design"
+                          className="w-full h-48 object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <div className="text-sm text-gray-600">Processing...</div>
+                          </div>
+                        </div>
+                      )}
                       <div className="p-3 bg-white">
                         <div className="text-xs text-gray-600">
-                          {variant.designer} • {variant.color_scheme}
+                          {variant.room_type} • {variant.designer}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {variant.status === 'processing' ? 'Processing...' : 'Completed'}
                         </div>
                       </div>
                     </div>
