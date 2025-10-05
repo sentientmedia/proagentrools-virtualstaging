@@ -290,9 +290,9 @@ const AIResultsModal = ({ listingId, onClose }) => {
                         
                         {toolData.status === 'completed' ? (
                           <div className="bg-white rounded border p-4">
-                            <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans">
-                              {formatToolOutput(toolData)}
-                            </pre>
+                            <div className="prose prose-sm max-w-none">
+                              {renderFormattedOutput(formatToolOutput(toolData))}
+                            </div>
                           </div>
                         ) : toolData.status === 'error' ? (
                           <div className="bg-red-50 border border-red-200 rounded p-3">
