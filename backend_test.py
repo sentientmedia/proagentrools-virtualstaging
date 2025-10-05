@@ -3365,6 +3365,13 @@ class ProAgentToolsAPITester:
         print("="*80)
         
         priority_tests = [
+            # AI CONTENT GENERATION WITH OPENAI FALLBACK (HIGHEST PRIORITY - FROM REVIEW REQUEST)
+            ("Generate Module Content with OpenAI Fallback", self.test_generate_module_content_with_fallback),
+            ("Chat Improve Module with OpenAI Fallback", self.test_chat_improve_module_with_fallback),
+            ("Interior Design Processing with Images", self.test_interior_design_processing_with_images),
+            ("Module Generation Auth Requirements", self.test_module_generation_without_auth),
+            ("Chat Improve Auth Requirements", self.test_chat_improve_without_auth),
+            ("Interior Design Processing Auth Requirements", self.test_interior_design_processing_without_auth),
             # NEW LISTING-CENTRIC ENDPOINTS (HIGH PRIORITY)
             ("Image Upload - POST /api/listings/{listing_id}/images/upload", self.test_listing_image_upload),
             ("Get Listing Images - GET /api/listings/{listing_id}/images", self.test_get_listing_images),
