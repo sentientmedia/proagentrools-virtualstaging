@@ -4770,27 +4770,59 @@ def main():
         print("❌ Some tests failed - check results above")
         return 1
 
+    def run_critical_interior_design_tests(self):
+        """Run CRITICAL tests for interior design processing fix"""
+        print("\n" + "="*80)
+        print("🔥 CRITICAL INTERIOR DESIGN PROCESSING FIX TESTS")
+        print("="*80)
+        
+        critical_tests = [
+            ("CRITICAL: Complete Interior Design Processing Flow", self.test_interior_design_processing_complete_flow),
+            ("Interior Design Variants Structure", self.test_interior_design_variants_structure),
+        ]
+        
+        critical_passed = 0
+        critical_total = len(critical_tests)
+        
+        for test_name, test_func in critical_tests:
+            print(f"\n🔥 Running: {test_name}")
+            try:
+                if test_func():
+                    critical_passed += 1
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        print(f"\n🔥 CRITICAL TESTS SUMMARY: {critical_passed}/{critical_total} passed ({critical_passed/critical_total*100:.1f}%)")
+        
+        return critical_passed, critical_total
+
 if __name__ == "__main__":
     tester = ProAgentToolsAPITester()
     
-    print("🚀 Starting ProAgentTools Priority API Testing...")
+    print("🚀 Starting ProAgentTools CRITICAL Interior Design Testing...")
     print(f"Testing against: {tester.api_url}")
     
-    # Run priority tests first (from review request)
-    priority_passed, priority_total = tester.run_priority_tests()
+    # Run CRITICAL interior design tests first (from review request)
+    critical_passed, critical_total = tester.run_critical_interior_design_tests()
     
-    # Print final summary
+    # Print critical test summary
     print(f"\n" + "="*50)
-    print(f"📊 PRIORITY TESTS RESULTS")
+    print(f"🔥 CRITICAL INTERIOR DESIGN TESTS RESULTS")
     print(f"="*50)
-    print(f"Priority Tests Run: {priority_total}")
-    print(f"Priority Tests Passed: {priority_passed}")
-    print(f"Priority Success Rate: {(priority_passed/priority_total)*100:.1f}%")
+    print(f"Critical Tests Run: {critical_total}")
+    print(f"Critical Tests Passed: {critical_passed}")
+    print(f"Critical Success Rate: {(critical_passed/critical_total)*100:.1f}%")
     
-    if priority_passed == priority_total:
-        print("🎉 All priority tests passed!")
+    if critical_passed == critical_total:
+        print("🎉 ALL CRITICAL INTERIOR DESIGN TESTS PASSED!")
+        print("✅ The fix for interior design processing is working correctly!")
+        print("✅ Listing variants are properly updated when processing completes!")
         sys.exit(0)
     else:
-        failed = priority_total - priority_passed
-        print(f"⚠️  {failed} priority tests failed")
+        failed = critical_total - critical_passed
+        print(f"🚨 {failed} CRITICAL interior design tests failed")
+        print("❌ The interior design processing fix needs attention")
         sys.exit(1)
