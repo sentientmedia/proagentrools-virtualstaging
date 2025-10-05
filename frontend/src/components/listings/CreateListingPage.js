@@ -310,44 +310,42 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
             </div>
           </div>
 
-          {/* AI Tools Selection */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Select AI Tools</h2>
-              <div className="text-lg font-medium text-blue-600">
-                Total: {calculateTotalCredits()} credits
-              </div>
-            </div>
-            
-            {Object.entries(aiTools).map(([category, tools]) => (
-              <div key={category} className="mb-6">
-                <h3 className="text-lg font-medium text-gray-800 mb-3 border-b pb-2">
-                  {category} ({tools.length} tools)
-                </h3>
-                
-                <div className="grid md:grid-cols-2 gap-3">
-                  {tools.map(tool => (
-                    <div key={tool.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
-                      <label className="flex items-start space-x-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.selected_tool_ids.includes(tool.id)}
-                          onChange={(e) => handleToolSelection(tool.id, e.target.checked)}
-                          className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-medium text-gray-900">{tool.name}</h4>
-                            <span className="text-sm font-medium text-blue-600">{tool.credits_cost} credits</span>
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">{tool.description}</p>
-                        </div>
-                      </label>
+          {/* What You Get Banner */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-6">
+            <div className="flex items-start space-x-4">
+              <div className="text-4xl">✨</div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">What You Get for 20 Credits</h2>
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <div>
+                      <span className="font-semibold text-gray-900">Neighborhood Research:</span>
+                      <span className="text-gray-700"> Detailed analysis of your property's location, nearby amenities, and community vibe</span>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <div>
+                      <span className="font-semibold text-gray-900">Professional Property Description:</span>
+                      <span className="text-gray-700"> Compelling 200-300 word listing copy that highlights features and creates buyer interest</span>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <div>
+                      <span className="font-semibold text-gray-900">Market Intelligence:</span>
+                      <span className="text-gray-700"> Strategic insights on target buyers, positioning, and pricing recommendations</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-blue-200">
+                  <p className="text-sm text-gray-700">
+                    After foundation content is generated, you can create marketing materials, social posts, emails, and more - each for just 1 credit!
+                  </p>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
 
           {/* Error Display */}
@@ -362,36 +360,28 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">
-                  {formData.selected_tool_ids.length} tools selected • {calculateTotalCredits()} credits required
+                  You have {user?.credits || 0} credits available
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  20 credits will be used to generate foundation content
                 </p>
               </div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (user?.credits || 0) < 20}
                 className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
-                  loading 
+                  loading || (user?.credits || 0) < 20
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-blue-600 hover:bg-blue-700'
                 } text-white`}
               >
-                {loading ? 'Creating...' : 'Create Listing'}
+                {loading ? 'Creating...' : 'Create Listing (20 Credits)'}
               </button>
             </div>
           </div>
 
         </form>
       </div>
-
-      {/* Credit Confirmation Modal */}
-      <CreditConfirmationModal
-        isOpen={showCreditConfirmation}
-        onConfirm={handleCreditConfirmation}
-        onCancel={handleCreditCancel}
-        totalCredits={calculateTotalCredits()}
-        selectedTools={getSelectedToolsForModal()}
-        actionType="create"
-        propertyAddress={`${formData.address}, ${formData.city}, ${formData.state}`}
-      />
     </div>
   );
 };
