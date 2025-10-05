@@ -3073,6 +3073,19 @@ class ProAgentToolsAPITester:
         print("="*80)
         
         priority_tests = [
+            # NEW LISTING-CENTRIC ENDPOINTS (HIGH PRIORITY)
+            ("Image Upload - POST /api/listings/{listing_id}/images/upload", self.test_listing_image_upload),
+            ("Get Listing Images - GET /api/listings/{listing_id}/images", self.test_get_listing_images),
+            ("Serve Listing Image - GET /api/listings/{listing_id}/images/{filename}", self.test_serve_listing_image),
+            ("Delete Listing Image - DELETE /api/listings/{listing_id}/images/{image_id}", self.test_delete_listing_image),
+            ("Generate Module Content - POST /api/listings/{listing_id}/modules/{module_name}/generate", self.test_generate_module_content),
+            ("Update Module Content - PUT /api/listings/{listing_id}/modules/{module_name}", self.test_update_module_content),
+            ("Chat Improve Module - POST /api/listings/{listing_id}/modules/{module_name}/chat", self.test_chat_improve_module),
+            ("Process Listing Interior Design - POST /api/listings/{listing_id}/interior-design/process", self.test_process_listing_interior_design),
+            ("Comprehensive Listing Workflow", self.test_comprehensive_listing_workflow),
+            ("Authentication Requirements - New Endpoints", self.test_authentication_requirements_new_endpoints),
+            ("Error Handling - New Endpoints", self.test_error_handling_new_endpoints),
+            # EXISTING TESTS
             ("MCP Mega-Agent Fixed Import Test", self.test_mcp_mega_agent_fixed_import),
             ("MCP Mega-Agent AI Results", self.test_mcp_mega_agent_ai_results),
             ("Watermarking - Upload Logo", self.test_watermarking_upload_logo),
