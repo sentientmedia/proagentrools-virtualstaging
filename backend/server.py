@@ -355,6 +355,33 @@ class ListingPhoto(BaseModel):
     is_primary: bool = False
     room_type: Optional[str] = None
     watermarked: bool = False
+    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
+    file_size: Optional[int] = None
+    dimensions: Optional[Dict[str, int]] = None  # {width, height}
+
+class InteriorDesignVariant(BaseModel):
+    id: str
+    original_image_id: str
+    processed_image_url: str
+    designer: str
+    color_scheme: str
+    room_type: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    watermarked: bool = False
+
+class ModuleContent(BaseModel):
+    content: str
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+    last_edited: datetime = Field(default_factory=datetime.utcnow)
+    version: int = 1
+    is_ai_generated: bool = True
+
+class ChatMessage(BaseModel):
+    id: str
+    role: str  # "user" or "assistant"
+    content: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    credits_used: int = 0
 
 class AIToolSelection(BaseModel):
     tool_id: str
