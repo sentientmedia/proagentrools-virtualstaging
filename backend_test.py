@@ -1833,39 +1833,91 @@ class ProAgentToolsAPITester:
             print("⚠️ No user token available, skipping test")
             return False
         
-        # First ensure we have a processed listing
-        if not hasattr(self, 'test_listing_id'):
-            print("⚠️ No test listing available, creating one...")
-            if not self.test_create_listing_authenticated():
+        # Use the processed listing from the previous test
+        if not hasattr(self, 'processed_listing_id'):
+            print("⚠️ No processed listing available, using a test listing...")
+            # Create and process a listing for this test
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            
+            test_data = {
+                "property_details": {
+                    "address": "789 AI Results Test St",
+                    "city": "San Francisco", 
+                    "state": "CA",
+                    "zip_code": "94105",
+                    "beds": 2,
+                    "baths": 1.5,
+                    "sqft": 1200,
+                    "property_type": "Condo",
+                    "listing_price": 850000
+                },
+                "description": "AI results test property",
+                "selected_tool_ids": ["listing_luxe_gpt", "social_snippets_studio"],
+                "agent_notes": "Test AI results endpoint"
+            }
+            
+            create_success, create_response = self.run_test(
+                "Create Listing for AI Results Test",
+                "POST",
+                "listings",
+                200,
+                data=test_data,
+                headers=headers
+            )
+            
+            if not create_success:
+                print("❌ Could not create listing for AI results test")
                 return False
+            
+            listing_id = create_response['id']
+            
+            # Process the listing
+            process_success, process_response = self.run_test(
+                "Process Listing for AI Results Test",
+                "POST",
+                f"listings/{listing_id}/process-ai",
+                200,
+                headers=headers
+            )
+            
+            if not process_success:
+                print("❌ Could not process listing for AI results test")
+                return False
+            
+            self.processed_listing_id = listing_id
         
         headers = {"Authorization": f"Bearer {self.user_token}"}
         
         success, response = self.run_test(
             "MCP Mega-Agent AI Results",
             "GET",
-            f"listings/{self.test_listing_id}/ai-results",
+            f"listings/{self.processed_listing_id}/ai-results",
             200,
             headers=headers
         )
         
         if success and response:
             # Verify response structure
-            if 'ai_output' not in response and 'ai_processing_status' not in response:
-                print("❌ Missing AI output or processing status in response")
-                return False
+            required_fields = ['listing_id', 'processing_status', 'ai_results']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in AI results response")
+                    return False
             
-            processing_status = response.get('ai_processing_status', 'unknown')
+            processing_status = response.get('processing_status', 'unknown')
             print(f"✅ AI results retrieved - Status: {processing_status}")
             
-            if processing_status == 'completed' and response.get('ai_output'):
-                print("   AI processing completed with output")
+            if processing_status == 'completed' and response.get('ai_results'):
+                print("   ✅ AI processing completed with output")
+                ai_results = response.get('ai_results', {})
+                if 'outputs' in ai_results:
+                    print(f"   ✅ AI outputs available for {len(ai_results.get('outputs', {}))} categories")
             elif processing_status == 'pending':
-                print("   AI processing is pending")
+                print("   ⚠️ AI processing is pending")
             elif processing_status == 'processing':
-                print("   AI processing is in progress")
+                print("   ⚠️ AI processing is in progress")
             else:
-                print(f"   AI processing status: {processing_status}")
+                print(f"   ⚠️ AI processing status: {processing_status}")
             
             return True
         
