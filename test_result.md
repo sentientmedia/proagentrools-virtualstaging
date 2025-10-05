@@ -169,7 +169,7 @@
     implemented: true
     working: false
     file: "/app/backend/server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -179,6 +179,9 @@
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL ISSUE: GPT-5 content generation fails with authentication error 'Incorrect API key provided: sk-emerg******************eFd7'. The endpoint structure is correct, authentication works, credit deduction logic implemented, but AI generation fails due to invalid/expired Emergent LLM API key. This blocks all module content generation functionality."
+        - working: false
+          agent: "testing"
+          comment: "❌ RE-TEST FAILED: OpenAI fallback not working. Code has fallback logic (EMERGENT_LLM_KEY or OPENAI_API_KEY) but EMERGENT_LLM_KEY exists with invalid value 'sk-emergent-12cA71fB42626FeFd7', so fallback never triggers. Backend logs show 'Using Emergent API key for content generation' then 401 Unauthorized. Fallback logic needs to validate key validity, not just existence. REQUIRES CODE FIX."
 
   - task: "NEW: Update Module Content - PUT /api/listings/{listing_id}/modules/{module_name}"
     implemented: true
