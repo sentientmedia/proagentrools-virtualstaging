@@ -948,6 +948,162 @@ async def get_ai_tools():
         logger.error(f"Get AI tools error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch AI tools")
 
+# MCP Mega-Agent Processing
+@api_router.post("/listings/{listing_id}/process-ai")
+async def process_listing_ai_tools(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Process all selected AI tools for a listing using the mega-agent"""
+    try:
+        # Get the listing
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Check if there are selected tools
+        selected_tools = listing.get("selected_ai_tools", [])
+        if not selected_tools:
+            raise HTTPException(status_code=400, detail="No AI tools selected for this listing")
+        
+        # Calculate total credits needed
+        total_credits_needed = sum(tool.get("credits_cost", 0) for tool in selected_tools)
+        
+        # Check if user has enough credits
+        if current_user.credits < total_credits_needed:
+            raise HTTPException(
+                status_code=402, 
+                detail=f"Insufficient credits. Need {total_credits_needed}, have {current_user.credits}"
+            )
+        
+        # Update listing status to processing
+        await db.listings.update_one(
+            {"id": listing_id, "user_id": current_user.id},
+            {
+                "$set": {
+                    "ai_processing_status": "processing",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Import and run the mega-agent
+        from mcp_agent_server import run_mega_agent_processing
+        
+        # Process with mega-agent
+        processing_result = await run_mega_agent_processing(listing, selected_tools)
+        
+        if processing_result.get('success'):
+            # Deduct credits from user
+            await db.users.update_one(
+                {"id": current_user.id},
+                {"$inc": {"credits": -total_credits_needed}}
+            )
+            
+            # Update listing with results
+            await db.listings.update_one(
+                {"id": listing_id, "user_id": current_user.id},
+                {
+                    "$set": {
+                        "ai_processing_status": "completed",
+                        "ai_output": processing_result,
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            
+            # Mark all tools as completed
+            updated_tools = []
+            for tool in selected_tools:
+                tool["completed"] = True
+                tool["processed_at"] = datetime.utcnow().isoformat()
+                updated_tools.append(tool)
+            
+            await db.listings.update_one(
+                {"id": listing_id, "user_id": current_user.id},
+                {"$set": {"selected_ai_tools": updated_tools}}
+            )
+            
+            return {
+                "success": True,
+                "processing_id": processing_result.get("processing_id"),
+                "tools_processed": len(selected_tools),
+                "credits_used": total_credits_needed,
+                "remaining_credits": current_user.credits - total_credits_needed,
+                "message": "AI processing completed successfully"
+            }
+        else:
+            # Update listing status to failed
+            await db.listings.update_one(
+                {"id": listing_id, "user_id": current_user.id},
+                {
+                    "$set": {
+                        "ai_processing_status": "failed",
+                        "ai_output": processing_result,
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            
+            raise HTTPException(status_code=500, detail="AI processing failed")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI processing error: {str(e)}")
+        
+        # Update listing status to failed
+        try:
+            await db.listings.update_one(
+                {"id": listing_id, "user_id": current_user.id},
+                {
+                    "$set": {
+                        "ai_processing_status": "failed",
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+        except:
+            pass
+            
+        raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
+
+@api_router.get("/listings/{listing_id}/ai-results")
+async def get_listing_ai_results(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get AI processing results for a listing"""
+    try:
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        ai_output = listing.get("ai_output")
+        if not ai_output:
+            raise HTTPException(status_code=404, detail="No AI results found for this listing")
+        
+        return {
+            "listing_id": listing_id,
+            "processing_status": listing.get("ai_processing_status"),
+            "ai_results": ai_output,
+            "tools_processed": listing.get("selected_ai_tools", [])
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get AI results error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch AI results")
+
 # AI Tools Configuration
 AI_TOOLS_CATALOG = {
     # Marketing & Creative
