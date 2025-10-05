@@ -154,6 +154,35 @@ const UserDashboard = () => {
               </div>
             </div>
 
+            {/* Agent Branding */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Agent Branding</h2>
+                <button
+                  onClick={() => setShowBrandingManager(true)}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  Manage
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-gray-700">Logo Watermarks</span>
+                  <span className="text-gray-600 text-sm">Auto-applied to all images</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-gray-700">Brand Consistency</span>
+                  <span className="text-gray-600 text-sm">Across all marketing materials</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBrandingManager(true)}
+                className="w-full mt-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                Upload Logo & Configure Watermarks
+              </button>
+            </div>
+
             {/* Tools Usage */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Tool Costs</h2>
@@ -172,9 +201,9 @@ const UserDashboard = () => {
                     <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                       <span className="text-green-600 text-sm">✍️</span>
                     </div>
-                    <span className="font-medium text-gray-900">GPT Property Tools</span>
+                    <span className="font-medium text-gray-900">AI Marketing Tools</span>
                   </div>
-                  <span className="text-gray-600 font-medium">1 credit</span>
+                  <span className="text-gray-600 font-medium">1-4 credits each</span>
                 </div>
               </div>
             </div>
