@@ -434,11 +434,14 @@ class ChatImproveRequest(BaseModel):
     message: str
     module_name: str
 
+class ImageDesignSettings(BaseModel):
+    image_id: str
+    room_type: str = "living_room"
+    designer: str = "alessia_duval"
+    color_scheme: str = "glacial_muse"
+
 class ProcessInteriorDesignRequest(BaseModel):
-    image_ids: List[str]
-    room_type: Optional[str] = None
-    designer: Optional[str] = None
-    color_scheme: Optional[str] = None
+    images: List[ImageDesignSettings]  # Each image has its own settings
 
 # Agent Branding Models
 class AgentBranding(BaseModel):
