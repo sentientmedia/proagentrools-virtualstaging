@@ -557,15 +557,18 @@
 
   - task: "Listing CRUD Operations - DELETE /api/listings/{id}"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "testing"
           comment: "❌ ISSUE: Delete listing endpoint has a bug - 'cannot access local variable 'response' where it is not associated with a value'. The endpoint logic needs to be fixed to properly handle the DELETE request and response."
+        - working: true
+          agent: "testing"
+          comment: "✅ FIXED & VERIFIED: Delete listing endpoint working correctly. Issue was in test framework - missing DELETE method handler in run_test function. Fixed test framework and verified DELETE endpoint works properly: creates listing, deletes it (returns success message), and confirms deletion with 404 on subsequent GET request. User isolation enforced."
 
   - task: "Listing Authentication Requirements"
     implemented: true
