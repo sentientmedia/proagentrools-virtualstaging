@@ -1309,7 +1309,6 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             </h2>
             
             {activeModule === 'images' && renderImages()}
-            {activeModule === 'interior_design' && renderInteriorDesign()}
             {currentModule?.ai && renderModuleContent(currentModule)}
           </div>
         )}
