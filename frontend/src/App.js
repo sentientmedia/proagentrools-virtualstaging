@@ -94,35 +94,41 @@ const Header = () => {
 };
 
 // Hero Section Component
-const HeroSection = () => (
-  <section className="relative bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
-    <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-    <div 
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-      style={{
-        backgroundImage: `url('https://images.unsplash.com/photo-1532495142380-2f10c263c93d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwzfHxyZWFsJTIwZXN0YXRlfGVufDB8fHxibHVlfDE3NTMwMjcxNzl8MA&ixlib=rb-4.1.0&q=85')`
-      }}
-    ></div>
-    <div className="relative container mx-auto px-6 text-center">
-      <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-        AI-Powered Tools for <span className="text-blue-600">Real Estate Agents</span>
-      </h1>
-      <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">
-        Transform your real estate business with cutting-edge AI technology. 
-        Generate stunning interior designs, create compelling property descriptions, 
-        and access 30+ professional AI tools designed specifically for agents.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="#interior-design" className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-          Try Interior Design AI
-        </a>
-        <a href="#ai-tools" className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
-          Explore AI Tools
-        </a>
+const HeroSection = () => {
+  const { isAuthenticated, openAuthModal } = useAuth();
+  
+  return (
+    <section className="relative bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
+      <div className="absolute inset-0 bg-black bg-opacity-10"></div>
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1532495142380-2f10c263c93d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwzfHxyZWFsJTIwZXN0YXRlfGVufDB8fHxibHVlfDE3NTMwMjcxNzl8MA&ixlib=rb-4.1.0&q=85')`
+        }}
+      ></div>
+      <div className="relative container mx-auto px-6 text-center">
+        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          AI-Powered Tools for <span className="text-blue-600">Real Estate Agents</span>
+        </h1>
+        <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">
+          Create listings, generate professional marketing copy, enhance photos with AI interior design, 
+          and improve every aspect of your properties with 30+ AI-powered tools.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button 
+            onClick={() => openAuthModal()}
+            className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Get Started - Create Your First Listing
+          </button>
+          <a href="#features" className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+            Learn More
+          </a>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 // Interior Design Tool Component
 const InteriorDesignTool = () => {
