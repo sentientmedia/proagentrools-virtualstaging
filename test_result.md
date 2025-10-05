@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-## user_problem_statement: "Test the complete authentication and admin system implementation for ProAgentTools. Comprehensive verification of user authentication, admin authentication, credit system integration, and database schema."
+## user_problem_statement: "Major restructure: Listing-centric platform with individual listing pages, module-based content generation (GPT-5), chat improvements (1 credit), image upload, and interior design integration. Test all new endpoints and functionality."
 
 ## backend:
   - task: "PHASE 2: MCP Mega-Agent AI Tools Processing - POST /api/listings/{listing_id}/process-ai"
