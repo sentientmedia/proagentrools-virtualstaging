@@ -3236,4 +3236,26 @@ def main():
         return 1
 
 if __name__ == "__main__":
-    sys.exit(main())
+    tester = ProAgentToolsAPITester()
+    
+    print("🚀 Starting ProAgentTools Priority API Testing...")
+    print(f"Testing against: {tester.api_url}")
+    
+    # Run priority tests first (from review request)
+    priority_passed, priority_total = tester.run_priority_tests()
+    
+    # Print final summary
+    print(f"\n" + "="*50)
+    print(f"📊 PRIORITY TESTS RESULTS")
+    print(f"="*50)
+    print(f"Priority Tests Run: {priority_total}")
+    print(f"Priority Tests Passed: {priority_passed}")
+    print(f"Priority Success Rate: {(priority_passed/priority_total)*100:.1f}%")
+    
+    if priority_passed == priority_total:
+        print("🎉 All priority tests passed!")
+        sys.exit(0)
+    else:
+        failed = priority_total - priority_passed
+        print(f"⚠️  {failed} priority tests failed")
+        sys.exit(1)
