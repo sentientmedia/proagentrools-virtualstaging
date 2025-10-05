@@ -5,6 +5,7 @@ import BrandingManager from '../branding/BrandingManager';
 const UserDashboard = () => {
   const { user, logout, refreshUserData } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [showBrandingManager, setShowBrandingManager] = useState(false);
 
   if (!user) {
     return (
