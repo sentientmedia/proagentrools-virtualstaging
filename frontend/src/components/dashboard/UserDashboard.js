@@ -210,6 +210,11 @@ const UserDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Branding Manager Modal */}
+      {showBrandingManager && (
+        <BrandingManager onClose={() => setShowBrandingManager(false)} />
+      )}
     </div>
   );
 };
