@@ -2971,6 +2971,30 @@ async def process_image_async(request_id: str, temp_file_path, generated_prompt:
                 "completed_at": datetime.utcnow()
             }}
         )
+        
+        # CRITICAL FIX: Also update the listing's interior_design_variants array with error status
+        try:
+            design_record = await db.interior_designs.find_one({"id": request_id})
+            if design_record and design_record.get("listing_id"):
+                listing_id = design_record["listing_id"]
+                
+                # Update the corresponding variant in the listing with failure status
+                await db.listings.update_one(
+                    {
+                        "id": listing_id,
+                        "interior_design_variants.design_request_id": request_id
+                    },
+                    {
+                        "$set": {
+                            "interior_design_variants.$.status": "failed",
+                            "interior_design_variants.$.error_message": str(e),
+                            "interior_design_variants.$.completed_at": datetime.utcnow()
+                        }
+                    }
+                )
+                logger.info(f"Updated listing {listing_id} variant status to failed")
+        except Exception as update_error:
+            logger.error(f"Failed to update listing variant status: {str(update_error)}")
     finally:
         # Clean up temp file
         try:
