@@ -404,6 +404,19 @@ const ListingsDashboard = () => {
           }}
         />
       )}
+
+      {/* Credit Confirmation Modal */}
+      {showCreditConfirmation && pendingProcessListing && (
+        <CreditConfirmationModal
+          isOpen={showCreditConfirmation}
+          onConfirm={handleCreditConfirmation}
+          onCancel={handleCreditCancel}
+          totalCredits={pendingProcessListing.selected_ai_tools.reduce((sum, tool) => sum + tool.credits_cost, 0)}
+          selectedTools={pendingProcessListing.selected_ai_tools}
+          actionType="process"
+          propertyAddress={`${pendingProcessListing.property_details.address}, ${pendingProcessListing.property_details.city}, ${pendingProcessListing.property_details.state}`}
+        />
+      )}
     </div>
   );
 };
