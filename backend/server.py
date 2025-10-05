@@ -1562,28 +1562,54 @@ async def chat_improve_module(
         # Get existing chat history
         chat_history = listing.get("chat_history", {}).get(module_name, [])
         
-        # Get LLM API key (try Emergent first, fall back to OpenAI)
-        api_key = os.environ.get('EMERGENT_LLM_KEY') or os.environ.get('OPENAI_API_KEY')
-        if not api_key:
-            raise HTTPException(status_code=500, detail="LLM key not configured")
-        
-        # Determine if using Emergent or direct OpenAI key
-        using_emergent = api_key.startswith('sk-emergent')
-        logger.info(f"Using {'Emergent' if using_emergent else 'OpenAI'} API key for content generation")
-        
-        # Initialize chat
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"listing_{listing_id}_chat_{module_name}",
-            system_message="You are a helpful assistant for improving real estate listing content. The user will provide feedback on existing content and you should help them refine it."
-        ).with_model("openai", "gpt-5")
-        
         # Build conversation context
         conversation = f"Current {module_name} content:\n\n{current_content}\n\nUser request: {request.message}"
         
-        # Get AI response
-        user_message = UserMessage(text=conversation)
-        response = await chat.send_message(user_message)
+        # Try with Emergent LLM key first, fall back to OpenAI key if it fails
+        response = None
+        api_key_used = None
+        
+        # First try: Emergent LLM key
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        
+        if emergent_key and emergent_key.startswith('sk-emergent'):
+            try:
+                logger.info(f"Attempting chat with Emergent LLM key")
+                chat = LlmChat(
+                    api_key=emergent_key,
+                    session_id=f"listing_{listing_id}_chat_{module_name}",
+                    system_message="You are a helpful assistant for improving real estate listing content. The user will provide feedback on existing content and you should help them refine it."
+                ).with_model("openai", "gpt-5")
+                
+                user_message = UserMessage(text=conversation)
+                response = await chat.send_message(user_message)
+                api_key_used = "Emergent LLM"
+                logger.info(f"✅ Chat response generated successfully with Emergent LLM key")
+            except Exception as e:
+                logger.warning(f"Emergent LLM key failed: {str(e)}, falling back to OpenAI key")
+                response = None
+        
+        # Fallback to OpenAI key if Emergent failed or not available
+        if not response and openai_key:
+            try:
+                logger.info(f"Attempting chat with OpenAI API key (fallback)")
+                chat = LlmChat(
+                    api_key=openai_key,
+                    session_id=f"listing_{listing_id}_chat_{module_name}",
+                    system_message="You are a helpful assistant for improving real estate listing content. The user will provide feedback on existing content and you should help them refine it."
+                ).with_model("openai", "gpt-5")
+                
+                user_message = UserMessage(text=conversation)
+                response = await chat.send_message(user_message)
+                api_key_used = "OpenAI"
+                logger.info(f"✅ Chat response generated successfully with OpenAI API key")
+            except Exception as e:
+                logger.error(f"OpenAI API key also failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to generate chat response with both API keys: {str(e)}")
+        
+        if not response:
+            raise HTTPException(status_code=500, detail="No API key available or all keys failed")
         
         # Create chat messages
         user_chat_msg = {
