@@ -40,7 +40,9 @@ const ListingsDashboard = () => {
   };
 
   const handleListingCreated = (newListing) => {
-    setListings(prev => [newListing, ...prev]);
+    // Navigate directly to the listing page
+    setSelectedListing(newListing.id);
+    setShowIndividualListing(true);
     setShowCreateForm(false);
   };
 
