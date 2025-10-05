@@ -1392,7 +1392,7 @@ Additional Context: {request.additional_context or 'None provided'}
         
         # Initialize chat with Emergent LLM
         chat = LlmChat(
-            api_key=emergent_key,
+            api_key=api_key,
             session_id=f"listing_{listing_id}_module_{module_name}",
             system_message=system_message
         ).with_model("openai", "gpt-5")
