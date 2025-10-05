@@ -54,6 +54,63 @@ const ListingsDashboard = () => {
     }
   };
 
+  const handleProcessAI = async (listingId) => {
+    const listing = listings.find(l => l.id === listingId);
+    const totalCredits = listing.selected_ai_tools.reduce((sum, tool) => sum + tool.credits_cost, 0);
+    
+    if (!window.confirm(`Process ${listing.selected_ai_tools.length} AI tools for ${totalCredits} credits?`)) {
+      return;
+    }
+
+    try {
+      // Update UI to show processing
+      setListings(prev => prev.map(l => 
+        l.id === listingId 
+          ? { ...l, ai_processing_status: 'processing' }
+          : l
+      ));
+
+      const response = await axios.post(`${BACKEND_URL}/api/listings/${listingId}/process-ai`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        // Refresh listings to get updated status
+        await loadListings();
+        alert(`AI processing completed! Used ${response.data.credits_used} credits.`);
+      }
+    } catch (err) {
+      console.error('Failed to process AI:', err);
+      alert(err.response?.data?.detail || 'Failed to process AI tools. Please try again.');
+      // Revert UI state
+      setListings(prev => prev.map(l => 
+        l.id === listingId 
+          ? { ...l, ai_processing_status: 'pending' }
+          : l
+      ));
+    }
+  };
+
+  const handleViewAIResults = async (listingId) => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}/ai-results`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      // For now, show results in an alert (could be replaced with a modal)
+      const results = response.data.ai_results;
+      alert(`AI Processing Results:\n\nTools Processed: ${results.tools_processed}\nProcessing ID: ${results.processing_id}\nStatus: ${results.success ? 'Success' : 'Failed'}\n\nCheck console for detailed results.`);
+      console.log('AI Results:', results);
+    } catch (err) {
+      console.error('Failed to get AI results:', err);
+      alert('Failed to fetch AI results. Please try again.');
+    }
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       draft: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Draft' },
