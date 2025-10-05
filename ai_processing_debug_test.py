@@ -373,7 +373,7 @@ class AIProcessingDebugTester:
         """Check database consistency for AI processing"""
         print("\n🔍 DEBUGGING STEP 7: Database Consistency Check")
         
-        if not self.db:
+        if self.db is None:
             print("⚠️ No database connection available")
             return False
         
