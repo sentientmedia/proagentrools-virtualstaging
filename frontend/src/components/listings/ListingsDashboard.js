@@ -366,7 +366,6 @@ const ListingsDashboard = () => {
           </div>
         )}
       </div>
-    </div>
 
       {/* AI Results Modal */}
       {showAIResults && selectedListingForResults && (
@@ -378,7 +377,8 @@ const ListingsDashboard = () => {
           }}
         />
       )}
-    );
+    </div>
+  );
 };
 
 export default ListingsDashboard;
