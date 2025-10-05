@@ -688,6 +688,12 @@ const IndividualListingPage = ({ listingId, onBack }) => {
 
   const renderOverview = () => {
     if (!listing) return null;
+    
+    const foundationComplete = listing.foundation_status === 'completed';
+    const foundationProcessing = listing.foundation_status === 'processing';
+    const foundationModules = modules.filter(m => m.isFoundation);
+    const dependentModules = modules.filter(m => m.requiresFoundation);
+    const otherModules = modules.filter(m => !m.isFoundation && !m.requiresFoundation && !m.ai);
 
     return (
       <div className="space-y-8">
@@ -708,7 +714,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                   📸 {images.length} photos
                 </div>
                 <div className="text-sm text-gray-600">
-                  ✅ {Object.keys(moduleContent).length} tools completed
+                  ✅ {Object.keys(moduleContent).length} content pieces
                 </div>
               </div>
             </div>
@@ -723,43 +729,123 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         </div>
 
-        {/* AI Tools Grid */}
+        {/* Foundation Status Banner */}
+        {foundationProcessing && (
+          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+            <div className="flex items-center space-x-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">Generating Foundation Content...</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  We're researching your neighborhood, writing your property description, and analyzing the market. This takes about 1-2 minutes.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Foundation Tools */}
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-4">AI-Powered Tools</h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {modules.filter(m => m.ai).map(module => {
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-900">Foundation (Auto-Generated with 20 Credits)</h3>
+            {foundationComplete && (
+              <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium">
+                ✓ Complete
+              </span>
+            )}
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {foundationModules.map(module => {
               const isCompleted = moduleContent[module.id];
               return (
                 <button
                   key={module.id}
                   onClick={() => {
-                    setActiveModule(module.id);
-                    setActiveView('module');
+                    if (isCompleted) {
+                      setActiveModule(module.id);
+                      setActiveView('module');
+                    }
                   }}
-                  className={`text-left p-6 rounded-lg border-2 transition-all hover:shadow-lg ${
+                  disabled={!isCompleted}
+                  className={`text-left p-6 rounded-lg border-2 transition-all ${
                     isCompleted
-                      ? 'bg-green-50 border-green-300'
-                      : 'bg-white border-gray-200 hover:border-blue-300'
+                      ? 'bg-green-50 border-green-300 hover:shadow-lg cursor-pointer'
+                      : 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-60'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-4xl">{module.icon}</span>
-                    {isCompleted && (
+                    {isCompleted ? (
                       <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
                         ✓ Done
                       </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">Generating...</span>
                     )}
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">{module.name}</h4>
-                  <p className="text-sm text-gray-600 mb-3">{module.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-blue-600">
-                      {module.credits} credit{module.credits > 1 ? 's' : ''}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {isCompleted ? 'View / Edit' : 'Generate →'}
-                    </span>
+                  <p className="text-sm text-gray-600">{module.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Dependent Tools */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-900">Marketing & Content Tools</h3>
+            {!foundationComplete && (
+              <span className="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full font-medium">
+                🔒 Unlocks after foundation
+              </span>
+            )}
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {dependentModules.map(module => {
+              const isCompleted = moduleContent[module.id];
+              const isLocked = !foundationComplete;
+              
+              return (
+                <button
+                  key={module.id}
+                  onClick={() => {
+                    if (!isLocked) {
+                      setActiveModule(module.id);
+                      setActiveView('module');
+                    }
+                  }}
+                  disabled={isLocked}
+                  className={`text-left p-6 rounded-lg border-2 transition-all ${
+                    isLocked
+                      ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50'
+                      : isCompleted
+                      ? 'bg-green-50 border-green-300 hover:shadow-lg'
+                      : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-lg'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-4xl">{module.icon}</span>
+                    {isLocked ? (
+                      <span className="text-gray-400 text-2xl">🔒</span>
+                    ) : isCompleted ? (
+                      <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
+                        ✓ Done
+                      </span>
+                    ) : null}
                   </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">{module.name}</h4>
+                  <p className="text-sm text-gray-600 mb-3">{module.description}</p>
+                  {!isLocked && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-blue-600">
+                        {module.credits} credit
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {isCompleted ? 'View / Edit' : 'Generate →'}
+                      </span>
+                    </div>
+                  )}
                 </button>
               );
             })}
@@ -770,7 +856,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-4">Images & Design</h3>
           <div className="grid md:grid-cols-2 gap-4">
-            {modules.filter(m => !m.ai).map(module => (
+            {otherModules.map(module => (
               <button
                 key={module.id}
                 onClick={() => {
