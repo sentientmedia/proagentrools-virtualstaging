@@ -12,6 +12,8 @@ const ListingsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedListing, setSelectedListing] = useState(null);
+  const [showAIResults, setShowAIResults] = useState(false);
+  const [selectedListingForResults, setSelectedListingForResults] = useState(null);
 
   useEffect(() => {
     loadListings();
