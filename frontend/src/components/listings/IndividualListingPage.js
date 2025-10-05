@@ -607,6 +607,177 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     );
   };
 
+  const renderOverview = () => {
+    if (!listing) return null;
+
+    return (
+      <div className="space-y-8">
+        {/* Property Details Card */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {listing.property_details.address}
+              </h2>
+              <p className="text-gray-600 mb-4">
+                {listing.property_details.city}, {listing.property_details.state} • 
+                {listing.property_details.beds} bed, {listing.property_details.baths} bath • 
+                {listing.property_details.sqft && ` ${listing.property_details.sqft.toLocaleString()} sq ft`}
+              </p>
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-600">
+                  📸 {images.length} photos
+                </div>
+                <div className="text-sm text-gray-600">
+                  ✅ {Object.keys(moduleContent).length} tools completed
+                </div>
+              </div>
+            </div>
+            {listing.property_details.listing_price && (
+              <div className="text-right">
+                <div className="text-sm text-gray-600">Listing Price</div>
+                <div className="text-3xl font-bold text-blue-600">
+                  ${listing.property_details.listing_price.toLocaleString()}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* AI Tools Grid */}
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">AI-Powered Tools</h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {modules.filter(m => m.ai).map(module => {
+              const isCompleted = moduleContent[module.id];
+              return (
+                <button
+                  key={module.id}
+                  onClick={() => {
+                    setActiveModule(module.id);
+                    setActiveView('module');
+                  }}
+                  className={`text-left p-6 rounded-lg border-2 transition-all hover:shadow-lg ${
+                    isCompleted
+                      ? 'bg-green-50 border-green-300'
+                      : 'bg-white border-gray-200 hover:border-blue-300'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-4xl">{module.icon}</span>
+                    {isCompleted && (
+                      <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
+                        ✓ Done
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">{module.name}</h4>
+                  <p className="text-sm text-gray-600 mb-3">{module.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-blue-600">
+                      {module.credits} credit{module.credits > 1 ? 's' : ''}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {isCompleted ? 'View / Edit' : 'Generate →'}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Image & Design Tools */}
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Images & Design</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {modules.filter(m => !m.ai).map(module => (
+              <button
+                key={module.id}
+                onClick={() => {
+                  setActiveModule(module.id);
+                  setActiveView('module');
+                }}
+                className="text-left p-6 rounded-lg border-2 bg-white border-gray-200 hover:border-blue-300 transition-all hover:shadow-lg"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-4xl">{module.icon}</span>
+                  {module.id === 'images' && images.length > 0 && (
+                    <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                      {images.length}
+                    </span>
+                  )}
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">{module.name}</h4>
+                <p className="text-sm text-gray-600 mb-3">{module.description}</p>
+                {module.credits && (
+                  <span className="text-xs font-medium text-blue-600">
+                    {module.credits} credits per image
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDetails_Old = () => {
+    if (!listing) return null;
+    const { property_details } = listing;
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Information</h3>
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Address</label>
+              <div className="text-gray-900">{property_details.address}</div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">City, State ZIP</label>
+              <div className="text-gray-900">
+                {property_details.city}, {property_details.state} {property_details.zip_code}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Property Type</label>
+              <div className="text-gray-900">{property_details.property_type}</div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Beds / Baths</label>
+              <div className="text-gray-900">{property_details.beds} bed / {property_details.baths} bath</div>
+            </div>
+            {property_details.sqft && (
+              <div>
+                <label className="text-sm font-medium text-gray-700">Square Feet</label>
+                <div className="text-gray-900">{property_details.sqft.toLocaleString()} sq ft</div>
+              </div>
+            )}
+            {property_details.listing_price && (
+              <div>
+                <label className="text-sm font-medium text-gray-700">Listing Price</label>
+                <div className="text-gray-900 text-xl font-bold text-blue-600">
+                  ${property_details.listing_price.toLocaleString()}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {listing.description && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+            <p className="text-gray-700">{listing.description}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
