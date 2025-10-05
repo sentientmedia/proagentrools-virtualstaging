@@ -1396,7 +1396,7 @@ Additional Context: {request.additional_context or 'None provided'}
                     api_key=emergent_key,
                     session_id=f"listing_{listing_id}_module_{module_name}",
                     system_message=system_message
-                ).with_model("openai", "gpt-5")
+                ).with_model("openai", "gpt-4o")
                 
                 user_message = UserMessage(text=prompt)
                 response = await chat.send_message(user_message)
@@ -1414,7 +1414,7 @@ Additional Context: {request.additional_context or 'None provided'}
                     api_key=openai_key,
                     session_id=f"listing_{listing_id}_module_{module_name}",
                     system_message=system_message
-                ).with_model("openai", "gpt-5")
+                ).with_model("openai", "gpt-4o")
                 
                 user_message = UserMessage(text=prompt)
                 response = await chat.send_message(user_message)
@@ -1571,7 +1571,7 @@ async def chat_improve_module(
                     api_key=emergent_key,
                     session_id=f"listing_{listing_id}_chat_{module_name}",
                     system_message="You are a helpful assistant for improving real estate listing content. The user will provide feedback on existing content and you should help them refine it."
-                ).with_model("openai", "gpt-5")
+                ).with_model("openai", "gpt-4o")
                 
                 user_message = UserMessage(text=conversation)
                 response = await chat.send_message(user_message)
@@ -1589,7 +1589,7 @@ async def chat_improve_module(
                     api_key=openai_key,
                     session_id=f"listing_{listing_id}_chat_{module_name}",
                     system_message="You are a helpful assistant for improving real estate listing content. The user will provide feedback on existing content and you should help them refine it."
-                ).with_model("openai", "gpt-5")
+                ).with_model("openai", "gpt-4o")
                 
                 user_message = UserMessage(text=conversation)
                 response = await chat.send_message(user_message)
