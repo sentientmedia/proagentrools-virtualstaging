@@ -453,6 +453,17 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
 
         </form>
       </div>
+
+      {/* Credit Confirmation Modal */}
+      <CreditConfirmationModal
+        isOpen={showCreditConfirmation}
+        onConfirm={handleCreditConfirmation}
+        onCancel={handleCreditCancel}
+        totalCredits={calculateTotalCredits()}
+        selectedTools={getSelectedToolsForModal()}
+        actionType="create"
+        propertyAddress={`${formData.address}, ${formData.city}, ${formData.state}`}
+      />
     </div>
   );
 };
