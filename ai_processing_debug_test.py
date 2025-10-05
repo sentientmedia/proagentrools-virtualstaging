@@ -108,7 +108,7 @@ class AIProcessingDebugTester:
 
     def query_database_listings(self):
         """Query database directly to check recent AI processing"""
-        if not self.db:
+        if self.db is None:
             print("⚠️ No database connection available")
             return False
         
