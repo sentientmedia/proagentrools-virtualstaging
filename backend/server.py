@@ -1587,11 +1587,21 @@ Additional Context: {request.additional_context or 'None provided'}
         # Define module-specific prompts
         module_prompts = {
             "listing_copy": "Write a compelling, professional property listing description that highlights key features and creates buyer interest. Be specific and engaging.",
-            "marketing_copy": "Create marketing copy for this property that can be used in emails, social media, and advertisements. Make it attention-grabbing and persuasive.",
-            "social_media": "Generate 3 different social media posts for this property listing. Make them engaging, include relevant hashtags, and vary the tone.",
+            "marketing_copy": "Create marketing copy for this property that can be used in brochures, flyers, and advertisements. Make it attention-grabbing and persuasive.",
+            "social_media": "Generate 3 different social media posts for this property listing. Make them engaging, include relevant hashtags, and vary the tone (professional, casual, luxury).",
             "email_template": "Write a professional email template that a real estate agent can use to introduce this property to potential buyers. Include a compelling subject line.",
             "market_intel": "Provide market intelligence and competitive positioning for this property. Include pricing strategy recommendations and target buyer profile.",
-            "virtual_tour_script": "Create a script for a virtual tour or property walkthrough video. Make it conversational and highlight unique selling points."
+            "virtual_tour_script": "Create a script for a virtual tour or property walkthrough video. Make it conversational and highlight unique selling points.",
+            "buyer_profile": "Create a detailed target buyer profile for this property. Include: age range, income level, family status, lifestyle, profession, motivations for buying, what they value in a home, and how this property meets their needs. Be specific and demographic-focused.",
+            "price_justification": "Write a detailed justification for why this property is priced appropriately. Include comparable sales, unique features that add value, neighborhood benefits, and market conditions.",
+            "competitor_comparison": "Analyze how this property compares to similar listings in the area. Include strengths, weaknesses, unique selling points, and competitive advantages.",
+            "agent_talking_points": "Create bullet-point talking points for agents to use during showings. Focus on key features, benefits, objection handling, and closing strategies.",
+            "open_house_promo": "Create promotional content for an open house event. Include invitation text, event details template, and marketing copy for various channels.",
+            "property_highlights": "Create a concise list of the top 10 property highlights and features that should be emphasized in all marketing materials.",
+            "objection_handling": "List common buyer objections for this type of property and provide professional responses/solutions for each.",
+            "negotiation_tips": "Provide negotiation strategies and tips specific to this property. Include pricing flexibility, deal sweeteners, and closing advice.",
+            "seller_updates": "Write a weekly update template that agents can send to sellers about marketing activity, showing feedback, and next steps.",
+            "buyer_followup": "Create follow-up message templates for after property showings. Include questions to ask, feedback requests, and next step suggestions."
         }
         
         system_message = f"You are an expert real estate copywriter and marketing professional. Generate high-quality, professional content for real estate listings."
