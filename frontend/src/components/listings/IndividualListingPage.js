@@ -127,6 +127,18 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
   };
 
+  const [chatSuggestion, setChatSuggestion] = useState(null); // Store AI suggestion
+
+  const handleDownloadContent = (moduleName, content) => {
+    const element = document.createElement('a');
+    const file = new Blob([content.replace(/\*\*/g, '')], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${listing.property_details.address}_${moduleName}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   const handleChatImprove = async (moduleName) => {
     if (!chatInput.trim()) return;
 
@@ -143,8 +155,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
       );
 
       if (response.data.success) {
-        // Update the module content with AI suggestion
-        alert(`AI Suggestion: ${response.data.response}\n\nYou can manually edit the content to apply changes.`);
+        setChatSuggestion(response.data.response);
         setChatInput('');
       }
     } catch (err) {
@@ -153,6 +164,33 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     } finally {
       setChatLoading(false);
     }
+  };
+
+  const handleReplaceSuggestion = async (moduleName) => {
+    try {
+      await axios.put(
+        `${BACKEND_URL}/api/listings/${listingId}/modules/${moduleName}`,
+        { content: chatSuggestion },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      
+      setModuleContent(prev => ({
+        ...prev,
+        [moduleName]: {
+          ...prev[moduleName],
+          content: chatSuggestion,
+          is_ai_generated: false
+        }
+      }));
+      setChatSuggestion(null);
+      await loadListing();
+    } catch (err) {
+      console.error('Failed to replace:', err);
+    }
+  };
+
+  const handleRejectSuggestion = () => {
+    setChatSuggestion(null);
   };
 
   const handleImageUpload = async (e) => {
