@@ -1151,6 +1151,529 @@ async def get_listing_ai_results(
         logger.error(f"Get AI results error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch AI results")
 
+
+# Image Upload & Management for Listings
+@api_router.post("/listings/{listing_id}/images/upload")
+async def upload_listing_images(
+    listing_id: str,
+    files: List[UploadFile] = File(...),
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Upload multiple images for a listing"""
+    try:
+        # Verify listing ownership
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Create listing images directory
+        images_dir = PROCESSED_IMAGES_DIR / "listings" / listing_id
+        images_dir.mkdir(parents=True, exist_ok=True)
+        
+        uploaded_images = []
+        
+        for file in files:
+            # Validate file type
+            if not file.content_type.startswith('image/'):
+                continue  # Skip non-image files
+            
+            # Generate unique filename
+            file_extension = Path(file.filename).suffix.lower()
+            image_id = str(uuid.uuid4())
+            filename = f"{image_id}{file_extension}"
+            file_path = images_dir / filename
+            
+            # Save the file
+            async with aiofiles.open(file_path, 'wb') as f:
+                content = await file.read()
+                await f.write(content)
+            
+            # Create photo record
+            photo = {
+                "id": image_id,
+                "filename": filename,
+                "url": f"/api/listings/{listing_id}/images/{filename}",
+                "caption": None,
+                "is_primary": len(listing.get("photos", [])) == 0,  # First image is primary
+                "room_type": None,
+                "watermarked": False,
+                "uploaded_at": datetime.utcnow(),
+                "file_size": len(content)
+            }
+            
+            uploaded_images.append(photo)
+        
+        # Update listing with new photos
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$push": {"photos": {"$each": uploaded_images}},
+                "$set": {"updated_at": datetime.utcnow()}
+            }
+        )
+        
+        return {
+            "success": True,
+            "uploaded_count": len(uploaded_images),
+            "images": uploaded_images
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Image upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload images: {str(e)}")
+
+@api_router.get("/listings/{listing_id}/images")
+async def get_listing_images(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get all images for a listing"""
+    try:
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        return {
+            "listing_id": listing_id,
+            "photos": listing.get("photos", []),
+            "interior_design_variants": listing.get("interior_design_variants", [])
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get images error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch images")
+
+@api_router.get("/listings/{listing_id}/images/{filename}")
+async def serve_listing_image(
+    listing_id: str,
+    filename: str
+):
+    """Serve a listing image file"""
+    try:
+        file_path = PROCESSED_IMAGES_DIR / "listings" / listing_id / filename
+        
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="Image not found")
+        
+        return FileResponse(
+            path=file_path,
+            media_type="image/jpeg",
+            headers={"Cache-Control": "public, max-age=31536000"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Serve image error: {str(e)}")
+        raise HTTPException(status_code=404, detail="Image not found")
+
+@api_router.delete("/listings/{listing_id}/images/{image_id}")
+async def delete_listing_image(
+    listing_id: str,
+    image_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Delete a listing image"""
+    try:
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Find the image
+        photos = listing.get("photos", [])
+        image = next((p for p in photos if p["id"] == image_id), None)
+        
+        if not image:
+            raise HTTPException(status_code=404, detail="Image not found")
+        
+        # Delete file
+        file_path = PROCESSED_IMAGES_DIR / "listings" / listing_id / image["filename"]
+        if file_path.exists():
+            file_path.unlink()
+        
+        # Remove from database
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$pull": {"photos": {"id": image_id}},
+                "$set": {"updated_at": datetime.utcnow()}
+            }
+        )
+        
+        return {"success": True, "message": "Image deleted"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete image error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete image")
+
+# Module Content Generation & Management
+@api_router.post("/listings/{listing_id}/modules/{module_name}/generate")
+async def generate_module_content(
+    listing_id: str,
+    module_name: str,
+    request: GenerateModuleRequest,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Generate AI content for a specific module"""
+    try:
+        # Verify listing ownership
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Check credits (1 credit per generation)
+        if current_user.credits < 1:
+            raise HTTPException(status_code=402, detail="Insufficient credits")
+        
+        # Deduct credits
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$inc": {"credits": -1}}
+        )
+        
+        # Get Emergent LLM key
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="LLM key not configured")
+        
+        # Prepare context from listing
+        property_details = listing.get("property_details", {})
+        context = f"""
+Property Address: {property_details.get('address', 'N/A')}
+City: {property_details.get('city', 'N/A')}, State: {property_details.get('state', 'N/A')}
+Property Type: {property_details.get('property_type', 'N/A')}
+Bedrooms: {property_details.get('beds', 'N/A')}
+Bathrooms: {property_details.get('baths', 'N/A')}
+Square Feet: {property_details.get('sqft', 'N/A')}
+Listing Price: ${property_details.get('listing_price', 'TBD')}
+Description: {listing.get('description', 'N/A')}
+
+Additional Context: {request.additional_context or 'None provided'}
+"""
+        
+        # Define module-specific prompts
+        module_prompts = {
+            "listing_copy": "Write a compelling, professional property listing description that highlights key features and creates buyer interest. Be specific and engaging.",
+            "marketing_copy": "Create marketing copy for this property that can be used in emails, social media, and advertisements. Make it attention-grabbing and persuasive.",
+            "social_media": "Generate 3 different social media posts for this property listing. Make them engaging, include relevant hashtags, and vary the tone.",
+            "email_template": "Write a professional email template that a real estate agent can use to introduce this property to potential buyers. Include a compelling subject line.",
+            "market_intel": "Provide market intelligence and competitive positioning for this property. Include pricing strategy recommendations and target buyer profile.",
+            "virtual_tour_script": "Create a script for a virtual tour or property walkthrough video. Make it conversational and highlight unique selling points."
+        }
+        
+        system_message = f"You are an expert real estate copywriter and marketing professional. Generate high-quality, professional content for real estate listings."
+        prompt = f"{module_prompts.get(module_name, 'Generate professional content for this property listing.'
+)}\n\nProperty Information:\n{context}"
+        
+        # Initialize chat with Emergent LLM
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"listing_{listing_id}_module_{module_name}",
+            system_message=system_message
+        ).with_model("openai", "gpt-5")
+        
+        # Generate content
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Store module content
+        module_content = {
+            "content": response,
+            "generated_at": datetime.utcnow(),
+            "last_edited": datetime.utcnow(),
+            "version": 1,
+            "is_ai_generated": True
+        }
+        
+        # Update listing
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$set": {
+                    f"module_outputs.{module_name}": module_content,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "module_name": module_name,
+            "content": response,
+            "credits_used": 1,
+            "remaining_credits": current_user.credits - 1
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Generate module content error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate content: {str(e)}")
+
+@api_router.put("/listings/{listing_id}/modules/{module_name}")
+async def update_module_content(
+    listing_id: str,
+    module_name: str,
+    request: UpdateModuleRequest,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Update module content (manual edit)"""
+    try:
+        # Verify listing ownership
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Get existing module content
+        module_outputs = listing.get("module_outputs", {})
+        existing_module = module_outputs.get(module_name, {})
+        
+        # Update content
+        updated_module = {
+            "content": request.content,
+            "generated_at": existing_module.get("generated_at", datetime.utcnow()),
+            "last_edited": datetime.utcnow(),
+            "version": existing_module.get("version", 1) + 1,
+            "is_ai_generated": False
+        }
+        
+        # Update listing
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$set": {
+                    f"module_outputs.{module_name}": updated_module,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "module_name": module_name,
+            "content": request.content
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update module content error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update content")
+
+@api_router.post("/listings/{listing_id}/modules/{module_name}/chat")
+async def chat_improve_module(
+    listing_id: str,
+    module_name: str,
+    request: ChatImproveRequest,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Chat with AI to improve module content (1 credit per message)"""
+    try:
+        # Verify listing ownership
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Check credits
+        if current_user.credits < 1:
+            raise HTTPException(status_code=402, detail="Insufficient credits")
+        
+        # Deduct credits
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$inc": {"credits": -1}}
+        )
+        
+        # Get current module content
+        module_outputs = listing.get("module_outputs", {})
+        current_content = module_outputs.get(module_name, {}).get("content", "")
+        
+        if not current_content:
+            raise HTTPException(status_code=404, detail="No content found for this module. Generate content first.")
+        
+        # Get existing chat history
+        chat_history = listing.get("chat_history", {}).get(module_name, [])
+        
+        # Get Emergent LLM key
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="LLM key not configured")
+        
+        # Initialize chat
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"listing_{listing_id}_chat_{module_name}",
+            system_message="You are a helpful assistant for improving real estate listing content. The user will provide feedback on existing content and you should help them refine it."
+        ).with_model("openai", "gpt-5")
+        
+        # Build conversation context
+        conversation = f"Current {module_name} content:\n\n{current_content}\n\nUser request: {request.message}"
+        
+        # Get AI response
+        user_message = UserMessage(text=conversation)
+        response = await chat.send_message(user_message)
+        
+        # Create chat messages
+        user_chat_msg = {
+            "id": str(uuid.uuid4()),
+            "role": "user",
+            "content": request.message,
+            "timestamp": datetime.utcnow(),
+            "credits_used": 0
+        }
+        
+        assistant_chat_msg = {
+            "id": str(uuid.uuid4()),
+            "role": "assistant",
+            "content": response,
+            "timestamp": datetime.utcnow(),
+            "credits_used": 1
+        }
+        
+        # Append to chat history
+        chat_history.extend([user_chat_msg, assistant_chat_msg])
+        
+        # Update listing with chat history
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$set": {
+                    f"chat_history.{module_name}": chat_history,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "response": response,
+            "credits_used": 1,
+            "remaining_credits": current_user.credits - 1,
+            "chat_history": chat_history
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Chat improve error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process chat: {str(e)}")
+
+# Interior Design Processing for Listing Images
+@api_router.post("/listings/{listing_id}/interior-design/process")
+async def process_listing_interior_design(
+    listing_id: str,
+    request: ProcessInteriorDesignRequest,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Process selected listing images through interior design AI"""
+    try:
+        # Verify listing ownership
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Verify images exist
+        photos = listing.get("photos", [])
+        selected_photos = [p for p in photos if p["id"] in request.image_ids]
+        
+        if not selected_photos:
+            raise HTTPException(status_code=404, detail="No valid images found")
+        
+        # Calculate credits (5 credits per image for interior design)
+        credits_per_image = await get_tool_rate("interior_design")
+        total_credits = credits_per_image * len(selected_photos)
+        
+        # Check credits
+        if current_user.credits < total_credits:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient credits. Need {total_credits}, have {current_user.credits}"
+            )
+        
+        # Deduct credits
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$inc": {"credits": -total_credits}}
+        )
+        
+        # Process each image (placeholder - actual implementation would call the interior design API)
+        processed_variants = []
+        
+        for photo in selected_photos:
+            variant_id = str(uuid.uuid4())
+            
+            # In production, this would call the actual interior design processing
+            # For now, we'll create a placeholder variant
+            variant = {
+                "id": variant_id,
+                "original_image_id": photo["id"],
+                "processed_image_url": photo["url"],  # Would be replaced with processed URL
+                "designer": request.designer or "alessia_duval",
+                "color_scheme": request.color_scheme or "glacial_muse",
+                "room_type": request.room_type or "living_room",
+                "created_at": datetime.utcnow(),
+                "watermarked": False
+            }
+            
+            processed_variants.append(variant)
+        
+        # Update listing with variants
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$push": {"interior_design_variants": {"$each": processed_variants}},
+                "$set": {"updated_at": datetime.utcnow()}
+            }
+        )
+        
+        return {
+            "success": True,
+            "processed_count": len(processed_variants),
+            "credits_used": total_credits,
+            "remaining_credits": current_user.credits - total_credits,
+            "variants": processed_variants
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Process interior design error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process images: {str(e)}")
+
 # Agent Branding & Watermarking Endpoints
 @api_router.post("/branding/upload-logo")
 async def upload_agent_logo(
