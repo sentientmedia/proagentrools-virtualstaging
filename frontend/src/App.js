@@ -1084,51 +1084,53 @@ const GPTTools = () => {
 const FeaturesSection = () => {
   const features = [
     {
-      title: "Interior Design AI",
-      description: "Transform any space with our custom-trained model that generates professional interior designs instantly.",
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwyfHx0ZWNobm9sb2d5fGVufDB8fHxibHVlfDE3NTMwMjcxODZ8MA&ixlib=rb-4.1.0&q=85",
-      icon: "🏠"
+      title: "Listing-Centric Workflow",
+      description: "Create a listing once, then use AI to generate marketing copy, social media posts, email templates, and more - all tailored to that property.",
+      icon: "📝"
     },
     {
-      title: "AI-Powered Tools",
-      description: "Access 30+ specialized tools for property descriptions, market analysis, client communications and more.",
-      image: "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwzfHx0ZWNobm9sb2d5fGVufDB8fHxibHVlfDE3NTMwMjcxODZ8MA&ixlib=rb-4.1.0&q=85",
+      title: "AI Content Generation",
+      description: "Generate professional listing descriptions, marketing materials, and social content with GPT-4. Chat with AI to refine and improve your content.",
+      icon: "✍️"
+    },
+    {
+      title: "Interior Design AI",
+      description: "Upload property photos and transform them with AI-powered interior design. Choose from multiple designer styles and color schemes.",
+      icon: "🎨"
+    },
+    {
+      title: "Batch Image Upload",
+      description: "Upload multiple property photos at once. Manage, organize, and process all your listing images in one place.",
+      icon: "📸"
+    },
+    {
+      title: "30+ AI Tools",
+      description: "Access specialized tools for market analysis, social media, emails, and more - all working together on your listings.",
       icon: "🤖"
     },
     {
-      title: "Credit-Based Pricing",
-      description: "Flexible tiered pricing system that scales with your business needs and usage patterns.",
+      title: "Flexible Credit System",
+      description: "Pay only for what you use. 1 credit for content generation, 5 credits per interior design image. Start with 100 free credits.",
       icon: "💳"
     }
   ];
 
   return (
-    <section className="py-16 bg-white">
+    <section id="features" className="py-16 bg-white">
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose ProAgentTools?</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Everything You Need for Perfect Listings</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Built specifically for real estate professionals, our AI tools help you close more deals, 
-            impress clients, and grow your business.
+            A complete platform designed for real estate agents who want to improve every aspect of their listings with AI.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div key={index} className="text-center">
-              {feature.image ? (
-                <div className="mb-6">
-                  <img 
-                    src={feature.image}
-                    alt={feature.title}
-                    className="w-full h-48 object-cover rounded-lg shadow-lg"
-                  />
-                </div>
-              ) : (
-                <div className="w-16 h-16 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-3xl">{feature.icon}</span>
-                </div>
-              )}
+            <div key={index} className="text-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-3xl">{feature.icon}</span>
+              </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
               <p className="text-gray-600">{feature.description}</p>
             </div>
