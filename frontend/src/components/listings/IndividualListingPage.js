@@ -153,6 +153,92 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    try {
+      setUploadingImages(true);
+      
+      const formData = new FormData();
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+
+      const response = await axios.post(
+        `${BACKEND_URL}/api/listings/${listingId}/images/upload`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        await loadImages();
+        alert(`Successfully uploaded ${response.data.uploaded_count} image(s)`);
+      }
+    } catch (err) {
+      console.error('Failed to upload images:', err);
+      alert(err.response?.data?.detail || 'Failed to upload images');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!window.confirm('Delete this image?')) return;
+
+    try {
+      await axios.delete(
+        `${BACKEND_URL}/api/listings/${listingId}/images/${imageId}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      await loadImages();
+    } catch (err) {
+      console.error('Failed to delete image:', err);
+      alert('Failed to delete image');
+    }
+  };
+
+  const handleProcessInteriorDesign = async () => {
+    if (selectedImageIds.length === 0) {
+      alert('Please select at least one image to process');
+      return;
+    }
+
+    const creditsNeeded = selectedImageIds.length * 5;
+    if (!window.confirm(`Process ${selectedImageIds.length} image(s) with interior design? This will cost ${creditsNeeded} credits.`)) {
+      return;
+    }
+
+    try {
+      setProcessingDesign(true);
+
+      const response = await axios.post(
+        `${BACKEND_URL}/api/listings/${listingId}/interior-design/process`,
+        {
+          image_ids: selectedImageIds,
+          ...designSettings
+        },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert(`Successfully processed ${response.data.processed_count} image(s)!`);
+        setSelectedImageIds([]);
+        await loadListing();
+      }
+    } catch (err) {
+      console.error('Failed to process interior design:', err);
+      alert(err.response?.data?.detail || 'Failed to process images');
+    } finally {
+      setProcessingDesign(false);
+    }
+  };
+
   const renderModuleContent = (module) => {
     const content = moduleContent[module.id];
 
