@@ -93,10 +93,17 @@ const ListingsDashboard = () => {
       });
 
       if (response.data.success) {
-        // Refresh listings to get updated status
-        await loadListings();
-        // You can add a toast notification here instead of alert
         console.log(`AI processing completed! Used ${response.data.credits_used} credits.`);
+        
+        // Update the specific listing to completed status immediately
+        setListings(prev => prev.map(l => 
+          l.id === listingId 
+            ? { ...l, ai_processing_status: 'completed' }
+            : l
+        ));
+        
+        // Also refresh listings to get full updated data
+        setTimeout(() => loadListings(), 1000);
       }
     } catch (err) {
       console.error('Failed to process AI:', err);
