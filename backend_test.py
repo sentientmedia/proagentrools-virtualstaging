@@ -1336,30 +1336,35 @@ class ProAgentToolsAPITester:
         print(f"   Created test listing: {listing_id}")
         
         # Step 2: Upload 2 test images to the listing
-        test_images = []
-        for i in range(2):
-            test_image = self.create_test_image()
-            files = {
-                'files': (f'test_interior_{i+1}.jpg', test_image, 'image/jpeg')
-            }
-            
-            upload_success, upload_response = self.run_test(
-                f"Upload Test Image {i+1}",
-                "POST",
-                f"listings/{listing_id}/images/upload",
-                200,
-                files=files,
-                headers=headers
-            )
-            
-            if upload_success and upload_response:
-                uploaded_images = upload_response.get('uploaded_images', [])
-                if uploaded_images:
-                    test_images.append(uploaded_images[0])
-                    print(f"   Uploaded image {i+1}: {uploaded_images[0]['id']}")
-            else:
-                print(f"❌ Failed to upload test image {i+1}")
-                return False
+        test_image1 = self.create_test_image()
+        test_image2 = self.create_test_image()
+        
+        files = [
+            ('files', ('test_interior_1.jpg', test_image1, 'image/jpeg')),
+            ('files', ('test_interior_2.jpg', test_image2, 'image/jpeg'))
+        ]
+        
+        upload_success, upload_response = self.run_test(
+            "Upload Test Images for Interior Design",
+            "POST",
+            f"listings/{listing_id}/images/upload",
+            200,
+            files=files,
+            headers=headers
+        )
+        
+        if not upload_success or not upload_response:
+            print("❌ Failed to upload test images")
+            return False
+        
+        # Extract uploaded images
+        uploaded_images = upload_response.get('uploaded_images', [])
+        if len(uploaded_images) < 2:
+            print(f"❌ Expected 2 uploaded images, got {len(uploaded_images)}")
+            return False
+        
+        test_images = uploaded_images[:2]  # Take first 2 images
+        print(f"   Uploaded {len(test_images)} images successfully")
         
         if len(test_images) != 2:
             print("❌ Failed to upload required test images")
