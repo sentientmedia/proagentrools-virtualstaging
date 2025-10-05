@@ -692,16 +692,8 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </h2>
           
           {activeModule === 'details' && renderDetails()}
-          {activeModule === 'images' && (
-            <div className="text-center py-12 text-gray-500">
-              Image upload and management coming soon
-            </div>
-          )}
-          {activeModule === 'interior_design' && (
-            <div className="text-center py-12 text-gray-500">
-              Interior design processing coming soon
-            </div>
-          )}
+          {activeModule === 'images' && renderImages()}
+          {activeModule === 'interior_design' && renderInteriorDesign()}
           {currentModule?.ai && renderModuleContent(currentModule)}
         </div>
       </div>
