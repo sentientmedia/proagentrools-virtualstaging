@@ -1881,7 +1881,7 @@ class ProAgentToolsAPITester:
         # Create test logo image
         test_logo = self.create_test_image()
         files = {
-            'logo': ('test_logo.jpg', test_logo, 'image/jpeg')
+            'file': ('test_logo.jpg', test_logo, 'image/jpeg')
         }
         
         headers = {"Authorization": f"Bearer {self.user_token}"}
