@@ -204,6 +204,19 @@ const ListingsDashboard = () => {
     );
   }
 
+  if (showIndividualListing && selectedListing) {
+    return (
+      <IndividualListingPage
+        listingId={selectedListing}
+        onBack={() => {
+          setShowIndividualListing(false);
+          setSelectedListing(null);
+          loadListings(); // Refresh listings when coming back
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       
