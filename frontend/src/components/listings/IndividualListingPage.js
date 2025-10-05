@@ -288,7 +288,9 @@ const IndividualListingPage = ({ listingId, onBack }) => {
         ) : (
           <div>
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="prose max-w-none whitespace-pre-wrap">{content.content}</div>
+              <div className="max-w-none whitespace-pre-wrap text-gray-900 leading-relaxed">
+                {content.content.replace(/\*\*/g, '')}
+              </div>
             </div>
             <div className="flex items-center justify-between mt-2">
               <div className="text-xs text-gray-500">
