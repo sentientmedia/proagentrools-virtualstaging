@@ -376,7 +376,10 @@ const ListingsDashboard = () => {
                   {/* Actions */}
                   <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                      <button 
+                        onClick={() => handleViewListingDetails(listing.id)}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      >
                         View Details
                       </button>
                       <button 
