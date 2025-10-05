@@ -1353,10 +1353,14 @@ async def generate_module_content(
             {"$inc": {"credits": -1}}
         )
         
-        # Get Emergent LLM key
-        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not emergent_key:
+        # Get LLM API key (try Emergent first, fall back to OpenAI)
+        api_key = os.environ.get('EMERGENT_LLM_KEY') or os.environ.get('OPENAI_API_KEY')
+        if not api_key:
             raise HTTPException(status_code=500, detail="LLM key not configured")
+        
+        # Determine if using Emergent or direct OpenAI key
+        using_emergent = api_key.startswith('sk-emergent')
+        logger.info(f"Using {'Emergent' if using_emergent else 'OpenAI'} API key for content generation")
         
         # Prepare context from listing
         property_details = listing.get("property_details", {})
