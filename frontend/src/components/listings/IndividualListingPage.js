@@ -27,22 +27,32 @@ const IndividualListingPage = ({ listingId, onBack }) => {
 
   const modules = [
     // Foundation modules (auto-generated, always unlocked)
-    { id: 'neighborhood_research', name: 'Neighborhood Research', icon: '🏘️', ai: true, credits: 0, description: 'Auto-generated neighborhood context', isFoundation: true },
-    { id: 'listing_copy', name: 'Property Description', icon: '✍️', ai: true, credits: 0, description: 'Auto-generated listing description', isFoundation: true },
-    { id: 'market_intel', name: 'Market Intelligence', icon: '📊', ai: true, credits: 0, description: 'Auto-generated market positioning', isFoundation: true },
+    { id: 'neighborhood_research', name: 'Neighborhood Research', icon: '🏘️', ai: true, credits: 0, description: 'Detailed neighborhood analysis', isFoundation: true, category: 'Foundation' },
+    { id: 'listing_copy', name: 'Property Description', icon: '✍️', ai: true, credits: 0, description: 'Professional listing copy', isFoundation: true, category: 'Foundation' },
+    { id: 'market_intel', name: 'Market Intelligence', icon: '📊', ai: true, credits: 0, description: 'Strategic market positioning', isFoundation: true, category: 'Foundation' },
     
-    // Dependent modules (require foundation to be complete)
-    { id: 'marketing_copy', name: 'Marketing Copy', icon: '📢', ai: true, credits: 1, description: 'Marketing materials based on listing', requiresFoundation: true },
-    { id: 'social_media', name: 'Social Media Posts', icon: '📱', ai: true, credits: 1, description: 'Social content from listing', requiresFoundation: true },
-    { id: 'email_template', name: 'Email Templates', icon: '✉️', ai: true, credits: 1, description: 'Email campaigns', requiresFoundation: true },
-    { id: 'virtual_tour_script', name: 'Virtual Tour Script', icon: '🎥', ai: true, credits: 1, description: 'Walkthrough video script', requiresFoundation: true },
-    { id: 'buyer_profile', name: 'Target Buyer Profile', icon: '👥', ai: true, credits: 1, description: 'Ideal buyer demographics', requiresFoundation: true },
-    { id: 'price_justification', name: 'Price Justification', icon: '💰', ai: true, credits: 1, description: 'Why this price makes sense', requiresFoundation: true },
-    { id: 'competitor_comparison', name: 'Competitor Analysis', icon: '🔍', ai: true, credits: 1, description: 'Compare to nearby properties', requiresFoundation: true },
-    { id: 'agent_talking_points', name: 'Agent Talking Points', icon: '💼', ai: true, credits: 1, description: 'Key points for showings', requiresFoundation: true },
+    // Marketing & Content
+    { id: 'marketing_copy', name: 'Marketing Materials', icon: '📢', ai: true, credits: 1, description: 'Brochures and flyers', requiresFoundation: true, category: 'Marketing' },
+    { id: 'social_media', name: 'Social Media Posts', icon: '📱', ai: true, credits: 1, description: 'Facebook, Instagram posts', requiresFoundation: true, category: 'Marketing' },
+    { id: 'email_template', name: 'Email Campaign', icon: '✉️', ai: true, credits: 1, description: 'Email to potential buyers', requiresFoundation: true, category: 'Marketing' },
+    { id: 'virtual_tour_script', name: 'Virtual Tour Script', icon: '🎥', ai: true, credits: 1, description: 'Video walkthrough script', requiresFoundation: true, category: 'Marketing' },
+    { id: 'open_house_promo', name: 'Open House Promotion', icon: '🏠', ai: true, credits: 1, description: 'Open house marketing', requiresFoundation: true, category: 'Marketing' },
+    { id: 'property_highlights', name: 'Property Highlights', icon: '⭐', ai: true, credits: 1, description: 'Key features summary', requiresFoundation: true, category: 'Marketing' },
     
-    // Non-AI modules (combined section)
-    { id: 'images', name: 'Property Images & Interior Design', icon: '📸', description: 'Upload photos and process with AI design' },
+    // Analysis & Strategy
+    { id: 'buyer_profile', name: 'Target Buyer Profile', icon: '👥', ai: true, credits: 1, description: 'Ideal buyer demographics', requiresFoundation: true, category: 'Strategy' },
+    { id: 'price_justification', name: 'Price Justification', icon: '💰', ai: true, credits: 1, description: 'Why this price works', requiresFoundation: true, category: 'Strategy' },
+    { id: 'competitor_comparison', name: 'Competitor Analysis', icon: '🔍', ai: true, credits: 1, description: 'Vs nearby properties', requiresFoundation: true, category: 'Strategy' },
+    { id: 'agent_talking_points', name: 'Agent Talking Points', icon: '💼', ai: true, credits: 1, description: 'Key points for showings', requiresFoundation: true, category: 'Strategy' },
+    { id: 'objection_handling', name: 'Objection Handlers', icon: '🛡️', ai: true, credits: 1, description: 'Overcome buyer concerns', requiresFoundation: true, category: 'Strategy' },
+    { id: 'negotiation_tips', name: 'Negotiation Strategy', icon: '🤝', ai: true, credits: 1, description: 'Pricing and offer tactics', requiresFoundation: true, category: 'Strategy' },
+    
+    // Client Communications  
+    { id: 'seller_updates', name: 'Seller Updates', icon: '📝', ai: true, credits: 1, description: 'Weekly seller reports', requiresFoundation: true, category: 'Communications' },
+    { id: 'buyer_followup', name: 'Buyer Follow-up', icon: '📞', ai: true, credits: 1, description: 'Post-showing messages', requiresFoundation: true, category: 'Communications' },
+    
+    // Media
+    { id: 'images', name: 'Photos & Interior Design', icon: '📸', description: 'Upload and enhance images', category: 'Media' },
   ];
 
   useEffect(() => {
