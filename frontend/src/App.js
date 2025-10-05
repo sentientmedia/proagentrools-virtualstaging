@@ -8,6 +8,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import UserDashboard from './components/dashboard/UserDashboard';
 import LandingPage from './components/LandingPage';
 import AuthLoadingPage from './components/auth/AuthLoadingPage';
+import ListingsDashboard from './components/listings/ListingsDashboard';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
