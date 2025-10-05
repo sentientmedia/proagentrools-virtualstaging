@@ -452,87 +452,66 @@ const IndividualListingPage = ({ listingId, onBack }) => {
 
   const renderImages = () => {
     const designers = [
-      {
-        id: 'alessia_duval',
-        name: 'Alessia Duval',
-        style: 'Modern Minimalist',
-        bio: 'Known for clean lines and neutral palettes, Alessia creates serene spaces that breathe elegance.',
-        image: '/images/designers/alessia_duval.jpg'
-      },
-      {
-        id: 'adrian_mercer',
-        name: 'Adrian Mercer',
-        style: 'Contemporary Luxe',
-        bio: 'Bold textures and statement pieces define Adrian\'s sophisticated, modern aesthetic.',
-        image: '/images/designers/adrian_mercer.jpg'
-      },
-      {
-        id: 'lucien_hart',
-        name: 'Lucien Hart',
-        style: 'Classic Elegance',
-        bio: 'Traditional craftsmanship meets timeless design in Lucien\'s refined interiors.',
-        image: '/images/designers/lucien_hart.jpg'
-      }
+      { id: 'alessia_duval', name: 'Alessia Duval', style: 'Parisian Eclecticism', bio: 'Infuses Parisian elegance with global eclecticism, layering vibrant textiles and refined antiques.', image: '/images/designers/alessia_duval.jpg' },
+      { id: 'adrian_mercer', name: 'Adrian Mercer', style: 'Industrial Poetry', bio: 'Transforms post-industrial materials into poetic, sculptural interiors full of moody drama.', image: '/images/designers/adrian_mercer.jpg' },
+      { id: 'lucien_hart', name: 'Lucien Hart', style: 'Couture Glamour', bio: 'Fuses runway glamour with architectural audacity, delivering bold, theatrical spaces saturated in jewel tones.', image: '/images/designers/lucien_hart.jpg' },
+      { id: 'elinor_hartwell', name: 'Elinor Hartwell', style: 'Mindful Comfort', bio: 'Creates warm, soulful rooms where mindful living meets tactile, handcrafted comfort.', image: '/images/designers/elinor_hartwell.jpg' },
+      { id: 'bianca_morelli', name: 'Bianca Morelli', style: 'Organic Elegance', bio: 'Weaves fluid, organic forms and tactile layers into emotionally engaging, elegant interiors.', image: '/images/designers/bianca_morelli.jpg' },
+      { id: 'eleanor_reed', name: 'Eleanor Reed', style: 'Vintage Eclectic', bio: 'Mixes vintage patina with contemporary comfort for richly textured, eclectic authenticity.', image: '/images/designers/eleanor_reed.jpg' },
+      { id: 'oliver_renard', name: 'Oliver Renard', style: 'Maximalist Theater', bio: 'Stages maximalist fantasies with jewel-tone palettes, luxe textures, and theatrical storytelling.', image: '/images/designers/oliver_renard.jpg' },
+      { id: 'gabrielle_marlowe', name: 'Gabrielle Marlowe', style: 'Southern Refinement', bio: 'Blends Southern graciousness with European classicism to craft airy, refined spaces of quiet luxury.', image: '/images/designers/gabrielle_marlowe.jpg' },
+      { id: 'elise_marceau', name: 'Elise Marceau', style: 'Zen Minimalism', bio: 'Balances minimalist restraint with tactile warmth, creating zen-like sanctuaries of European elegance.', image: '/images/designers/elise_marceau.jpg' },
+      { id: 'alexander_bennett', name: 'Alexander Bennett', style: 'Classical Grandeur', bio: 'Revives classical grandeur with tailored American sophistication and rich architectural detailing.', image: '/images/designers/alexander_bennett.jpg' },
+      { id: 'allegra_marquez', name: 'Allegra Marquez', style: 'Cultural Fusion', bio: 'Combines cultural authenticity with modern lines, marrying vibrant heritage motifs to Scandinavian restraint.', image: '/images/designers/allegra_marquez.jpg' },
+      { id: 'olivia_bennett', name: 'Olivia Bennett', style: 'Approachable Elegance', bio: 'Creates approachable elegance through thoughtful styling and sustainable, handcrafted details.', image: '/images/designers/olivia_bennett.jpg' }
     ];
 
     const colorSchemes = [
-      {
-        id: 'glacial_muse',
-        name: 'Glacial Muse',
-        colors: ['#E8F4F8', '#B8D8E8', '#7BA8C0'],
-        description: 'Cool, calming blues and whites create a serene, spa-like atmosphere'
-      },
-      {
-        id: 'nomad_prism',
-        name: 'Nomad Prism',
-        colors: ['#D4A574', '#8B7355', '#E6D5C3'],
-        description: 'Warm earth tones and desert-inspired hues for a bohemian feel'
-      },
-      {
-        id: 'urban_alloy',
-        name: 'Urban Alloy',
-        colors: ['#4A4A4A', '#7D7D7D', '#A8A8A8'],
-        description: 'Industrial grays and metallics for a modern, sophisticated look'
-      },
-      {
-        id: 'sage_whisper',
-        name: 'Sage Whisper',
-        colors: ['#B8C5B0', '#8FA888', '#6B8E6B'],
-        description: 'Soft greens and natural tones bring the outdoors in'
-      },
-      {
-        id: 'terracotta_dream',
-        name: 'Terracotta Dream',
-        colors: ['#E07856', '#C65D3B', '#A0522D'],
-        description: 'Warm, inviting oranges and browns for a cozy Mediterranean vibe'
-      },
-      {
-        id: 'midnight_navy',
-        name: 'Midnight Navy',
-        colors: ['#1C3A57', '#2C5F8D', '#4A7BA7'],
-        description: 'Deep, rich blues create drama and sophistication'
-      }
+      { id: 'glacial_muse', name: 'Glacial Muse', colors: ['#E8F4F8', '#B8D8E8', '#89B5CE'], description: 'Icy pastels and frosted neutrals evoking Nordic serenity' },
+      { id: 'nomad_prism', name: 'Nomad Prism', colors: ['#D4A574', '#8B7355', '#E6D5C3'], description: 'Vibrant gems and wanderlust tones for eclectic tastes' },
+      { id: 'urban_alloy', name: 'Urban Alloy', colors: ['#4A4A4A', '#7D7D7D', '#A8A8A8'], description: 'Iron hues and industrial patina—gritty and raw' },
+      { id: 'aegean_whisper', name: 'Aegean Whisper', colors: ['#5B9AA9', '#D4C5A9', '#E8DCC4'], description: 'Oceanic blues and sun-kissed earth tones' },
+      { id: 'velvet_deco', name: 'Velvet Deco', colors: ['#4A1E3D', '#8B6F47', '#C9A961'], description: 'Deep jewel tones and metallic glamour' },
+      { id: 'desert_modern', name: 'Desert Modern', colors: ['#C79F6B', '#8D6346', '#E8DCC4'], description: 'Burnt earth and washed neutrals with desert grace' },
+      { id: 'enchanted_forest', name: 'Enchanted Forest', colors: ['#2D5016', '#4A7C2F', '#8B9E6B'], description: 'Lush emeralds and bark browns meet mossy whispers' },
+      { id: 'savannah_bloom', name: 'Savannah Bloom', colors: ['#D4A960', '#B8935F', '#E8C98E'], description: 'Sunburnt petals and golden grass' },
+      { id: 'canyon_clay', name: 'Canyon Clay', colors: ['#B85C3F', '#8D5241', '#D4A07A'], description: 'Terracotta cliffs under a molten sky' },
+      { id: 'lunar_drift', name: 'Lunar Drift', colors: ['#B8B8C8', '#9494A8', '#D4D4E0'], description: 'Icy greys, pale lavenders, and shadows in motion' },
+      { id: 'sienna_smoke', name: 'Sienna Smoke', colors: ['#A67C52', '#8D6E5A', '#C9B4A0'], description: 'Warm neutrals drifting through dusty clay and chalk' },
+      { id: 'retro_zest', name: 'Retro Zest', colors: ['#8B9E4A', '#E89B4F', '#E8D960'], description: 'Avocado green, popsicle orange, lemony optimism' },
+      { id: 'twilight_grove', name: 'Twilight Grove', colors: ['#6B5B7C', '#4A5941', '#8D8E9E'], description: 'Smoky violet, ash green, and forest shadows' },
+      { id: 'citrus_pop', name: 'Citrus Pop', colors: ['#E89B4F', '#E8D960', '#FFB84D'], description: 'Grapefruit zest and neon fizz—sunrise energy' },
+      { id: 'oxblood_study', name: 'Oxblood Study', colors: ['#5B1E1E', '#3D2929', '#8D6B6B'], description: 'Oxblood, ink, and old paper tones—academic luxury' },
+      { id: 'sunken_studio', name: 'Sunken Studio', colors: ['#3D4A5B', '#2D3D4F', '#6B7C8D'], description: 'Undersea study in moody ink and shale' },
+      { id: 'charred_cotton', name: 'Charred Cotton', colors: ['#5B5B5B', '#8D8D8D', '#C9C9C9'], description: 'Ash, linen, and charcoal smudge' },
+      { id: 'silken_ember', name: 'Silken Ember', colors: ['#A66B5F', '#8D5747', '#C9A89E'], description: 'Firelight meets silk—subdued luxury with spice' },
+      { id: 'mineral_tonic', name: 'Mineral Tonic', colors: ['#5B7C8D', '#7C8E9E', '#A0B4C0'], description: 'Mineral blue, flint, and dried herbs' },
+      { id: 'bauhaus_dusk', name: 'Bauhaus Dusk', colors: ['#8D8E9E', '#4A5B7C', '#C9A961'], description: 'Modernist primary accents on greys and pastels' }
     ];
 
     return (
       <div className="space-y-8">
         {/* Designer Gallery */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Choose Your Designer</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Designer</h2>
+          <p className="text-gray-600 mb-6">Select from 12 award-winning interior designers, each with their own unique style and aesthetic</p>
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
             {designers.map(designer => (
-              <div key={designer.id} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 transition-all">
-                <div className="h-64 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-32 h-32 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
-                      <span className="text-5xl">👤</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">{designer.name}</h3>
-                  </div>
+              <div key={designer.id} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer">
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={designer.image} 
+                    alt={designer.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23e5e7eb" width="200" height="200"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="60">👤</text></svg>';
+                    }}
+                  />
                 </div>
-                <div className="p-4">
-                  <div className="text-sm font-semibold text-blue-600 mb-2">{designer.style}</div>
-                  <p className="text-sm text-gray-600">{designer.bio}</p>
+                <div className="p-3">
+                  <h3 className="font-bold text-gray-900 text-sm">{designer.name}</h3>
+                  <div className="text-xs font-semibold text-blue-600 mb-1">{designer.style}</div>
+                  <p className="text-xs text-gray-600 line-clamp-2">{designer.bio}</p>
                 </div>
               </div>
             ))}
@@ -541,20 +520,21 @@ const IndividualListingPage = ({ listingId, onBack }) => {
 
         {/* Color Schemes */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Color Schemes</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Color Schemes</h2>
+          <p className="text-gray-600 mb-6">20 carefully curated palettes to match any style and mood</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {colorSchemes.map(scheme => (
-              <div key={scheme.id} className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-all">
-                <div className="flex space-x-2 mb-3">
+              <div key={scheme.id} className="bg-white border-2 border-gray-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer">
+                <div className="flex space-x-1 mb-2">
                   {scheme.colors.map((color, i) => (
                     <div
                       key={i}
-                      className="flex-1 h-16 rounded"
+                      className="flex-1 h-12 rounded"
                       style={{ backgroundColor: color }}
                     />
                   ))}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">{scheme.name}</h3>
+                <h3 className="font-semibold text-gray-900 text-sm mb-1">{scheme.name}</h3>
                 <p className="text-xs text-gray-600">{scheme.description}</p>
               </div>
             ))}
