@@ -750,6 +750,9 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                               <option value="glacial_muse">Glacial Muse</option>
                               <option value="nomad_prism">Nomad Prism</option>
                               <option value="urban_alloy">Urban Alloy</option>
+                              <option value="sage_whisper">Sage Whisper</option>
+                              <option value="terracotta_dream">Terracotta Dream</option>
+                              <option value="midnight_navy">Midnight Navy</option>
                             </select>
                           </div>
                         </>
