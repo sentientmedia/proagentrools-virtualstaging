@@ -31,14 +31,14 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   });
 
   const modules = [
-    { id: 'details', name: 'Listing Details', icon: '📝' },
-    { id: 'listing_copy', name: 'AI Copy', icon: '✍️', ai: true },
-    { id: 'marketing_copy', name: 'Marketing', icon: '📢', ai: true },
-    { id: 'social_media', name: 'Social Media', icon: '📱', ai: true },
-    { id: 'email_template', name: 'Email Template', icon: '✉️', ai: true },
-    { id: 'market_intel', name: 'Market Intel', icon: '📊', ai: true },
-    { id: 'images', name: 'Images', icon: '📸' },
-    { id: 'interior_design', name: 'Interior Design', icon: '🎨' },
+    { id: 'listing_copy', name: 'Listing Description', icon: '✍️', ai: true, credits: 1, description: 'Generate professional property listing description' },
+    { id: 'marketing_copy', name: 'Marketing Copy', icon: '📢', ai: true, credits: 1, description: 'Create compelling marketing materials' },
+    { id: 'social_media', name: 'Social Media Posts', icon: '📱', ai: true, credits: 1, description: 'Generate engaging social media content' },
+    { id: 'email_template', name: 'Email Templates', icon: '✉️', ai: true, credits: 1, description: 'Create professional email templates' },
+    { id: 'market_intel', name: 'Market Intelligence', icon: '📊', ai: true, credits: 1, description: 'Get market analysis and positioning' },
+    { id: 'virtual_tour_script', name: 'Virtual Tour Script', icon: '🎥', ai: true, credits: 1, description: 'Create walkthrough video script' },
+    { id: 'images', name: 'Property Images', icon: '📸', description: 'Upload and manage property photos' },
+    { id: 'interior_design', name: 'AI Interior Design', icon: '🎨', credits: 5, description: 'Transform photos with AI staging' },
   ];
 
   useEffect(() => {
