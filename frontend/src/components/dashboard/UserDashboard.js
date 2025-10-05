@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import BrandingManager from '../branding/BrandingManager';
 
 const UserDashboard = () => {
   const { user, logout, refreshUserData } = useAuth();
