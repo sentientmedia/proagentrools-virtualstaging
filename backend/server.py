@@ -750,6 +750,289 @@ async def logout_user(current_user: User = Depends(get_current_user_enhanced)):
         logger.error(f"Logout error: {str(e)}")
         raise HTTPException(status_code=500, detail="Logout failed")
 
+# AI Tools Configuration
+AI_TOOLS_CATALOG = {
+    # Marketing & Creative
+    "listing_luxe_gpt": {
+        "id": "listing_luxe_gpt",
+        "name": "Listing-Luxe GPT",
+        "category": "Marketing & Creative",
+        "description": "Rewrites raw bullet points into MLS-ready, SEO-savvy descriptions in the agent's chosen tone.",
+        "credits_cost": 3,
+        "inputs": ["room_details", "upgrades", "tone_slider"],
+        "outputs": ["listing_description", "headline", "social_snippets"]
+    },
+    "social_snippets_studio": {
+        "id": "social_snippets_studio", 
+        "name": "Social-Snippets Studio",
+        "category": "Marketing & Creative",
+        "description": "Spits out a week of reels hooks, carousel copy, hashtag sets, and CTA captions per listing.",
+        "credits_cost": 2,
+        "inputs": ["listing_url", "tone", "platform_mix"],
+        "outputs": ["ig_captions", "reels_scripts", "hashtag_clusters"]
+    },
+    "photofix_wizard": {
+        "id": "photofix_wizard",
+        "name": "PhotoFix Wizard", 
+        "category": "Marketing & Creative",
+        "description": "Detects poor listing photos, auto-suggests retouching notes and Stable Diffusion prompts.",
+        "credits_cost": 2,
+        "inputs": ["photos"],
+        "outputs": ["before_after_mockups", "prompt_blocks"]
+    },
+    "walk_score_wordsmith": {
+        "id": "walk_score_wordsmith",
+        "name": "Walk-Score Wordsmith",
+        "category": "Marketing & Creative", 
+        "description": "Turns raw WalkScore/TransitScore/BikeScore data into marketing copy snippets.",
+        "credits_cost": 1,
+        "inputs": ["walk_score_data"],
+        "outputs": ["headlines", "marketing_blurbs"]
+    },
+    "foreign_buyer_friendly": {
+        "id": "foreign_buyer_friendly",
+        "name": "Foreign-Buyer Friendly",
+        "category": "Marketing & Creative",
+        "description": "Instantly translates listings & marketing collateral into top five languages in your market.",
+        "credits_cost": 4,
+        "inputs": ["listing_copy"],
+        "outputs": ["multilingual_pack"]
+    },
+    "video_tour_scriptsmith": {
+        "id": "video_tour_scriptsmith",
+        "name": "Video-Tour Scriptsmith",
+        "category": "Marketing & Creative",
+        "description": "Writes 60-second vertical-video scripts timed to pan shots, plus on-screen caption text.",
+        "credits_cost": 3,
+        "inputs": ["property_details", "video_style"],
+        "outputs": ["storyboard", "teleprompter_script"]
+    },
+    
+    # Staging & Design
+    "staging_style_coach": {
+        "id": "staging_style_coach",
+        "name": "Staging Style Coach",
+        "category": "Staging & Design",
+        "description": "Suggests virtual-staging looks and outputs a ready-to-order brief for your staging vendor.",
+        "credits_cost": 3,
+        "inputs": ["photos", "floor_plan", "target_buyer_profile"],
+        "outputs": ["mood_board", "furniture_list", "staging_prompts"]
+    },
+    
+    # Due-Diligence & Compliance  
+    "contract_clarifier": {
+        "id": "contract_clarifier",
+        "name": "Contract-Clarifier",
+        "category": "Due-Diligence & Compliance",
+        "description": "Translates state-specific contract clauses into plain English and highlights gotchas.",
+        "credits_cost": 2,
+        "inputs": ["contract_pdf", "state"],
+        "outputs": ["simplified_text", "faq", "signature_checklist"]
+    },
+    "fair_housing_guard": {
+        "id": "fair_housing_guard", 
+        "name": "Fair-Housing Compliance Guard",
+        "category": "Due-Diligence & Compliance",
+        "description": "Scans any marketing copy or ad creative and flags potential Fair-Housing or local-regulation violations.",
+        "credits_cost": 1,
+        "inputs": ["ad_text", "images"],
+        "outputs": ["violation_flags", "safe_rewrites"]
+    },
+    "permit_pulse": {
+        "id": "permit_pulse",
+        "name": "PermitPulse", 
+        "category": "Due-Diligence & Compliance",
+        "description": "Pulls local building-permit history & flags red-flag renovations or missing finals.",
+        "credits_cost": 3,
+        "inputs": ["property_address"],
+        "outputs": ["permit_timeline", "inspection_checklist"]
+    },
+    "flood_fire_radar": {
+        "id": "flood_fire_radar",
+        "name": "Flood & Fire Risk Radar",
+        "category": "Due-Diligence & Compliance", 
+        "description": "Maps FEMA flood, wildfire, and climate-risk layers for a property and translates them into guidance.",
+        "credits_cost": 3,
+        "inputs": ["property_address"],
+        "outputs": ["risk_map", "premium_impact_estimate"]
+    },
+    "hoa_decoder": {
+        "id": "hoa_decoder",
+        "name": "HOA Decoder",
+        "category": "Due-Diligence & Compliance",
+        "description": "Summarizes 50-page HOA docs into readable rules, fees, pet restrictions, and rental caps.",
+        "credits_cost": 2,
+        "inputs": ["hoa_documents"],
+        "outputs": ["summary", "deal_breaker_highlights"]
+    },
+    "zoning_whisperer": {
+        "id": "zoning_whisperer",
+        "name": "Zoning Whisperer",
+        "category": "Due-Diligence & Compliance",
+        "description": "Translates local zoning code into plain English and shows what can/can't be built or ADU-ed.",
+        "credits_cost": 2,
+        "inputs": ["property_address"],
+        "outputs": ["buildout_matrix", "permit_path"]
+    },
+    "renovation_rulebook": {
+        "id": "renovation_rulebook",
+        "name": "Renovation-Rulebook Retriever", 
+        "category": "Due-Diligence & Compliance",
+        "description": "Pulls city/county renovation rules, flags common pitfalls, and links to permit forms.",
+        "credits_cost": 2,
+        "inputs": ["property_address"],
+        "outputs": ["compliance_checklist", "permit_links"]
+    },
+    
+    # Market Intel & Strategy
+    "neighborhood_insider": {
+        "id": "neighborhood_insider",
+        "name": "Neighborhood Insider",
+        "category": "Market Intel & Strategy",
+        "description": "Generates a shareable local intel sheet—schools, commute times, walk scores, new developments, vibe.",
+        "credits_cost": 3,
+        "inputs": ["address", "lat_long"],
+        "outputs": ["intel_pdf", "commentary_hooks"]
+    },
+    "comp_cruncher_cma": {
+        "id": "comp_cruncher_cma",
+        "name": "Comp-Cruncher CMA", 
+        "category": "Market Intel & Strategy",
+        "description": "Builds a plain-English comparative-market analysis and price-position recommendation.",
+        "credits_cost": 4,
+        "inputs": ["subject_property", "mls_data"],
+        "outputs": ["price_graph", "list_price_range", "talking_points"]
+    },
+    "investor_math_buddy": {
+        "id": "investor_math_buddy",
+        "name": "Investor Math Buddy",
+        "category": "Market Intel & Strategy",
+        "description": "Calculates cap rate, cash-on-cash, IRR, break-even rents from a quickfill worksheet.",
+        "credits_cost": 2,
+        "inputs": ["purchase_price", "rents", "expenses", "loan_terms"],
+        "outputs": ["analysis_table", "pros_cons_narrative"]
+    },
+    "renovation_roi_estimator": {
+        "id": "renovation_roi_estimator",
+        "name": "Renovation ROI Estimator",
+        "category": "Market Intel & Strategy",
+        "description": "Predicts value-add lift for common upgrades and ranks them by expected return and days-on-market impact.",
+        "credits_cost": 3,
+        "inputs": ["property_type", "comps", "upgrade_list"],
+        "outputs": ["roi_chart", "project_recommendations"]
+    },
+    "school_scope_analyzer": {
+        "id": "school_scope_analyzer", 
+        "name": "SchoolScope Analyzer",
+        "category": "Market Intel & Strategy",
+        "description": "Generates a parent-friendly breakdown of public/private schools within X miles.",
+        "credits_cost": 2,
+        "inputs": ["location", "school_radius"],
+        "outputs": ["school_cheatsheet", "talking_points"]
+    },
+    "farm_area_crystal_ball": {
+        "id": "farm_area_crystal_ball",
+        "name": "Farm-Area Crystal Ball",
+        "category": "Market Intel & Strategy", 
+        "description": "Tracks demographic shifts, new permits, and price trends in a farming area; spits out a report.",
+        "credits_cost": 4,
+        "inputs": ["farming_area"],
+        "outputs": ["trend_charts", "opportunity_score"]
+    },
+    "investor_exit_planner": {
+        "id": "investor_exit_planner",
+        "name": "Investor Exit Planner",
+        "category": "Market Intel & Strategy",
+        "description": "Generates multiple sell/hold/refi exit strategies for small landlords based on forecasts.",
+        "credits_cost": 3,
+        "inputs": ["rent_roll", "market_forecasts"],
+        "outputs": ["roi_scenarios"]
+    },
+    "fair_rent_finder": {
+        "id": "fair_rent_finder",
+        "name": "Fair-Rent Finder",
+        "category": "Market Intel & Strategy",
+        "description": "Benchmarks local rental rates, vacancy, and absorption for investor clients or STR pricing.",
+        "credits_cost": 2,
+        "inputs": ["location", "property_type"],
+        "outputs": ["rent_matrix", "sweet_spot_range"]
+    },
+    
+    # Process & Productivity
+    "open_house_orchestrator": {
+        "id": "open_house_orchestrator",
+        "name": "Open-House Orchestrator", 
+        "category": "Process & Productivity",
+        "description": "Plans the event end-to-end: invite copy, SMS reminders, sign-in QR form, post-event drip emails.",
+        "credits_cost": 3,
+        "inputs": ["date_time", "buyer_persona", "followup_cadence"],
+        "outputs": ["calendar_ics", "sms_templates", "email_sequence"]
+    },
+    "lead_qualifier_lite": {
+        "id": "lead_qualifier_lite",
+        "name": "Lead Qualifier Lite",
+        "category": "Process & Productivity",
+        "description": "Interviews inbound leads via chat/text, scores motivation & financing, and pushes hot leads to the CRM.",
+        "credits_cost": 2,
+        "inputs": ["lead_inquiry"],
+        "outputs": ["qualification_summary", "urgency_score", "next_action"]
+    },
+    "relocation_concierge": {
+        "id": "relocation_concierge",
+        "name": "Relocation Concierge",
+        "category": "Process & Productivity",
+        "description": "Crafts a turnkey welcome packet with utilities, DMV, healthcare, hotspots, and kid-friendly recs.",
+        "credits_cost": 2,
+        "inputs": ["destination_zip", "family_profile"],
+        "outputs": ["welcome_packet", "resource_links"]
+    },
+    "energy_saver_scorecard": {
+        "id": "energy_saver_scorecard",
+        "name": "Energy-Saver Scorecard",
+        "category": "Process & Productivity",
+        "description": "Estimates utility costs & carbon footprint vs. comps; recommends top 3 ROI-positive efficiency upgrades.",
+        "credits_cost": 2,
+        "inputs": ["property_details", "comparable_properties"],
+        "outputs": ["scorecard_graphic", "rebate_links"]
+    },
+    "expired_listing_resurrector": {
+        "id": "expired_listing_resurrector",
+        "name": "Expired-Listing Resurrector",
+        "category": "Process & Productivity",
+        "description": "Autopsies an expired MLS entry, diagnoses why it didn't sell, and drafts a relaunch game-plan.",
+        "credits_cost": 3,
+        "inputs": ["expired_mls_data"],
+        "outputs": ["fix_list", "relaunch_copy"]
+    },
+    "voice_note_summarizer": {
+        "id": "voice_note_summarizer",
+        "name": "Voice-Note Summarizer", 
+        "category": "Process & Productivity",
+        "description": "Converts messy on-the-road voice memos into clean client updates, task lists, or CRM notes.",
+        "credits_cost": 1,
+        "inputs": ["voice_recording"],
+        "outputs": ["structured_text", "follow_ups"]
+    },
+    "open_house_debrief_bot": {
+        "id": "open_house_debrief_bot",
+        "name": "Open-House Debrief Bot",
+        "category": "Process & Productivity",
+        "description": "After the event, digests sign-in data & attendee feedback, then drafts personalized follow-up emails ranked by lead quality.",
+        "credits_cost": 2,
+        "inputs": ["signin_data", "feedback"],
+        "outputs": ["lead_scoresheet", "email_merge_file"]
+    },
+    "sellers_stress_buster": {
+        "id": "sellers_stress_buster",
+        "name": "Sellers' Stress-Buster",
+        "category": "Process & Productivity",
+        "description": "Creates a personalized selling prep calendar that spaces out decluttering, minor fixes, showings, and move-out tasks.",
+        "credits_cost": 2,
+        "inputs": ["property_details", "sale_timeline"],
+        "outputs": ["ical_file", "printable_checklist"]
+    }
+}
+
 # Authentication functions complete
 
 # Admin endpoints
