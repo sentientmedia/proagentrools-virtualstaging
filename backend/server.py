@@ -803,6 +803,190 @@ async def logout_user(current_user: User = Depends(get_current_user_enhanced)):
         raise HTTPException(status_code=500, detail="Logout failed")
 
 # Listing Management Endpoints
+
+# Foundation Generation System
+async def generate_listing_foundation(listing_id: str, property_details: dict):
+    """Generate foundational content for a listing: neighborhood research, description, market intel"""
+    try:
+        logger.info(f"Starting foundation generation for listing {listing_id}")
+        
+        # Get API key
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        api_key = openai_key if openai_key else emergent_key
+        
+        if not api_key:
+            raise Exception("No API key available")
+        
+        # Extract property info
+        address = property_details.get('address', '')
+        city = property_details.get('city', '')
+        state = property_details.get('state', '')
+        zip_code = property_details.get('zip_code', '')
+        property_type = property_details.get('property_type', '')
+        beds = property_details.get('beds', 0)
+        baths = property_details.get('baths', 0)
+        sqft = property_details.get('sqft', 0)
+        listing_price = property_details.get('listing_price', 0)
+        
+        full_address = f"{address}, {city}, {state} {zip_code}"
+        
+        # Step 1: Neighborhood Research
+        logger.info(f"Generating neighborhood research for {full_address}")
+        neighborhood_prompt = f"""Research and describe the neighborhood for this property:
+Address: {full_address}
+
+Provide detailed information about:
+1. Neighborhood character and atmosphere
+2. Nearby amenities (parks, shopping, dining, schools)
+3. Transportation and accessibility
+4. Historical significance or notable features
+5. Distance to downtown and major attractions
+6. Demographics and community vibe
+
+Be specific and factual. Format as clear, readable paragraphs."""
+
+        try:
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=f"foundation_{listing_id}_neighborhood",
+                system_message="You are a real estate researcher providing accurate neighborhood information."
+            ).with_model("openai", "gpt-4o")
+            
+            neighborhood_research = await chat.send_message(UserMessage(text=neighborhood_prompt))
+        except Exception as e:
+            logger.error(f"Neighborhood research failed: {str(e)}")
+            neighborhood_research = f"Located in {city}, {state}. A {property_type} property in this area."
+        
+        # Step 2: Property Description (based on neighborhood research)
+        logger.info(f"Generating property description")
+        description_prompt = f"""Write a compelling property listing description for:
+
+Property Details:
+- Address: {full_address}
+- Type: {property_type}
+- Bedrooms: {beds}
+- Bathrooms: {baths}
+- Square Feet: {sqft:,}
+- Listing Price: ${listing_price:,}
+
+Neighborhood Context:
+{neighborhood_research}
+
+Write a professional, engaging listing description that:
+1. Highlights key property features
+2. Incorporates the neighborhood benefits
+3. Creates emotional appeal
+4. Is 200-300 words
+5. Avoids clichés and generic phrases
+
+Do not use bold or special formatting. Write in clear, flowing paragraphs."""
+
+        try:
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=f"foundation_{listing_id}_description",
+                system_message="You are an expert real estate copywriter who writes compelling property descriptions."
+            ).with_model("openai", "gpt-4o")
+            
+            property_description = await chat.send_message(UserMessage(text=description_prompt))
+        except Exception as e:
+            logger.error(f"Description generation failed: {str(e)}")
+            property_description = f"{beds} bed, {baths} bath {property_type} in {city}, {state}."
+        
+        # Step 3: Market Intel
+        logger.info(f"Generating market intelligence")
+        market_prompt = f"""Provide market intelligence and positioning strategy for:
+
+Property: {full_address}
+Type: {property_type}, {beds} bed, {baths} bath, {sqft:,} sq ft
+Price: ${listing_price:,}
+
+Neighborhood Context:
+{neighborhood_research}
+
+Property Description:
+{property_description}
+
+Provide:
+1. Target buyer profile (demographics, lifestyle, needs)
+2. Competitive positioning (what makes this property stand out)
+3. Pricing strategy recommendations
+4. Key selling points to emphasize
+5. Potential objections and how to address them
+
+Be strategic and actionable. Do not use bold formatting."""
+
+        try:
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=f"foundation_{listing_id}_market",
+                system_message="You are a real estate market analyst providing strategic insights."
+            ).with_model("openai", "gpt-4o")
+            
+            market_intel = await chat.send_message(UserMessage(text=market_prompt))
+        except Exception as e:
+            logger.error(f"Market intel generation failed: {str(e)}")
+            market_intel = f"Property positioned for buyers seeking {property_type} in {city}."
+        
+        # Store all foundation content
+        module_outputs = {
+            "neighborhood_research": {
+                "content": neighborhood_research,
+                "generated_at": datetime.utcnow(),
+                "last_edited": datetime.utcnow(),
+                "version": 1,
+                "is_ai_generated": True,
+                "is_foundation": True
+            },
+            "listing_copy": {
+                "content": property_description,
+                "generated_at": datetime.utcnow(),
+                "last_edited": datetime.utcnow(),
+                "version": 1,
+                "is_ai_generated": True,
+                "is_foundation": True
+            },
+            "market_intel": {
+                "content": market_intel,
+                "generated_at": datetime.utcnow(),
+                "last_edited": datetime.utcnow(),
+                "version": 1,
+                "is_ai_generated": True,
+                "is_foundation": True
+            }
+        }
+        
+        # Update listing with foundation content
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$set": {
+                    "module_outputs": module_outputs,
+                    "foundation_status": "completed",
+                    "ai_processing_status": "completed",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        logger.info(f"Foundation generation completed for listing {listing_id}")
+        
+    except Exception as e:
+        logger.error(f"Foundation generation error for listing {listing_id}: {str(e)}")
+        # Mark as failed
+        await db.listings.update_one(
+            {"id": listing_id},
+            {
+                "$set": {
+                    "foundation_status": "failed",
+                    "ai_processing_status": "failed",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+
+
 @api_router.post("/listings", response_model=Listing)
 async def create_listing(
     listing_data: CreateListingRequest,
