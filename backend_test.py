@@ -2758,6 +2758,27 @@ def main():
     tester.test_listing_data_validation()
     tester.test_listing_ai_processing_status()
     
+    # ========== PHASE 2: MCP MEGA-AGENT TESTING ==========
+    print("\n🤖 PHASE 2: Testing MCP Mega-Agent System...")
+    tester.test_mega_agent_ai_tools_processing()
+    tester.test_mega_agent_insufficient_credits()
+    tester.test_get_ai_results_endpoint()
+    tester.test_mega_agent_tool_categorization()
+    tester.test_mega_agent_unified_summary()
+    
+    # ========== PHASE 3: WATERMARKING SYSTEM TESTING ==========
+    print("\n🎨 PHASE 3: Testing Watermarking System...")
+    tester.test_upload_agent_logo()
+    tester.test_upload_invalid_logo_file()
+    tester.test_serve_agent_logo()
+    tester.test_serve_nonexistent_logo()
+    tester.test_get_branding_settings()
+    tester.test_update_branding_settings()
+    tester.test_invalid_branding_settings()
+    tester.test_watermarking_integration()
+    tester.test_watermark_storage_directories()
+    tester.test_watermark_file_validation()
+    
     # Print final results
     print("\n" + "=" * 80)
     print(f"📊 FINAL RESULTS:")
