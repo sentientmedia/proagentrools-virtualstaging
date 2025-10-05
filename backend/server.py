@@ -1225,11 +1225,14 @@ async def get_agent_branding(
         logger.error(f"Get branding error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch branding settings")
 
+class BrandingUpdateRequest(BaseModel):
+    position: str = "bottom-right"
+    opacity: float = 0.7
+    brand_colors: Dict[str, str] = {}
+
 @api_router.put("/branding/settings")
 async def update_agent_branding(
-    position: str = "bottom-right",
-    opacity: float = 0.7,
-    brand_colors: Dict[str, str] = {},
+    update_data: BrandingUpdateRequest,
     current_user: User = Depends(get_current_user_enhanced)
 ):
     """Update agent branding settings"""
