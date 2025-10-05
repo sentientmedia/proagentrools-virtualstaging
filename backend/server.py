@@ -1538,7 +1538,7 @@ async def chat_improve_module(
         
         # Initialize chat
         chat = LlmChat(
-            api_key=emergent_key,
+            api_key=api_key,
             session_id=f"listing_{listing_id}_chat_{module_name}",
             system_message="You are a helpful assistant for improving real estate listing content. The user will provide feedback on existing content and you should help them refine it."
         ).with_model("openai", "gpt-5")
