@@ -404,7 +404,8 @@ class Listing(BaseModel):
     selected_ai_tools: List[AIToolSelection] = []
     interior_designs: List[str] = []  # IDs of associated interior designs
     status: str = "draft"  # draft, active, pending, sold
-    ai_processing_status: str = "pending"  # pending, processing, completed, failed
+    ai_processing_status: str = "pending"  # pending, processing, generating_foundation, completed, failed
+    foundation_status: Optional[str] = "pending"  # pending, processing, completed, failed
     ai_output: Optional[Dict[str, Any]] = None
     module_outputs: Dict[str, ModuleContent] = {}  # Key: module name, Value: content
     chat_history: Dict[str, List[ChatMessage]] = {}  # Key: module name, Value: chat messages
