@@ -1390,16 +1390,51 @@ Additional Context: {request.additional_context or 'None provided'}
         system_message = f"You are an expert real estate copywriter and marketing professional. Generate high-quality, professional content for real estate listings."
         prompt = f"{module_prompts.get(module_name, 'Generate professional content for this property listing.')}\n\nProperty Information:\n{context}"
         
-        # Initialize chat with Emergent LLM
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"listing_{listing_id}_module_{module_name}",
-            system_message=system_message
-        ).with_model("openai", "gpt-5")
+        # Try with Emergent LLM key first, fall back to OpenAI key if it fails
+        response = None
+        api_key_used = None
         
-        # Generate content
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+        # First try: Emergent LLM key
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        
+        if emergent_key and emergent_key.startswith('sk-emergent'):
+            try:
+                logger.info(f"Attempting content generation with Emergent LLM key")
+                chat = LlmChat(
+                    api_key=emergent_key,
+                    session_id=f"listing_{listing_id}_module_{module_name}",
+                    system_message=system_message
+                ).with_model("openai", "gpt-5")
+                
+                user_message = UserMessage(text=prompt)
+                response = await chat.send_message(user_message)
+                api_key_used = "Emergent LLM"
+                logger.info(f"✅ Content generated successfully with Emergent LLM key")
+            except Exception as e:
+                logger.warning(f"Emergent LLM key failed: {str(e)}, falling back to OpenAI key")
+                response = None
+        
+        # Fallback to OpenAI key if Emergent failed or not available
+        if not response and openai_key:
+            try:
+                logger.info(f"Attempting content generation with OpenAI API key (fallback)")
+                chat = LlmChat(
+                    api_key=openai_key,
+                    session_id=f"listing_{listing_id}_module_{module_name}",
+                    system_message=system_message
+                ).with_model("openai", "gpt-5")
+                
+                user_message = UserMessage(text=prompt)
+                response = await chat.send_message(user_message)
+                api_key_used = "OpenAI"
+                logger.info(f"✅ Content generated successfully with OpenAI API key")
+            except Exception as e:
+                logger.error(f"OpenAI API key also failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to generate content with both API keys: {str(e)}")
+        
+        if not response:
+            raise HTTPException(status_code=500, detail="No API key available or all keys failed")
         
         # Store module content
         module_content = {
