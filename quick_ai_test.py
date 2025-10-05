@@ -11,7 +11,7 @@ import io
 
 class QuickAITester:
     def __init__(self):
-        self.base_url = "https://smart-listing-pro-2.preview.emergentagent.com"
+        self.base_url = "https://proagent-realty.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.user_token = None
         self.test_listing_id = None

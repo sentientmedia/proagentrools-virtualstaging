@@ -10,7 +10,7 @@ import os
 from dotenv import load_dotenv
 
 class AIProcessingDebugTester:
-    def __init__(self, base_url="https://smart-listing-pro-2.preview.emergentagent.com"):
+    def __init__(self, base_url="https://proagent-realty.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
