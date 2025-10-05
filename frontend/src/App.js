@@ -1238,8 +1238,9 @@ const AppRouter = () => {
     return <AuthLoadingPage isOAuthFlow={isOAuthFlow} />;
   }
 
-  // Handle dashboard route
+  // Handle routes
   const path = window.location.pathname;
+  
   if (path === '/dashboard') {
     if (isAuthenticated) {
       return <UserDashboard />;
@@ -1248,6 +1249,14 @@ const AppRouter = () => {
       window.location.href = '/';
       return null;
     }
+  }
+
+  if (path === '/listings') {
+    return (
+      <ProtectedRoute>
+        <ListingsDashboard />
+      </ProtectedRoute>
+    );
   }
 
   // Demo route removed - beautiful loading pages are now integrated
