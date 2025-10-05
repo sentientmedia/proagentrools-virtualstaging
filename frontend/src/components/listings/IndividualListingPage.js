@@ -36,10 +36,13 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     { id: 'social_media', name: 'Social Media Posts', icon: '📱', ai: true, credits: 1, description: 'Social content from listing', requiresFoundation: true },
     { id: 'email_template', name: 'Email Templates', icon: '✉️', ai: true, credits: 1, description: 'Email campaigns', requiresFoundation: true },
     { id: 'virtual_tour_script', name: 'Virtual Tour Script', icon: '🎥', ai: true, credits: 1, description: 'Walkthrough video script', requiresFoundation: true },
+    { id: 'buyer_profile', name: 'Target Buyer Profile', icon: '👥', ai: true, credits: 1, description: 'Ideal buyer demographics', requiresFoundation: true },
+    { id: 'price_justification', name: 'Price Justification', icon: '💰', ai: true, credits: 1, description: 'Why this price makes sense', requiresFoundation: true },
+    { id: 'competitor_comparison', name: 'Competitor Analysis', icon: '🔍', ai: true, credits: 1, description: 'Compare to nearby properties', requiresFoundation: true },
+    { id: 'agent_talking_points', name: 'Agent Talking Points', icon: '💼', ai: true, credits: 1, description: 'Key points for showings', requiresFoundation: true },
     
-    // Non-AI modules
-    { id: 'images', name: 'Property Images', icon: '📸', description: 'Upload and manage photos' },
-    { id: 'interior_design', name: 'AI Interior Design', icon: '🎨', credits: 5, description: 'Transform photos with AI' },
+    // Non-AI modules (combined section)
+    { id: 'images', name: 'Property Images & Interior Design', icon: '📸', description: 'Upload photos and process with AI design' },
   ];
 
   useEffect(() => {
