@@ -1989,15 +1989,48 @@ async def process_image_async(request_id: str, temp_file_path, generated_prompt:
             local_image_url = await download_and_store_image(processed_url, request_id)
             logger.info(f"Image stored locally at: {local_image_url}")
             
+            # Apply watermark if user has branding configured
+            watermarked_url = None
+            try:
+                from watermark_utils import ensure_image_watermarked
+                
+                # Get the local file path
+                local_filename = local_image_url.split("/")[-1]
+                image_path = PROCESSED_IMAGES_DIR / local_filename
+                
+                # Get user ID from the design record
+                design_record = await db.interior_designs.find_one({"id": request_id})
+                if design_record and design_record.get("user_id"):
+                    watermarked_path = await ensure_image_watermarked(
+                        str(image_path), 
+                        design_record["user_id"], 
+                        db
+                    )
+                    
+                    if watermarked_path != str(image_path):
+                        watermarked_filename = Path(watermarked_path).name
+                        watermarked_url = f"/api/images/{watermarked_filename}"
+                        logger.info(f"Watermark applied to interior design: {watermarked_url}")
+                        
+            except Exception as e:
+                logger.error(f"Watermarking failed for design {request_id}: {str(e)}")
+                # Continue without watermark
+            
             # Update database with success
+            update_data = {
+                "status": "completed",
+                "processed_image_url": local_image_url,  # Use local URL
+                "original_replicate_url": processed_url,  # Keep original URL for reference
+                "completed_at": datetime.utcnow()
+            }
+            
+            # Add watermarked URL if available
+            if watermarked_url:
+                update_data["watermarked_image_url"] = watermarked_url
+            
             await db.interior_designs.update_one(
                 {"id": request_id},
-                {"$set": {
-                    "status": "completed",
-                    "processed_image_url": local_image_url,  # Use local URL
-                    "original_replicate_url": processed_url,  # Keep original URL for reference
-                    "completed_at": datetime.utcnow()
-                }}
+                {"$set": update_data}
             )
             
     except Exception as e:
