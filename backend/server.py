@@ -750,6 +750,204 @@ async def logout_user(current_user: User = Depends(get_current_user_enhanced)):
         logger.error(f"Logout error: {str(e)}")
         raise HTTPException(status_code=500, detail="Logout failed")
 
+# Listing Management Endpoints
+@api_router.post("/listings", response_model=Listing)
+async def create_listing(
+    listing_data: CreateListingRequest,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Create a new property listing"""
+    try:
+        listing_id = str(uuid.uuid4())
+        
+        # Convert selected tool IDs to AIToolSelection objects
+        selected_tools = []
+        for tool_id in listing_data.selected_tool_ids:
+            if tool_id in AI_TOOLS_CATALOG:
+                tool_info = AI_TOOLS_CATALOG[tool_id]
+                selected_tools.append(AIToolSelection(
+                    tool_id=tool_id,
+                    tool_name=tool_info["name"],
+                    category=tool_info["category"],
+                    credits_cost=tool_info["credits_cost"],
+                    selected=True
+                ))
+        
+        now = datetime.utcnow()
+        
+        new_listing = {
+            "id": listing_id,
+            "user_id": current_user.id,
+            "property_details": listing_data.property_details.dict(),
+            "description": listing_data.description,
+            "photos": [],
+            "selected_ai_tools": [tool.dict() for tool in selected_tools],
+            "interior_designs": [],
+            "status": "draft",
+            "ai_processing_status": "pending" if selected_tools else "completed",
+            "ai_output": None,
+            "agent_notes": listing_data.agent_notes,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        await db.listings.insert_one(new_listing)
+        
+        # Convert back to Pydantic model for response
+        return Listing(**new_listing)
+        
+    except Exception as e:
+        logger.error(f"Create listing error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create listing")
+
+@api_router.get("/listings", response_model=List[Listing])
+async def get_user_listings(
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get all listings for the current user"""
+    try:
+        listings_cursor = db.listings.find({"user_id": current_user.id}).sort("created_at", -1)
+        listings = await listings_cursor.to_list(length=None)
+        
+        return [Listing(**{k: v for k, v in listing.items() if k != '_id'}) for listing in listings]
+        
+    except Exception as e:
+        logger.error(f"Get listings error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch listings")
+
+@api_router.get("/listings/{listing_id}", response_model=Listing)
+async def get_listing(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get a specific listing"""
+    try:
+        listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        return Listing(**{k: v for k, v in listing.items() if k != '_id'})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get listing error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch listing")
+
+@api_router.put("/listings/{listing_id}", response_model=Listing)
+async def update_listing(
+    listing_id: str,
+    update_data: UpdateListingRequest,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Update a listing"""
+    try:
+        # Check if listing exists and belongs to user
+        existing_listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if not existing_listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Build update document
+        update_doc = {"updated_at": datetime.utcnow()}
+        
+        if update_data.property_details:
+            update_doc["property_details"] = update_data.property_details.dict()
+        if update_data.description is not None:
+            update_doc["description"] = update_data.description
+        if update_data.status:
+            update_doc["status"] = update_data.status
+        if update_data.agent_notes is not None:
+            update_doc["agent_notes"] = update_data.agent_notes
+        
+        if update_data.selected_tool_ids is not None:
+            # Update selected AI tools
+            selected_tools = []
+            for tool_id in update_data.selected_tool_ids:
+                if tool_id in AI_TOOLS_CATALOG:
+                    tool_info = AI_TOOLS_CATALOG[tool_id]
+                    selected_tools.append(AIToolSelection(
+                        tool_id=tool_id,
+                        tool_name=tool_info["name"],
+                        category=tool_info["category"],
+                        credits_cost=tool_info["credits_cost"],
+                        selected=True
+                    ))
+            update_doc["selected_ai_tools"] = [tool.dict() for tool in selected_tools]
+            update_doc["ai_processing_status"] = "pending" if selected_tools else "completed"
+        
+        # Update the listing
+        await db.listings.update_one(
+            {"id": listing_id, "user_id": current_user.id},
+            {"$set": update_doc}
+        )
+        
+        # Fetch and return updated listing
+        updated_listing = await db.listings.find_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        return Listing(**{k: v for k, v in updated_listing.items() if k != '_id'})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update listing error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update listing")
+
+@api_router.delete("/listings/{listing_id}")
+async def delete_listing(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Delete a listing"""
+    try:
+        result = await db.listings.delete_one({
+            "id": listing_id,
+            "user_id": current_user.id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        return {"success": True, "message": "Listing deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete listing error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete listing")
+
+# AI Tools Endpoints
+@api_router.get("/ai-tools")
+async def get_ai_tools():
+    """Get available AI tools catalog"""
+    try:
+        # Group tools by category
+        tools_by_category = {}
+        for tool_id, tool_info in AI_TOOLS_CATALOG.items():
+            category = tool_info["category"]
+            if category not in tools_by_category:
+                tools_by_category[category] = []
+            tools_by_category[category].append(tool_info)
+        
+        return {
+            "tools_by_category": tools_by_category,
+            "total_tools": len(AI_TOOLS_CATALOG)
+        }
+        
+    except Exception as e:
+        logger.error(f"Get AI tools error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch AI tools")
+
 # AI Tools Configuration
 AI_TOOLS_CATALOG = {
     # Marketing & Creative
