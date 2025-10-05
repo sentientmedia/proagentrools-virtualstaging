@@ -1340,7 +1340,7 @@ class ProAgentToolsAPITester:
         for i in range(2):
             test_image = self.create_test_image()
             files = {
-                'images': (f'test_interior_{i+1}.jpg', test_image, 'image/jpeg')
+                'files': (f'test_interior_{i+1}.jpg', test_image, 'image/jpeg')
             }
             
             upload_success, upload_response = self.run_test(
