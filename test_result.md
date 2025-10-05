@@ -202,7 +202,7 @@
     implemented: true
     working: false
     file: "/app/backend/server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -212,6 +212,9 @@
         - working: false
           agent: "testing"
           comment: "❌ BLOCKED: Chat improvement fails with same GPT-5 authentication error 'Incorrect API key provided: sk-emerg******************eFd7'. Endpoint structure is correct, requires existing module content, credit deduction logic implemented, but AI chat fails due to invalid/expired Emergent LLM API key. Depends on fixing the API key issue."
+        - working: false
+          agent: "testing"
+          comment: "❌ RE-TEST FAILED: Same OpenAI fallback issue as module generation. EMERGENT_LLM_KEY exists but invalid, preventing fallback to OPENAI_API_KEY. Backend logs confirm 'Using Emergent API key for content generation' then 401 error. Chat endpoint structure correct, authentication working, but LLM integration blocked by fallback logic issue. REQUIRES SAME CODE FIX AS MODULE GENERATION."
 
   - task: "NEW: Process Listing Interior Design - POST /api/listings/{listing_id}/interior-design/process"
     implemented: true
