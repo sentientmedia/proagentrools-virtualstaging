@@ -31,17 +31,28 @@ const Header = () => {
           
           <div className="flex items-center space-x-6">
             <nav className="hidden md:flex space-x-6">
-              <a href="#interior-design" className="hover:text-blue-300 transition-colors">Interior Design</a>
-              <a href="#ai-tools" className="hover:text-blue-300 transition-colors">AI Tools</a>
               {isAuthenticated ? (
-                <button
-                  onClick={() => window.location.href = '/dashboard'}
-                  className="hover:text-blue-300 transition-colors"
-                >
-                  Dashboard
-                </button>
+                <>
+                  <button
+                    onClick={() => window.location.href = '/listings'}
+                    className="hover:text-blue-300 transition-colors"
+                  >
+                    My Listings
+                  </button>
+                  <a href="#interior-design" className="hover:text-blue-300 transition-colors">Interior Design</a>
+                  <button
+                    onClick={() => window.location.href = '/dashboard'}
+                    className="hover:text-blue-300 transition-colors"
+                  >
+                    Dashboard
+                  </button>
+                </>
               ) : (
-                <a href="#pricing" className="hover:text-blue-300 transition-colors">Pricing</a>
+                <>
+                  <a href="#interior-design" className="hover:text-blue-300 transition-colors">Interior Design</a>
+                  <a href="#ai-tools" className="hover:text-blue-300 transition-colors">AI Tools</a>
+                  <a href="#pricing" className="hover:text-blue-300 transition-colors">Pricing</a>
+                </>
               )}
             </nav>
             
