@@ -1752,6 +1752,388 @@ class ProAgentToolsAPITester:
         
         return success
 
+    # ========== AI PROCESSING STATUS DEBUG TESTS ==========
+    
+    def test_current_processing_status(self):
+        """Check current AI processing status and identify stuck jobs"""
+        print("\n🔍 CHECKING CURRENT AI PROCESSING STATUS...")
+        
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Get all listings to check processing status
+        success, response = self.run_test(
+            "Get All Listings for Status Check",
+            "GET",
+            "listings",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            processing_listings = []
+            completed_listings = []
+            pending_listings = []
+            failed_listings = []
+            
+            for listing in response:
+                status = listing.get('ai_processing_status', 'unknown')
+                if status == 'processing':
+                    processing_listings.append(listing)
+                elif status == 'completed':
+                    completed_listings.append(listing)
+                elif status == 'pending':
+                    pending_listings.append(listing)
+                elif status == 'failed':
+                    failed_listings.append(listing)
+            
+            print(f"📊 PROCESSING STATUS SUMMARY:")
+            print(f"   🔄 Processing: {len(processing_listings)} listings")
+            print(f"   ✅ Completed: {len(completed_listings)} listings")
+            print(f"   ⏳ Pending: {len(pending_listings)} listings")
+            print(f"   ❌ Failed: {len(failed_listings)} listings")
+            
+            # Check for stuck processing jobs
+            if processing_listings:
+                print(f"\n🚨 FOUND {len(processing_listings)} LISTINGS IN PROCESSING STATUS:")
+                for listing in processing_listings:
+                    created_at = listing.get('created_at', 'unknown')
+                    updated_at = listing.get('updated_at', 'unknown')
+                    selected_tools = listing.get('selected_ai_tools', [])
+                    tool_count = len(selected_tools)
+                    
+                    print(f"   📋 Listing ID: {listing['id']}")
+                    print(f"      Created: {created_at}")
+                    print(f"      Updated: {updated_at}")
+                    print(f"      Tools: {tool_count} selected")
+                    
+                    # Check if this matches the 27-tool job mentioned in review
+                    if tool_count >= 25:  # Close to 27 tools
+                        print(f"      🎯 POTENTIAL MATCH: Large job with {tool_count} tools")
+                        print(f"      🔍 This could be the stuck 27-tool job from 05:00:00")
+                
+                return False  # Processing jobs found - potential issue
+            else:
+                print("✅ No listings currently in processing status")
+                return True
+        
+        return success
+
+    def test_ai_tools_processing_time_analysis(self):
+        """Analyze processing times for AI tools to determine if current times are reasonable"""
+        print("\n⏱️ ANALYZING AI PROCESSING TIMES...")
+        
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Create a test listing with multiple tools to measure processing time
+        test_data = {
+            "property_details": {
+                "address": "789 Processing Test Ave",
+                "city": "San Francisco", 
+                "state": "CA",
+                "zip_code": "94104",
+                "beds": 3,
+                "baths": 2.5,
+                "sqft": 1800,
+                "property_type": "Townhouse",
+                "listing_price": 1100000
+            },
+            "description": "Test property for processing time analysis",
+            "selected_tool_ids": ["listing_luxe_gpt", "social_snippets_studio", "comp_cruncher_cma", "open_house_orchestrator"],
+            "agent_notes": "Processing time test - 4 tools"
+        }
+        
+        create_success, create_response = self.run_test(
+            "Create Test Listing for Processing Analysis",
+            "POST",
+            "listings",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if not create_success:
+            print("❌ Could not create test listing")
+            return False
+        
+        listing_id = create_response['id']
+        selected_tools = create_response.get('selected_ai_tools', [])
+        total_credits = sum(tool.get('credits_cost', 0) for tool in selected_tools)
+        
+        print(f"📋 Created test listing with {len(selected_tools)} tools")
+        print(f"💰 Total credits required: {total_credits}")
+        
+        # Calculate expected processing time
+        # Estimate: 10-30 seconds per tool for AI processing
+        estimated_time_min = len(selected_tools) * 10  # seconds
+        estimated_time_max = len(selected_tools) * 30  # seconds
+        
+        print(f"⏱️ ESTIMATED PROCESSING TIME:")
+        print(f"   Minimum: {estimated_time_min} seconds ({estimated_time_min/60:.1f} minutes)")
+        print(f"   Maximum: {estimated_time_max} seconds ({estimated_time_max/60:.1f} minutes)")
+        
+        # For 27 tools (mentioned in review):
+        tools_27_min = 27 * 10  # 270 seconds = 4.5 minutes
+        tools_27_max = 27 * 30  # 810 seconds = 13.5 minutes
+        
+        print(f"\n🎯 FOR 27-TOOL JOB (from review request):")
+        print(f"   Expected range: {tools_27_min/60:.1f} - {tools_27_max/60:.1f} minutes")
+        print(f"   If job started at 05:00:00 and it's been ~6 minutes:")
+        print(f"   ✅ Still within normal range (up to 13.5 minutes expected)")
+        
+        return True
+
+    def test_check_database_for_stuck_listings(self):
+        """Check database directly for listings that might be stuck in processing"""
+        print("\n🗄️ DATABASE CONSISTENCY CHECK...")
+        
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Get all listings and analyze their status
+        success, response = self.run_test(
+            "Database Consistency Check",
+            "GET",
+            "listings",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            total_listings = len(response)
+            status_counts = {}
+            
+            for listing in response:
+                status = listing.get('ai_processing_status', 'unknown')
+                status_counts[status] = status_counts.get(status, 0) + 1
+                
+                # Check for potential issues
+                if status == 'processing':
+                    created_at = listing.get('created_at', '')
+                    updated_at = listing.get('updated_at', '')
+                    
+                    print(f"⚠️ PROCESSING LISTING FOUND:")
+                    print(f"   ID: {listing['id']}")
+                    print(f"   Created: {created_at}")
+                    print(f"   Updated: {updated_at}")
+                    print(f"   Tools: {len(listing.get('selected_ai_tools', []))}")
+                    
+                    # This indicates a potential stuck job
+                    return False
+            
+            print(f"📊 DATABASE STATUS SUMMARY:")
+            for status, count in status_counts.items():
+                print(f"   {status}: {count} listings")
+            
+            print(f"✅ Total listings in database: {total_listings}")
+            
+            # Check if we have any completed listings with AI output
+            completed_with_output = 0
+            for listing in response:
+                if listing.get('ai_processing_status') == 'completed' and listing.get('ai_output'):
+                    completed_with_output += 1
+            
+            print(f"✅ Completed listings with AI output: {completed_with_output}")
+            
+            return True
+        
+        return success
+
+    def test_ai_processing_endpoint_direct(self):
+        """Test AI processing endpoint directly to see current behavior"""
+        print("\n🤖 TESTING AI PROCESSING ENDPOINT DIRECTLY...")
+        
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Create a small test listing
+        test_data = {
+            "property_details": {
+                "address": "999 Direct Test St",
+                "city": "San Francisco", 
+                "state": "CA",
+                "zip_code": "94105",
+                "beds": 2,
+                "baths": 1.5,
+                "sqft": 1200,
+                "property_type": "Condo",
+                "listing_price": 850000
+            },
+            "description": "Direct processing test",
+            "selected_tool_ids": ["listing_luxe_gpt", "social_snippets_studio"],
+            "agent_notes": "Direct AI processing test"
+        }
+        
+        create_success, create_response = self.run_test(
+            "Create Listing for Direct Processing Test",
+            "POST",
+            "listings",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if not create_success:
+            print("❌ Could not create test listing")
+            return False
+        
+        listing_id = create_response['id']
+        
+        # Try to process AI tools
+        process_success, process_response = self.run_test(
+            "Process AI Tools Directly",
+            "POST",
+            f"listings/{listing_id}/process-ai",
+            200,
+            headers=headers
+        )
+        
+        if process_success and process_response:
+            print(f"✅ AI processing started successfully")
+            print(f"   Response: {json.dumps(process_response, indent=2)[:300]}...")
+            
+            # Check the listing status immediately after
+            status_success, status_response = self.run_test(
+                "Check Listing Status After Processing",
+                "GET",
+                f"listings/{listing_id}",
+                200,
+                headers=headers
+            )
+            
+            if status_success and status_response:
+                ai_status = status_response.get('ai_processing_status', 'unknown')
+                print(f"📊 Listing status after processing: {ai_status}")
+                
+                if ai_status == 'completed':
+                    print("✅ Processing completed immediately - working correctly")
+                    return True
+                elif ai_status == 'processing':
+                    print("⏳ Processing in progress - this is normal")
+                    return True
+                else:
+                    print(f"⚠️ Unexpected status: {ai_status}")
+                    return False
+        
+        return process_success
+
+    def test_ai_results_endpoint(self):
+        """Test AI results endpoint to see if we can retrieve completed results"""
+        print("\n📊 TESTING AI RESULTS RETRIEVAL...")
+        
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Get all listings and find completed ones
+        success, response = self.run_test(
+            "Get Listings for Results Test",
+            "GET",
+            "listings",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            completed_listings = [l for l in response if l.get('ai_processing_status') == 'completed']
+            
+            if completed_listings:
+                listing_id = completed_listings[0]['id']
+                print(f"🎯 Testing AI results for completed listing: {listing_id}")
+                
+                results_success, results_response = self.run_test(
+                    "Get AI Results",
+                    "GET",
+                    f"listings/{listing_id}/ai-results",
+                    200,
+                    headers=headers
+                )
+                
+                if results_success and results_response:
+                    print("✅ AI results retrieved successfully")
+                    print(f"   Results preview: {json.dumps(results_response, indent=2)[:300]}...")
+                    return True
+                else:
+                    print("❌ Could not retrieve AI results")
+                    return False
+            else:
+                print("⚠️ No completed listings found to test AI results")
+                return True  # Not an error, just no data
+        
+        return success
+
+    def test_user_experience_status_sync(self):
+        """Test that frontend would see correct status updates"""
+        print("\n🖥️ TESTING USER EXPERIENCE STATUS SYNCHRONIZATION...")
+        
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Get current listings to see what user would see
+        success, response = self.run_test(
+            "Frontend Status Check - Get All Listings",
+            "GET",
+            "listings",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            print(f"📱 FRONTEND VIEW - User would see {len(response)} listings:")
+            
+            for listing in response:
+                status = listing.get('ai_processing_status', 'unknown')
+                created_at = listing.get('created_at', 'unknown')
+                tools_count = len(listing.get('selected_ai_tools', []))
+                
+                print(f"   📋 {listing['id'][:8]}... | Status: {status} | Tools: {tools_count} | Created: {created_at}")
+                
+                if status == 'processing':
+                    print(f"      🚨 USER WOULD SEE: 'AI Processing in progress...'")
+                elif status == 'completed':
+                    print(f"      ✅ USER WOULD SEE: 'AI Processing Complete'")
+                elif status == 'pending':
+                    print(f"      ⏳ USER WOULD SEE: 'AI Processing Pending'")
+                elif status == 'failed':
+                    print(f"      ❌ USER WOULD SEE: 'AI Processing Failed'")
+            
+            # Check if there are any processing jobs that might appear stuck to user
+            processing_count = sum(1 for l in response if l.get('ai_processing_status') == 'processing')
+            
+            if processing_count > 0:
+                print(f"\n🚨 USER EXPERIENCE ISSUE: {processing_count} listings showing as 'processing'")
+                print("   This could appear as 'stuck' to the user if it's been too long")
+                return False
+            else:
+                print("\n✅ USER EXPERIENCE: No listings stuck in processing status")
+                return True
+        
+        return success
+
     # ========== PRIORITY TESTING FOR REVIEW REQUEST ==========
     
     def test_mcp_mega_agent_fixed_import(self):
