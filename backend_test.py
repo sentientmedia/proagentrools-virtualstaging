@@ -1752,6 +1752,482 @@ class ProAgentToolsAPITester:
         
         return success
 
+    # ========== NEW LISTING-CENTRIC ENDPOINTS TESTS ==========
+    
+    def test_listing_image_upload(self):
+        """Test POST /api/listings/{listing_id}/images/upload - Upload multiple images"""
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        # First create a listing if we don't have one
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Create multiple test images
+        test_image1 = self.create_test_image()
+        test_image2 = self.create_test_image()
+        
+        files = [
+            ('files', ('test_image1.jpg', test_image1, 'image/jpeg')),
+            ('files', ('test_image2.jpg', test_image2, 'image/jpeg'))
+        ]
+        
+        success, response = self.run_test(
+            "Upload Listing Images",
+            "POST",
+            f"listings/{self.test_listing_id}/images/upload",
+            200,
+            files=files,
+            headers=headers
+        )
+        
+        if success and response:
+            if not response.get('success'):
+                print("❌ Upload response did not indicate success")
+                return False
+            
+            if response.get('uploaded_count') != 2:
+                print(f"❌ Expected 2 uploaded images, got {response.get('uploaded_count')}")
+                return False
+            
+            images = response.get('images', [])
+            if len(images) != 2:
+                print(f"❌ Expected 2 image records, got {len(images)}")
+                return False
+            
+            # Verify image structure
+            for image in images:
+                required_fields = ['id', 'filename', 'url', 'uploaded_at', 'file_size']
+                for field in required_fields:
+                    if field not in image:
+                        print(f"❌ Missing required field '{field}' in image record")
+                        return False
+            
+            # Store image IDs for later tests
+            self.test_image_ids = [img['id'] for img in images]
+            
+            print(f"✅ Successfully uploaded {response.get('uploaded_count')} images")
+            return True
+        
+        return success
+
+    def test_get_listing_images(self):
+        """Test GET /api/listings/{listing_id}/images - Get all listing images"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        if not hasattr(self, 'test_listing_id'):
+            print("⚠️ No test listing available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        success, response = self.run_test(
+            "Get Listing Images",
+            "GET",
+            f"listings/{self.test_listing_id}/images",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            required_fields = ['listing_id', 'photos', 'interior_design_variants']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            if response['listing_id'] != self.test_listing_id:
+                print(f"❌ Listing ID mismatch: expected {self.test_listing_id}, got {response['listing_id']}")
+                return False
+            
+            photos = response.get('photos', [])
+            variants = response.get('interior_design_variants', [])
+            
+            print(f"✅ Retrieved {len(photos)} photos and {len(variants)} interior design variants")
+            return True
+        
+        return success
+
+    def test_serve_listing_image(self):
+        """Test GET /api/listings/{listing_id}/images/{filename} - Serve image file"""
+        if not hasattr(self, 'test_listing_id') or not hasattr(self, 'test_image_ids'):
+            print("⚠️ No test images available, skipping test")
+            return False
+        
+        # Get the first uploaded image filename
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        success, response = self.run_test(
+            "Get Images for Filename",
+            "GET",
+            f"listings/{self.test_listing_id}/images",
+            200,
+            headers=headers
+        )
+        
+        if not success or not response.get('photos'):
+            print("❌ Could not get image filename for serving test")
+            return False
+        
+        filename = response['photos'][0]['filename']
+        
+        # Test serving the image (no auth required for serving)
+        success, response = self.run_test(
+            "Serve Listing Image",
+            "GET",
+            f"listings/{self.test_listing_id}/images/{filename}",
+            200
+        )
+        
+        if success:
+            print("✅ Image served successfully with caching headers")
+            return True
+        
+        return success
+
+    def test_delete_listing_image(self):
+        """Test DELETE /api/listings/{listing_id}/images/{image_id} - Delete an image"""
+        if not self.user_token or not hasattr(self, 'test_listing_id') or not hasattr(self, 'test_image_ids'):
+            print("⚠️ No test images available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        image_id = self.test_image_ids[0]  # Delete the first image
+        
+        success, response = self.run_test(
+            "Delete Listing Image",
+            "DELETE",
+            f"listings/{self.test_listing_id}/images/{image_id}",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            if not response.get('success'):
+                print("❌ Delete response did not indicate success")
+                return False
+            
+            print("✅ Image deleted successfully")
+            return True
+        
+        return success
+
+    def test_generate_module_content(self):
+        """Test POST /api/listings/{listing_id}/modules/{module_name}/generate - Generate AI content"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Test generating listing_copy module
+        test_data = {
+            "module_name": "listing_copy",
+            "additional_context": "Focus on the modern kitchen and mountain views"
+        }
+        
+        success, response = self.run_test(
+            "Generate Module Content (listing_copy)",
+            "POST",
+            f"listings/{self.test_listing_id}/modules/listing_copy/generate",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if success and response:
+            required_fields = ['success', 'module_name', 'content', 'credits_used', 'remaining_credits']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            if response.get('credits_used') != 1:
+                print(f"❌ Expected 1 credit used, got {response.get('credits_used')}")
+                return False
+            
+            if not response.get('content'):
+                print("❌ No content generated")
+                return False
+            
+            print(f"✅ Generated content for {response.get('module_name')} module")
+            print(f"   Credits used: {response.get('credits_used')}")
+            print(f"   Content length: {len(response.get('content', ''))}")
+            return True
+        
+        return success
+
+    def test_update_module_content(self):
+        """Test PUT /api/listings/{listing_id}/modules/{module_name} - Update module content manually"""
+        if not self.user_token or not hasattr(self, 'test_listing_id'):
+            print("⚠️ No test listing available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # First generate content if not exists
+        self.test_generate_module_content()
+        
+        # Update the content
+        test_data = {
+            "content": "This is manually updated listing copy content with custom details about the property."
+        }
+        
+        success, response = self.run_test(
+            "Update Module Content",
+            "PUT",
+            f"listings/{self.test_listing_id}/modules/listing_copy",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if success and response:
+            required_fields = ['success', 'module_name', 'content']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            if response.get('content') != test_data['content']:
+                print("❌ Content not updated correctly")
+                return False
+            
+            print("✅ Module content updated successfully")
+            return True
+        
+        return success
+
+    def test_chat_improve_module(self):
+        """Test POST /api/listings/{listing_id}/modules/{module_name}/chat - Chat to improve content"""
+        if not self.user_token or not hasattr(self, 'test_listing_id'):
+            print("⚠️ No test listing available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Ensure we have content to improve
+        self.test_generate_module_content()
+        
+        # Chat to improve the content
+        test_data = {
+            "message": "Make the description more luxurious and emphasize the mountain views",
+            "module_name": "listing_copy"
+        }
+        
+        success, response = self.run_test(
+            "Chat Improve Module Content",
+            "POST",
+            f"listings/{self.test_listing_id}/modules/listing_copy/chat",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if success and response:
+            required_fields = ['success', 'response', 'credits_used', 'remaining_credits', 'chat_history']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            if response.get('credits_used') != 1:
+                print(f"❌ Expected 1 credit used, got {response.get('credits_used')}")
+                return False
+            
+            chat_history = response.get('chat_history', [])
+            if len(chat_history) < 2:  # Should have user message and assistant response
+                print(f"❌ Expected at least 2 chat messages, got {len(chat_history)}")
+                return False
+            
+            print("✅ Chat improvement successful")
+            print(f"   Credits used: {response.get('credits_used')}")
+            print(f"   Chat history length: {len(chat_history)}")
+            return True
+        
+        return success
+
+    def test_process_listing_interior_design(self):
+        """Test POST /api/listings/{listing_id}/interior-design/process - Process images through interior design"""
+        if not self.user_token or not hasattr(self, 'test_listing_id'):
+            print("⚠️ No test listing available, skipping test")
+            return False
+        
+        # Ensure we have uploaded images
+        if not hasattr(self, 'test_image_ids'):
+            if not self.test_listing_image_upload():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Process one image through interior design
+        test_data = {
+            "image_ids": [self.test_image_ids[0]],  # Process first image
+            "room_type": "living_room",
+            "designer": "alessia_duval",
+            "color_scheme": "glacial_muse"
+        }
+        
+        success, response = self.run_test(
+            "Process Listing Interior Design",
+            "POST",
+            f"listings/{self.test_listing_id}/interior-design/process",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if success and response:
+            required_fields = ['success', 'processed_count', 'credits_used', 'remaining_credits', 'variants']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            if response.get('processed_count') != 1:
+                print(f"❌ Expected 1 processed image, got {response.get('processed_count')}")
+                return False
+            
+            # Should cost 5 credits per image
+            if response.get('credits_used') != 5:
+                print(f"❌ Expected 5 credits used, got {response.get('credits_used')}")
+                return False
+            
+            variants = response.get('variants', [])
+            if len(variants) != 1:
+                print(f"❌ Expected 1 variant, got {len(variants)}")
+                return False
+            
+            # Verify variant structure
+            variant = variants[0]
+            required_variant_fields = ['id', 'original_image_id', 'designer', 'color_scheme', 'room_type']
+            for field in required_variant_fields:
+                if field not in variant:
+                    print(f"❌ Missing required field '{field}' in variant")
+                    return False
+            
+            print("✅ Interior design processing successful")
+            print(f"   Processed images: {response.get('processed_count')}")
+            print(f"   Credits used: {response.get('credits_used')}")
+            return True
+        
+        return success
+
+    def test_comprehensive_listing_workflow(self):
+        """Test complete workflow: Create listing -> Upload images -> Generate content -> Chat -> Interior design"""
+        print("\n🔄 COMPREHENSIVE LISTING WORKFLOW TEST...")
+        
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        # Step 1: Create listing
+        if not self.test_create_listing_authenticated():
+            print("❌ Failed to create listing")
+            return False
+        
+        # Step 2: Upload images
+        if not self.test_listing_image_upload():
+            print("❌ Failed to upload images")
+            return False
+        
+        # Step 3: Generate AI content
+        if not self.test_generate_module_content():
+            print("❌ Failed to generate content")
+            return False
+        
+        # Step 4: Update content manually
+        if not self.test_update_module_content():
+            print("❌ Failed to update content")
+            return False
+        
+        # Step 5: Chat to improve content
+        if not self.test_chat_improve_module():
+            print("❌ Failed to chat improve")
+            return False
+        
+        # Step 6: Process interior design
+        if not self.test_process_listing_interior_design():
+            print("❌ Failed to process interior design")
+            return False
+        
+        print("✅ COMPREHENSIVE WORKFLOW COMPLETED SUCCESSFULLY")
+        return True
+
+    def test_authentication_requirements_new_endpoints(self):
+        """Test that all new endpoints require authentication"""
+        print("\n🔐 TESTING AUTHENTICATION REQUIREMENTS FOR NEW ENDPOINTS...")
+        
+        fake_listing_id = str(uuid.uuid4())
+        fake_image_id = str(uuid.uuid4())
+        
+        # Test endpoints without authentication
+        endpoints_to_test = [
+            ("POST", f"listings/{fake_listing_id}/images/upload", "Upload Images"),
+            ("GET", f"listings/{fake_listing_id}/images", "Get Images"),
+            ("DELETE", f"listings/{fake_listing_id}/images/{fake_image_id}", "Delete Image"),
+            ("POST", f"listings/{fake_listing_id}/modules/listing_copy/generate", "Generate Content"),
+            ("PUT", f"listings/{fake_listing_id}/modules/listing_copy", "Update Content"),
+            ("POST", f"listings/{fake_listing_id}/modules/listing_copy/chat", "Chat Improve"),
+            ("POST", f"listings/{fake_listing_id}/interior-design/process", "Interior Design")
+        ]
+        
+        all_protected = True
+        
+        for method, endpoint, name in endpoints_to_test:
+            success, response = self.run_test(
+                f"{name} Without Auth (Should Fail)",
+                method,
+                endpoint,
+                401,
+                data={"test": "data"} if method in ["POST", "PUT"] else None
+            )
+            
+            if not success:
+                print(f"❌ {name} endpoint not properly protected")
+                all_protected = False
+            else:
+                print(f"✅ {name} endpoint properly requires authentication")
+        
+        return all_protected
+
+    def test_error_handling_new_endpoints(self):
+        """Test error handling for new endpoints"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        fake_listing_id = str(uuid.uuid4())
+        fake_image_id = str(uuid.uuid4())
+        
+        # Test with non-existent listing
+        success, response = self.run_test(
+            "Generate Content for Non-existent Listing (Should Fail)",
+            "POST",
+            f"listings/{fake_listing_id}/modules/listing_copy/generate",
+            404,
+            data={"module_name": "listing_copy"},
+            headers=headers
+        )
+        
+        if success:
+            print("✅ Proper error handling for non-existent listing")
+            return True
+        
+        return success
+
     # ========== AI PROCESSING STATUS DEBUG TESTS ==========
     
     def test_current_processing_status(self):
