@@ -43,6 +43,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   useEffect(() => {
     if (listingId) {
       loadListing();
+      loadImages();
     }
   }, [listingId]);
 
@@ -57,6 +58,17 @@ const IndividualListingPage = ({ listingId, onBack }) => {
       console.error('Failed to load listing:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadImages = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}/images`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setImages(response.data.photos || []);
+    } catch (err) {
+      console.error('Failed to load images:', err);
     }
   };
 
