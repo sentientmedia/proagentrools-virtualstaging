@@ -361,8 +361,10 @@ class ListingPhoto(BaseModel):
 
 class InteriorDesignVariant(BaseModel):
     id: str
+    design_request_id: str
     original_image_id: str
-    processed_image_url: str
+    processed_image_url: Optional[str] = None
+    status: str = "processing"  # processing, completed, failed
     designer: str
     color_scheme: str
     room_type: str
