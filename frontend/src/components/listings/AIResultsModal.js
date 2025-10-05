@@ -51,6 +51,15 @@ const AIResultsModal = ({ listingId, onClose }) => {
     
     // If output has structured data, format it nicely
     if (typeof output === 'object' && output.content) {
+      // Try to parse content if it's JSON string
+      if (typeof output.content === 'string') {
+        try {
+          const parsed = JSON.parse(output.content);
+          return formatParsedOutput(parsed);
+        } catch {
+          return output.content;
+        }
+      }
       return output.content;
     }
     
@@ -58,13 +67,54 @@ const AIResultsModal = ({ listingId, onClose }) => {
     if (typeof output === 'string') {
       try {
         const parsed = JSON.parse(output);
-        return JSON.stringify(parsed, null, 2);
+        return formatParsedOutput(parsed);
       } catch {
         return output;
       }
     }
     
-    return JSON.stringify(output, null, 2);
+    // If output is already an object, format it
+    if (typeof output === 'object') {
+      return formatParsedOutput(output);
+    }
+    
+    return String(output);
+  };
+
+  const formatParsedOutput = (data) => {
+    if (!data || typeof data !== 'object') return String(data);
+
+    let formatted = '';
+
+    // Handle different output structures
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === 'TOOL 1' || key.includes('TOOL')) {
+        // Skip tool wrapper keys
+        if (typeof value === 'object') {
+          formatted += formatParsedOutput(value);
+        }
+        return;
+      }
+
+      // Format the key nicely
+      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
+      if (Array.isArray(value)) {
+        formatted += `**${formattedKey}:**\n`;
+        value.forEach((item, index) => {
+          formatted += `${index + 1}. ${item}\n`;
+        });
+        formatted += '\n';
+      } else if (typeof value === 'object') {
+        formatted += `**${formattedKey}:**\n`;
+        formatted += formatParsedOutput(value);
+        formatted += '\n';
+      } else {
+        formatted += `**${formattedKey}:**\n${value}\n\n`;
+      }
+    });
+
+    return formatted;
   };
 
   const getCategoryIcon = (category) => {
