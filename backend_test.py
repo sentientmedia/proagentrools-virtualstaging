@@ -1952,8 +1952,8 @@ class ProAgentToolsAPITester:
         
         # Test with JSON data (the fix)
         update_data = {
-            "watermark_position": "top-right",
-            "watermark_opacity": 0.8,
+            "position": "top-right",
+            "opacity": 0.8,
             "brand_colors": {
                 "primary": "#FF6B35",
                 "secondary": "#004E89"
