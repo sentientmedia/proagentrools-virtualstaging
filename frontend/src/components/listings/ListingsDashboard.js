@@ -277,12 +277,26 @@ const ListingsDashboard = () => {
                       <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                         View Details
                       </button>
-                      <button className="text-sm text-green-600 hover:text-green-700 font-medium">
+                      <button 
+                        onClick={() => window.location.href = `#interior-design`}
+                        className="text-sm text-green-600 hover:text-green-700 font-medium"
+                      >
                         Interior Design
                       </button>
-                      {listing.ai_processing_status === 'pending' && (
-                        <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">
-                          Process AI
+                      {listing.ai_processing_status === 'pending' && listing.selected_ai_tools.length > 0 && (
+                        <button 
+                          onClick={() => handleProcessAI(listing.id)}
+                          className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                        >
+                          Process AI ({listing.selected_ai_tools.reduce((sum, tool) => sum + tool.credits_cost, 0)} credits)
+                        </button>
+                      )}
+                      {listing.ai_processing_status === 'completed' && (
+                        <button 
+                          onClick={() => handleViewAIResults(listing.id)}
+                          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          View AI Results
                         </button>
                       )}
                     </div>
