@@ -30,6 +30,7 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
   const [aiTools, setAiTools] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showCreditConfirmation, setShowCreditConfirmation] = useState(false);
 
   const propertyTypes = [
     'Single Family', 'Condo', 'Townhouse', 'Multi-Family', 
