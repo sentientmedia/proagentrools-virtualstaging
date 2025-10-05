@@ -126,8 +126,8 @@ class ProAgentToolsMegaAgent:
         
         # Process with unified context
         try:
-            response = await self.client.achat.completions.create(
-                model="openai/gpt-4o",  # Using latest GPT-4 for best results
+            response = self.client.chat.completions.create(
+                model="gpt-4o",  # Using latest GPT-4 with emergent key
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": self._format_batch_request(tool_prompts)}
