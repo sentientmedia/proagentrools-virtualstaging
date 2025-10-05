@@ -24,6 +24,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   
   // Interior design state
   const [processingDesign, setProcessingDesign] = useState(false);
+  
+  // Designer bio modal
+  const [selectedDesigner, setSelectedDesigner] = useState(null);
+  const [showDesignerModal, setShowDesignerModal] = useState(false);
 
   const modules = [
     // Foundation modules (auto-generated, always unlocked)
