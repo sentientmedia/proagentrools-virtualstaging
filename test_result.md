@@ -220,9 +220,9 @@
     implemented: true
     working: true
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -233,6 +233,12 @@
         - working: true
           agent: "testing"
           comment: "✅ RE-TEST SUCCESSFUL: Interior design processing working correctly with uploaded images. Successfully processed 2 images, deducted 10 credits (5 per image), created variants with proper structure (id, original_image_id, designer, color_scheme, room_type). Uses OpenAI for prompt generation and Replicate for image processing. Authentication and credit system working. Previous issue was test setup - needed to upload images to listing first."
+        - working: false
+          agent: "user"
+          comment: "❌ USER REPORT: Interior design images not processing correctly. Frontend shows 'Processing...' indefinitely even after processing completes."
+        - working: "NA"
+          agent: "main"
+          comment: "🔍 ROOT CAUSE IDENTIFIED: process_image_async updates interior_designs collection with completion status but NEVER updates the listing's interior_design_variants array. Frontend reads from variants array and sees status='processing' forever. CRITICAL FIX APPLIED: Modified process_image_async (lines 2935-2965) to also update listing's interior_design_variants array when processing completes or fails, using MongoDB positional operator to match by design_request_id. Now syncs completion status, processed_image_url, watermarked_image_url to the listing. Needs comprehensive testing to verify fix works."
 
 
   - task: "PHASE 2: MCP Mega-Agent AI Tools Processing - POST /api/listings/{listing_id}/process-ai"
