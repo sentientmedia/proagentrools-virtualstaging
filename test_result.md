@@ -137,15 +137,18 @@
 
   - task: "NEW: Serve Listing Image - GET /api/listings/{listing_id}/images/{filename}"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Serves image files from listing-specific directories with caching headers. Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Image serving working perfectly. Successfully serves uploaded images with proper MIME types and caching headers (Cache-Control: public, max-age=31536000). No authentication required for serving (public access). FileResponse implementation correct."
 
   - task: "NEW: Delete Listing Image - DELETE /api/listings/{listing_id}/images/{image_id}"
     implemented: true
