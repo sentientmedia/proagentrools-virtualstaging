@@ -1384,8 +1384,7 @@ Additional Context: {request.additional_context or 'None provided'}
         }
         
         system_message = f"You are an expert real estate copywriter and marketing professional. Generate high-quality, professional content for real estate listings."
-        prompt = f"{module_prompts.get(module_name, 'Generate professional content for this property listing.'
-)}\n\nProperty Information:\n{context}"
+        prompt = f"{module_prompts.get(module_name, 'Generate professional content for this property listing.')}\n\nProperty Information:\n{context}"
         
         # Initialize chat with Emergent LLM
         chat = LlmChat(
