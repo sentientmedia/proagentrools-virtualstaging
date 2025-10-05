@@ -15,6 +15,19 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   const [editContent, setEditContent] = useState('');
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+  
+  // Image management state
+  const [images, setImages] = useState([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [selectedImageIds, setSelectedImageIds] = useState([]);
+  
+  // Interior design state
+  const [processingDesign, setProcessingDesign] = useState(false);
+  const [designSettings, setDesignSettings] = useState({
+    room_type: 'living_room',
+    designer: 'alessia_duval',
+    color_scheme: 'glacial_muse'
+  });
 
   const modules = [
     { id: 'details', name: 'Listing Details', icon: '📝' },
