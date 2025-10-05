@@ -2139,6 +2139,21 @@ def main():
     print("\n❌ Testing Error Handling...")
     tester.test_invalid_endpoints()
     
+    # ========== NEW LISTING MANAGEMENT SYSTEM TESTS ==========
+    print("\n🏢 Testing New Listing Management System...")
+    tester.test_ai_tools_catalog_endpoint()
+    tester.test_create_listing_without_auth()
+    tester.test_create_listing_authenticated()
+    tester.test_get_user_listings_without_auth()
+    tester.test_get_user_listings()
+    tester.test_get_specific_listing()
+    tester.test_get_nonexistent_listing()
+    tester.test_update_listing()
+    tester.test_delete_listing()
+    tester.test_user_isolation_listings()
+    tester.test_listing_data_validation()
+    tester.test_listing_ai_processing_status()
+    
     # Print final results
     print("\n" + "=" * 80)
     print(f"📊 FINAL RESULTS:")
