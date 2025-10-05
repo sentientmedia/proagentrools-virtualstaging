@@ -200,13 +200,13 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   };
 
   const handleProcessInteriorDesign = async () => {
-    if (selectedImageIds.length === 0) {
+    if (selectedImages.length === 0) {
       alert('Please select at least one image to process');
       return;
     }
 
-    const creditsNeeded = selectedImageIds.length * 5;
-    if (!window.confirm(`Process ${selectedImageIds.length} image(s) with interior design? This will cost ${creditsNeeded} credits.`)) {
+    const creditsNeeded = selectedImages.length * 5;
+    if (!window.confirm(`Process ${selectedImages.length} image(s) with interior design? This will cost ${creditsNeeded} credits.`)) {
       return;
     }
 
@@ -216,16 +216,16 @@ const IndividualListingPage = ({ listingId, onBack }) => {
       const response = await axios.post(
         `${BACKEND_URL}/api/listings/${listingId}/interior-design/process`,
         {
-          image_ids: selectedImageIds,
-          ...designSettings
+          images: selectedImages  // Send per-image settings
         },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        alert(`Successfully processed ${response.data.processed_count} image(s)!`);
-        setSelectedImageIds([]);
+        alert(`${response.data.message}\n\nProcessed: ${response.data.processed_count} image(s)`);
+        setSelectedImages([]);
         await loadListing();
+        await loadImages();
       }
     } catch (err) {
       console.error('Failed to process interior design:', err);
