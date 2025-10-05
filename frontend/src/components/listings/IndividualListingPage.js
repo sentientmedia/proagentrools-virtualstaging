@@ -343,6 +343,214 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     );
   };
 
+  const renderImages = () => {
+    return (
+      <div className="space-y-6">
+        {/* Upload Section */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Images</h3>
+          <div className="flex items-center space-x-4">
+            <label className="cursor-pointer bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={uploadingImages}
+              />
+              {uploadingImages ? 'Uploading...' : '📤 Upload Images'}
+            </label>
+            <span className="text-sm text-gray-600">Select multiple images to upload at once</span>
+          </div>
+        </div>
+
+        {/* Images Grid */}
+        {images.length > 0 ? (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Property Images ({images.length})
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {images.map(image => (
+                <div key={image.id} className="relative group">
+                  <img
+                    src={`${BACKEND_URL}${image.url}`}
+                    alt={image.filename}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity rounded-lg flex items-center justify-center">
+                    <button
+                      onClick={() => handleDeleteImage(image.id)}
+                      className="opacity-0 group-hover:opacity-100 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  {image.is_primary && (
+                    <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                      Primary
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <span className="text-4xl mb-2 block">📸</span>
+            <p className="text-gray-600">No images uploaded yet</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderInteriorDesign = () => {
+    return (
+      <div className="space-y-6">
+        {/* Selection Info */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-blue-800">
+            💡 Select images from your property photos, choose design settings, and process them with AI interior design (5 credits per image)
+          </p>
+        </div>
+
+        {images.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <span className="text-4xl mb-2 block">🎨</span>
+            <p className="text-gray-600 mb-4">Upload images first to use interior design</p>
+            <button
+              onClick={() => setActiveModule('images')}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Go to Images
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Design Settings */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Design Settings</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Room Type</label>
+                  <select
+                    value={designSettings.room_type}
+                    onChange={(e) => setDesignSettings({...designSettings, room_type: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="living_room">Living Room</option>
+                    <option value="bedroom">Bedroom</option>
+                    <option value="kitchen">Kitchen</option>
+                    <option value="bathroom">Bathroom</option>
+                    <option value="dining_room">Dining Room</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Designer Style</label>
+                  <select
+                    value={designSettings.designer}
+                    onChange={(e) => setDesignSettings({...designSettings, designer: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="alessia_duval">Alessia Duval</option>
+                    <option value="adrian_mercer">Adrian Mercer</option>
+                    <option value="lucien_hart">Lucien Hart</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
+                  <select
+                    value={designSettings.color_scheme}
+                    onChange={(e) => setDesignSettings({...designSettings, color_scheme: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="glacial_muse">Glacial Muse</option>
+                    <option value="nomad_prism">Nomad Prism</option>
+                    <option value="urban_alloy">Urban Alloy</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Image Selection */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Select Images to Process ({selectedImageIds.length} selected)
+                </h3>
+                <button
+                  onClick={handleProcessInteriorDesign}
+                  disabled={selectedImageIds.length === 0 || processingDesign}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                >
+                  {processingDesign ? 'Processing...' : `Process Selected (${selectedImageIds.length * 5} credits)`}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {images.map(image => (
+                  <div
+                    key={image.id}
+                    onClick={() => {
+                      setSelectedImageIds(prev =>
+                        prev.includes(image.id)
+                          ? prev.filter(id => id !== image.id)
+                          : [...prev, image.id]
+                      );
+                    }}
+                    className={`relative cursor-pointer border-4 rounded-lg transition-all ${
+                      selectedImageIds.includes(image.id)
+                        ? 'border-blue-600 shadow-lg'
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={`${BACKEND_URL}${image.url}`}
+                      alt={image.filename}
+                      className="w-full h-48 object-cover rounded"
+                    />
+                    {selectedImageIds.includes(image.id) && (
+                      <div className="absolute top-2 right-2 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                        ✓
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Interior Design Variants */}
+            {listing?.interior_design_variants?.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Processed Designs ({listing.interior_design_variants.length})
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {listing.interior_design_variants.map(variant => (
+                    <div key={variant.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <img
+                        src={`${BACKEND_URL}${variant.processed_image_url}`}
+                        alt="Interior Design"
+                        className="w-full h-48 object-cover"
+                      />
+                      <div className="p-3 bg-white">
+                        <div className="text-xs text-gray-600">
+                          {variant.designer} • {variant.color_scheme}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
   const renderDetails = () => {
     if (!listing) return null;
     const { property_details } = listing;
