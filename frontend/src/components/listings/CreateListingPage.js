@@ -80,6 +80,22 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Check if user has disabled credit confirmations
+    const confirmationDisabled = localStorage.getItem('creditConfirmationDisabled') === 'true';
+    const totalCredits = calculateTotalCredits();
+
+    // If tools are selected and confirmations are enabled, show confirmation modal
+    if (formData.selected_tool_ids.length > 0 && !confirmationDisabled && totalCredits > 0) {
+      setShowCreditConfirmation(true);
+      return;
+    }
+
+    // Proceed with creation
+    await createListing();
+  };
+
+  const createListing = async () => {
     setLoading(true);
 
     try {
@@ -126,6 +142,30 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreditConfirmation = () => {
+    setShowCreditConfirmation(false);
+    createListing();
+  };
+
+  const handleCreditCancel = () => {
+    setShowCreditConfirmation(false);
+  };
+
+  const getSelectedToolsForModal = () => {
+    const selectedTools = [];
+    Object.values(aiTools).flat().forEach(tool => {
+      if (formData.selected_tool_ids.includes(tool.id)) {
+        selectedTools.push({
+          tool_id: tool.id,
+          tool_name: tool.name,
+          category: tool.category,
+          credits_cost: tool.credits_cost
+        });
+      }
+    });
+    return selectedTools;
   };
 
   return (
