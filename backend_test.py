@@ -4627,6 +4627,35 @@ class ProAgentToolsAPITester:
         print("   Max size: 5MB validation implemented")
         return True
 
+    def run_critical_interior_design_tests(self):
+        """Run CRITICAL tests for interior design processing fix"""
+        print("\n" + "="*80)
+        print("🔥 CRITICAL INTERIOR DESIGN PROCESSING FIX TESTS")
+        print("="*80)
+        
+        critical_tests = [
+            ("CRITICAL: Complete Interior Design Processing Flow", self.test_interior_design_processing_complete_flow),
+            ("Interior Design Variants Structure", self.test_interior_design_variants_structure),
+        ]
+        
+        critical_passed = 0
+        critical_total = len(critical_tests)
+        
+        for test_name, test_func in critical_tests:
+            print(f"\n🔥 Running: {test_name}")
+            try:
+                if test_func():
+                    critical_passed += 1
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        print(f"\n🔥 CRITICAL TESTS SUMMARY: {critical_passed}/{critical_total} passed ({critical_passed/critical_total*100:.1f}%)")
+        
+        return critical_passed, critical_total
+
 def main():
     print("🚀 Starting ProAgentTools API Testing...")
     print("🔐 COMPREHENSIVE AUTHENTICATION & ADMIN SYSTEM TESTING")
