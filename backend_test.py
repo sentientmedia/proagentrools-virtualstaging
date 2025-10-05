@@ -1358,7 +1358,7 @@ class ProAgentToolsAPITester:
             return False
         
         # Extract uploaded images
-        uploaded_images = upload_response.get('uploaded_images', [])
+        uploaded_images = upload_response.get('images', [])
         if len(uploaded_images) < 2:
             print(f"❌ Expected 2 uploaded images, got {len(uploaded_images)}")
             return False
