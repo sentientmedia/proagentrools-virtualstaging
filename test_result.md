@@ -197,15 +197,18 @@
 
   - task: "NEW: Chat Improve Module - POST /api/listings/{listing_id}/modules/{module_name}/chat"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Chat with GPT-5 to improve existing module content. Costs 1 credit per message. Stores chat history. Uses emergentintegrations. Needs testing."
+        - working: false
+          agent: "testing"
+          comment: "❌ BLOCKED: Chat improvement fails with same GPT-5 authentication error 'Incorrect API key provided: sk-emerg******************eFd7'. Endpoint structure is correct, requires existing module content, credit deduction logic implemented, but AI chat fails due to invalid/expired Emergent LLM API key. Depends on fixing the API key issue."
 
   - task: "NEW: Process Listing Interior Design - POST /api/listings/{listing_id}/interior-design/process"
     implemented: true
