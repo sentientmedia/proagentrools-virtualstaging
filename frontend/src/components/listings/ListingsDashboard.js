@@ -96,22 +96,9 @@ const ListingsDashboard = () => {
     }
   };
 
-  const handleViewAIResults = async (listingId) => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}/ai-results`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      // For now, show results in an alert (could be replaced with a modal)
-      const results = response.data.ai_results;
-      alert(`AI Processing Results:\n\nTools Processed: ${results.tools_processed}\nProcessing ID: ${results.processing_id}\nStatus: ${results.success ? 'Success' : 'Failed'}\n\nCheck console for detailed results.`);
-      console.log('AI Results:', results);
-    } catch (err) {
-      console.error('Failed to get AI results:', err);
-      alert('Failed to fetch AI results. Please try again.');
-    }
+  const handleViewAIResults = (listingId) => {
+    setSelectedListingForResults(listingId);
+    setShowAIResults(true);
   };
 
   const getStatusBadge = (status) => {
