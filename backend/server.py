@@ -1670,7 +1670,8 @@ async def process_listing_interior_design(
         
         # Verify images exist
         photos = listing.get("photos", [])
-        selected_photos = [p for p in photos if p["id"] in request.image_ids]
+        image_settings_map = {img.image_id: img for img in request.images}
+        selected_photos = [p for p in photos if p["id"] in image_settings_map]
         
         if not selected_photos:
             raise HTTPException(status_code=404, detail="No valid images found")
@@ -1692,23 +1693,67 @@ async def process_listing_interior_design(
             {"$inc": {"credits": -total_credits}}
         )
         
-        # Process each image (placeholder - actual implementation would call the interior design API)
+        # Process each image with its own settings
         processed_variants = []
         
         for photo in selected_photos:
+            settings = image_settings_map[photo["id"]]
             variant_id = str(uuid.uuid4())
             
-            # In production, this would call the actual interior design processing
-            # For now, we'll create a placeholder variant
+            # Get the image file path
+            image_path = PROCESSED_IMAGES_DIR / "listings" / listing_id / photo["filename"]
+            
+            if not image_path.exists():
+                logger.error(f"Image file not found: {image_path}")
+                continue
+            
+            # Generate prompt for this image's settings
+            generated_prompt = await generate_design_prompt_with_assistant(
+                settings.room_type, 
+                settings.designer, 
+                settings.color_scheme
+            )
+            
+            # Create design request record
+            design_request = InteriorDesignRequest(
+                original_filename=photo["filename"],
+                status="queued",
+                room_type=settings.room_type,
+                designer=settings.designer,
+                color_scheme=settings.color_scheme,
+                generated_prompt=generated_prompt
+            )
+            
+            design_dict = design_request.dict()
+            design_dict["user_id"] = current_user.id
+            design_dict["credits_used"] = credits_per_image
+            design_dict["listing_id"] = listing_id
+            design_dict["original_image_id"] = photo["id"]
+            
+            await db.interior_designs.insert_one(design_dict)
+            
+            # Process asynchronously
+            import asyncio
+            asyncio.create_task(process_image_async(
+                design_request.id, 
+                image_path, 
+                generated_prompt, 
+                photo["filename"], 
+                settings.room_type, 
+                settings.designer, 
+                settings.color_scheme
+            ))
+            
+            # Create variant record (will be updated when processing completes)
             variant = {
                 "id": variant_id,
+                "design_request_id": design_request.id,
                 "original_image_id": photo["id"],
-                "processed_image_url": photo["url"],  # Would be replaced with processed URL
-                "designer": request.designer or "alessia_duval",
-                "color_scheme": request.color_scheme or "glacial_muse",
-                "room_type": request.room_type or "living_room",
-                "created_at": datetime.utcnow(),
-                "watermarked": False
+                "status": "processing",
+                "designer": settings.designer,
+                "color_scheme": settings.color_scheme,
+                "room_type": settings.room_type,
+                "created_at": datetime.utcnow()
             }
             
             processed_variants.append(variant)
@@ -1727,7 +1772,8 @@ async def process_listing_interior_design(
             "processed_count": len(processed_variants),
             "credits_used": total_credits,
             "remaining_credits": current_user.credits - total_credits,
-            "variants": processed_variants
+            "variants": processed_variants,
+            "message": "Images are being processed. Check back in a few minutes."
         }
         
     except HTTPException:
