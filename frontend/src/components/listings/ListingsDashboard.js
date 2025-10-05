@@ -138,6 +138,11 @@ const ListingsDashboard = () => {
     setShowAIResults(true);
   };
 
+  const handleViewListingDetails = (listingId) => {
+    setSelectedListing(listingId);
+    setShowIndividualListing(true);
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       draft: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Draft' },
