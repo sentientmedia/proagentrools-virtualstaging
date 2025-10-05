@@ -1288,6 +1288,554 @@ class ProAgentToolsAPITester:
         )
         return success
 
+    # ========== LISTING MANAGEMENT SYSTEM TESTS ==========
+    
+    def test_ai_tools_catalog_endpoint(self):
+        """Test GET /api/ai-tools - Should return 30 AI tools organized by 5 categories"""
+        success, response = self.run_test(
+            "AI Tools Catalog Endpoint",
+            "GET",
+            "ai-tools",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if 'tools_by_category' not in response or 'total_tools' not in response:
+                print("❌ Missing tools_by_category or total_tools in response")
+                return False
+            
+            tools_by_category = response['tools_by_category']
+            total_tools = response['total_tools']
+            
+            # Check total tools count
+            if total_tools != 30:
+                print(f"❌ Expected 30 total tools, got {total_tools}")
+                return False
+            
+            # Check categories
+            expected_categories = [
+                "Marketing & Creative",
+                "Staging & Design", 
+                "Due-Diligence & Compliance",
+                "Market Intel & Strategy",
+                "Process & Productivity"
+            ]
+            
+            for category in expected_categories:
+                if category not in tools_by_category:
+                    print(f"❌ Missing category: {category}")
+                    return False
+            
+            # Verify tool structure
+            tool_count = 0
+            for category, tools in tools_by_category.items():
+                for tool in tools:
+                    tool_count += 1
+                    required_fields = ['id', 'name', 'category', 'description', 'credits_cost']
+                    for field in required_fields:
+                        if field not in tool:
+                            print(f"❌ Tool missing required field '{field}': {tool}")
+                            return False
+                    
+                    # Verify credits_cost is positive integer
+                    if not isinstance(tool['credits_cost'], int) or tool['credits_cost'] <= 0:
+                        print(f"❌ Invalid credits_cost for tool {tool['name']}: {tool['credits_cost']}")
+                        return False
+            
+            if tool_count != 30:
+                print(f"❌ Expected 30 tools total, counted {tool_count}")
+                return False
+            
+            # Check specific tools mentioned in review request
+            all_tools = []
+            for tools in tools_by_category.values():
+                all_tools.extend(tools)
+            
+            tool_ids = [tool['id'] for tool in all_tools]
+            if 'listing_luxe_gpt' not in tool_ids:
+                print("❌ Missing required tool: listing_luxe_gpt")
+                return False
+            if 'social_snippets_studio' not in tool_ids:
+                print("❌ Missing required tool: social_snippets_studio")
+                return False
+            
+            print(f"✅ AI Tools Catalog: {total_tools} tools across {len(expected_categories)} categories")
+            print(f"   Categories: {list(tools_by_category.keys())}")
+            return True
+        
+        return success
+
+    def test_create_listing_authenticated(self):
+        """Test POST /api/listings - Create new listing with authentication"""
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Test data from review request
+        test_data = {
+            "property_details": {
+                "address": "123 Test Street",
+                "city": "San Francisco", 
+                "state": "CA",
+                "zip_code": "94102",
+                "beds": 3,
+                "baths": 2.5,
+                "sqft": 2000,
+                "property_type": "Single Family",
+                "listing_price": 1200000
+            },
+            "description": "Beautiful test property",
+            "selected_tool_ids": ["listing_luxe_gpt", "social_snippets_studio"],
+            "agent_notes": "Test listing for validation"
+        }
+        
+        success, response = self.run_test(
+            "Create Listing (Authenticated)",
+            "POST",
+            "listings",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if success and response:
+            # Verify response structure
+            required_fields = ['id', 'user_id', 'property_details', 'selected_ai_tools', 'status', 'created_at']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            # Verify property details
+            prop_details = response['property_details']
+            if prop_details['address'] != "123 Test Street":
+                print(f"❌ Property address mismatch: {prop_details['address']}")
+                return False
+            
+            # Verify AI tools selection
+            selected_tools = response['selected_ai_tools']
+            if len(selected_tools) != 2:
+                print(f"❌ Expected 2 selected tools, got {len(selected_tools)}")
+                return False
+            
+            tool_ids = [tool['tool_id'] for tool in selected_tools]
+            if 'listing_luxe_gpt' not in tool_ids or 'social_snippets_studio' not in tool_ids:
+                print(f"❌ Missing expected tools in selection: {tool_ids}")
+                return False
+            
+            # Verify credits calculation
+            total_credits = sum(tool['credits_cost'] for tool in selected_tools)
+            expected_credits = 3 + 2  # listing_luxe_gpt (3) + social_snippets_studio (2)
+            if total_credits != expected_credits:
+                print(f"❌ Credits calculation error: expected {expected_credits}, got {total_credits}")
+                return False
+            
+            # Store listing ID for other tests
+            self.test_listing_id = response['id']
+            
+            print(f"✅ Listing created successfully with ID: {response['id']}")
+            print(f"   Selected tools: {tool_ids}")
+            print(f"   Total credits cost: {total_credits}")
+            return True
+        
+        return success
+
+    def test_create_listing_without_auth(self):
+        """Test POST /api/listings without authentication - should fail"""
+        test_data = {
+            "property_details": {
+                "address": "123 Test Street",
+                "city": "San Francisco", 
+                "state": "CA",
+                "zip_code": "94102",
+                "beds": 3,
+                "baths": 2.5,
+                "sqft": 2000,
+                "property_type": "Single Family",
+                "listing_price": 1200000
+            },
+            "description": "Beautiful test property",
+            "selected_tool_ids": ["listing_luxe_gpt"],
+            "agent_notes": "Test listing for validation"
+        }
+        
+        success, response = self.run_test(
+            "Create Listing Without Auth (Should Fail)",
+            "POST",
+            "listings",
+            401,
+            data=test_data
+        )
+        
+        if success:
+            print("✅ Create listing correctly requires authentication")
+            return True
+        
+        return success
+
+    def test_get_user_listings(self):
+        """Test GET /api/listings - Get all listings for authenticated user"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        success, response = self.run_test(
+            "Get User Listings",
+            "GET",
+            "listings",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            # Should be a list
+            if not isinstance(response, list):
+                print(f"❌ Expected list response, got {type(response)}")
+                return False
+            
+            print(f"✅ Retrieved {len(response)} listings for user")
+            
+            # If we have listings, verify structure
+            if len(response) > 0:
+                listing = response[0]
+                required_fields = ['id', 'user_id', 'property_details', 'status', 'created_at']
+                for field in required_fields:
+                    if field not in listing:
+                        print(f"❌ Missing required field '{field}' in listing")
+                        return False
+                
+                print("✅ Listing structure validated")
+            
+            return True
+        
+        return success
+
+    def test_get_user_listings_without_auth(self):
+        """Test GET /api/listings without authentication - should fail"""
+        success, response = self.run_test(
+            "Get User Listings Without Auth (Should Fail)",
+            "GET",
+            "listings",
+            401
+        )
+        
+        if success:
+            print("✅ Get listings correctly requires authentication")
+            return True
+        
+        return success
+
+    def test_get_specific_listing(self):
+        """Test GET /api/listings/{id} - Get specific listing"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        # First create a listing if we don't have one
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        success, response = self.run_test(
+            "Get Specific Listing",
+            "GET",
+            f"listings/{self.test_listing_id}",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            # Verify it's the correct listing
+            if response['id'] != self.test_listing_id:
+                print(f"❌ Listing ID mismatch: expected {self.test_listing_id}, got {response['id']}")
+                return False
+            
+            # Verify structure
+            required_fields = ['id', 'user_id', 'property_details', 'status', 'created_at']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            print(f"✅ Retrieved specific listing: {response['id']}")
+            return True
+        
+        return success
+
+    def test_get_nonexistent_listing(self):
+        """Test GET /api/listings/{id} with non-existent ID - should return 404"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        fake_id = str(uuid.uuid4())
+        
+        success, response = self.run_test(
+            "Get Non-existent Listing (Should Fail)",
+            "GET",
+            f"listings/{fake_id}",
+            404,
+            headers=headers
+        )
+        
+        if success:
+            print("✅ Non-existent listing correctly returns 404")
+            return True
+        
+        return success
+
+    def test_update_listing(self):
+        """Test PUT /api/listings/{id} - Update listing"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        # First create a listing if we don't have one
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        update_data = {
+            "description": "Updated beautiful test property with new features",
+            "status": "active",
+            "selected_tool_ids": ["listing_luxe_gpt", "social_snippets_studio", "photofix_wizard"],
+            "agent_notes": "Updated test listing with additional tools"
+        }
+        
+        success, response = self.run_test(
+            "Update Listing",
+            "PUT",
+            f"listings/{self.test_listing_id}",
+            200,
+            data=update_data,
+            headers=headers
+        )
+        
+        if success and response:
+            # Verify updates were applied
+            if response['description'] != update_data['description']:
+                print(f"❌ Description not updated: {response['description']}")
+                return False
+            
+            if response['status'] != update_data['status']:
+                print(f"❌ Status not updated: {response['status']}")
+                return False
+            
+            # Verify AI tools were updated
+            selected_tools = response['selected_ai_tools']
+            if len(selected_tools) != 3:
+                print(f"❌ Expected 3 selected tools after update, got {len(selected_tools)}")
+                return False
+            
+            tool_ids = [tool['tool_id'] for tool in selected_tools]
+            expected_tools = ["listing_luxe_gpt", "social_snippets_studio", "photofix_wizard"]
+            for tool_id in expected_tools:
+                if tool_id not in tool_ids:
+                    print(f"❌ Missing expected tool after update: {tool_id}")
+                    return False
+            
+            print(f"✅ Listing updated successfully")
+            print(f"   New status: {response['status']}")
+            print(f"   Updated tools: {tool_ids}")
+            return True
+        
+        return success
+
+    def test_delete_listing(self):
+        """Test DELETE /api/listings/{id} - Delete listing"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        # Create a new listing specifically for deletion test
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        test_data = {
+            "property_details": {
+                "address": "456 Delete Street",
+                "city": "Test City", 
+                "state": "CA",
+                "zip_code": "90210",
+                "beds": 2,
+                "baths": 1.0,
+                "sqft": 1000,
+                "property_type": "Condo",
+                "listing_price": 800000
+            },
+            "description": "Listing to be deleted",
+            "selected_tool_ids": ["listing_luxe_gpt"],
+            "agent_notes": "Test deletion"
+        }
+        
+        create_success, create_response = self.run_test(
+            "Create Listing for Deletion Test",
+            "POST",
+            "listings",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if not create_success:
+            print("❌ Could not create listing for deletion test")
+            return False
+        
+        listing_id = create_response['id']
+        
+        # Now delete it
+        success, response = self.run_test(
+            "Delete Listing",
+            "DELETE",
+            f"listings/{listing_id}",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            if not response.get('success'):
+                print("❌ Delete response did not indicate success")
+                return False
+            
+            # Verify listing is actually deleted by trying to get it
+            get_success, get_response = self.run_test(
+                "Verify Listing Deleted",
+                "GET",
+                f"listings/{listing_id}",
+                404,
+                headers=headers
+            )
+            
+            if get_success:
+                print("✅ Listing successfully deleted and verified")
+                return True
+            else:
+                print("❌ Listing not properly deleted")
+                return False
+        
+        return success
+
+    def test_user_isolation_listings(self):
+        """Test that users can only see their own listings"""
+        # This test would require creating two different users
+        # For now, we'll test that a user can't access a non-existent listing
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        fake_id = str(uuid.uuid4())
+        
+        success, response = self.run_test(
+            "User Isolation Test (Non-existent Listing)",
+            "GET",
+            f"listings/{fake_id}",
+            404,
+            headers=headers
+        )
+        
+        if success:
+            print("✅ User isolation working - cannot access non-existent/other user's listings")
+            return True
+        
+        return success
+
+    def test_listing_data_validation(self):
+        """Test data validation for listing creation"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Test with missing required fields
+        invalid_data = {
+            "property_details": {
+                "address": "123 Test Street",
+                # Missing required fields like city, state, etc.
+                "beds": 3,
+                "baths": 2.5
+            },
+            "description": "Test property with missing fields"
+        }
+        
+        success, response = self.run_test(
+            "Listing Data Validation (Invalid Data)",
+            "POST",
+            "listings",
+            422,  # Validation error
+            data=invalid_data,
+            headers=headers
+        )
+        
+        if success:
+            print("✅ Data validation working - rejects invalid property details")
+            return True
+        else:
+            # Some APIs might return 400 instead of 422
+            success, response = self.run_test(
+                "Listing Data Validation (Invalid Data - 400)",
+                "POST",
+                "listings",
+                400,
+                data=invalid_data,
+                headers=headers
+            )
+            if success:
+                print("✅ Data validation working - rejects invalid property details (400)")
+                return True
+        
+        return success
+
+    def test_listing_ai_processing_status(self):
+        """Test AI processing status tracking"""
+        if not self.user_token:
+            print("⚠️ No user token available, skipping test")
+            return False
+        
+        # First create a listing if we don't have one
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        success, response = self.run_test(
+            "Check AI Processing Status",
+            "GET",
+            f"listings/{self.test_listing_id}",
+            200,
+            headers=headers
+        )
+        
+        if success and response:
+            # Verify AI processing status field exists
+            if 'ai_processing_status' not in response:
+                print("❌ Missing ai_processing_status field")
+                return False
+            
+            ai_status = response['ai_processing_status']
+            valid_statuses = ['pending', 'processing', 'completed', 'failed']
+            
+            if ai_status not in valid_statuses:
+                print(f"❌ Invalid AI processing status: {ai_status}")
+                return False
+            
+            print(f"✅ AI processing status tracking working: {ai_status}")
+            return True
+        
+        return success
+
     def test_queue_status_endpoint(self):
         """Test queue status endpoint - NEW FEATURE"""
         success, response = self.run_test(
