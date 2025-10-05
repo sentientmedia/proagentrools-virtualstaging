@@ -1270,15 +1270,17 @@ const AppRouter = () => {
     );
   }
 
-  // Demo route removed - beautiful loading pages are now integrated
+  // If authenticated, redirect to listings (listing-centric flow)
+  if (isAuthenticated) {
+    window.location.href = '/listings';
+    return null;
+  }
 
-  // Main app with tools
+  // Main landing page (unauthenticated users only)
   return (
     <div className="App">
       <Header />
       <HeroSection />
-      <InteriorDesignTool />
-      <GPTTools />
       <FeaturesSection />
       <PricingSection />
       <Footer />
