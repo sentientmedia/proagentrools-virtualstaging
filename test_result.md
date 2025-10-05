@@ -122,15 +122,18 @@
 
   - task: "NEW: Get Listing Images - GET /api/listings/{listing_id}/images"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Returns all photos and interior design variants for a listing. Needs testing."
+        - working: true
+          agent: "testing"
+          comment: "✅ VERIFIED: Get listing images working correctly. Returns proper structure with listing_id, photos array, and interior_design_variants array. Retrieved 2 photos and 0 interior design variants as expected. Authentication required and user isolation enforced."
 
   - task: "NEW: Serve Listing Image - GET /api/listings/{listing_id}/images/{filename}"
     implemented: true
