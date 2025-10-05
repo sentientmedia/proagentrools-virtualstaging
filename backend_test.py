@@ -1752,6 +1752,298 @@ class ProAgentToolsAPITester:
         
         return success
 
+    # ========== AI CONTENT GENERATION TESTS (RE-TEST WITH OPENAI FALLBACK) ==========
+    
+    def test_generate_module_content_with_fallback(self):
+        """Test POST /api/listings/{listing_id}/modules/{module_name}/generate with OpenAI fallback"""
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        # First create a listing if we don't have one
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # Test generating content for listing_copy module
+        test_data = {
+            "module_name": "listing_copy",
+            "additional_context": "This is a luxury property with modern amenities"
+        }
+        
+        success, response = self.run_test(
+            "Generate Module Content (listing_copy) - OpenAI Fallback",
+            "POST",
+            f"listings/{self.test_listing_id}/modules/listing_copy/generate",
+            200,
+            data=test_data,
+            headers=headers
+        )
+        
+        if success and response:
+            # Verify response structure
+            required_fields = ['content', 'credits_used', 'remaining_credits']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            # Verify credits were deducted (should be 1 credit)
+            if response.get('credits_used') != 1:
+                print(f"❌ Expected 1 credit used, got {response.get('credits_used')}")
+                return False
+            
+            # Verify content was generated
+            content = response.get('content', '')
+            if not content or len(content) < 50:
+                print(f"❌ Generated content too short or empty: {len(content)} chars")
+                return False
+            
+            print(f"✅ Module content generated successfully")
+            print(f"   Credits used: {response.get('credits_used')}")
+            print(f"   Remaining credits: {response.get('remaining_credits')}")
+            print(f"   Content length: {len(content)} characters")
+            return True
+        
+        return success
+
+    def test_chat_improve_module_with_fallback(self):
+        """Test POST /api/listings/{listing_id}/modules/{module_name}/chat with OpenAI fallback"""
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        # First create a listing if we don't have one
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # First generate some content for marketing_copy module
+        generate_data = {
+            "module_name": "marketing_copy",
+            "additional_context": "Focus on the property's investment potential"
+        }
+        
+        generate_success, generate_response = self.run_test(
+            "Generate Marketing Copy for Chat Test",
+            "POST",
+            f"listings/{self.test_listing_id}/modules/marketing_copy/generate",
+            200,
+            data=generate_data,
+            headers=headers
+        )
+        
+        if not generate_success:
+            print("❌ Could not generate initial content for chat test")
+            return False
+        
+        # Now test chat improvement
+        chat_data = {
+            "message": "Make it more exciting and add emphasis on luxury features",
+            "module_name": "marketing_copy"
+        }
+        
+        success, response = self.run_test(
+            "Chat Improve Module (marketing_copy) - OpenAI Fallback",
+            "POST",
+            f"listings/{self.test_listing_id}/modules/marketing_copy/chat",
+            200,
+            data=chat_data,
+            headers=headers
+        )
+        
+        if success and response:
+            # Verify response structure
+            required_fields = ['suggestion', 'credits_used', 'remaining_credits', 'chat_history']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            # Verify credits were deducted (should be 1 credit)
+            if response.get('credits_used') != 1:
+                print(f"❌ Expected 1 credit used, got {response.get('credits_used')}")
+                return False
+            
+            # Verify AI suggestion was generated
+            suggestion = response.get('suggestion', '')
+            if not suggestion or len(suggestion) < 20:
+                print(f"❌ AI suggestion too short or empty: {len(suggestion)} chars")
+                return False
+            
+            # Verify chat history was stored
+            chat_history = response.get('chat_history', [])
+            if len(chat_history) < 2:  # Should have user message and AI response
+                print(f"❌ Chat history incomplete: {len(chat_history)} messages")
+                return False
+            
+            print(f"✅ Chat improvement successful")
+            print(f"   Credits used: {response.get('credits_used')}")
+            print(f"   Remaining credits: {response.get('remaining_credits')}")
+            print(f"   Suggestion length: {len(suggestion)} characters")
+            print(f"   Chat history: {len(chat_history)} messages")
+            return True
+        
+        return success
+
+    def test_interior_design_processing_with_images(self):
+        """Test POST /api/listings/{listing_id}/interior-design/process with uploaded images"""
+        if not self.user_token:
+            print("⚠️ No user token available, creating one...")
+            if not self.test_user_registration():
+                return False
+        
+        # First create a listing if we don't have one
+        if not hasattr(self, 'test_listing_id'):
+            if not self.test_create_listing_authenticated():
+                return False
+        
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+        
+        # First upload some images to the listing
+        test_image1 = self.create_test_image()
+        test_image2 = self.create_test_image()
+        
+        files = [
+            ('files', ('test_image1.jpg', test_image1, 'image/jpeg')),
+            ('files', ('test_image2.jpg', test_image2, 'image/jpeg'))
+        ]
+        
+        upload_success, upload_response = self.run_test(
+            "Upload Images for Interior Design Test",
+            "POST",
+            f"listings/{self.test_listing_id}/images/upload",
+            200,
+            files=files,
+            headers=headers
+        )
+        
+        if not upload_success or not upload_response.get('images'):
+            print("❌ Could not upload images for interior design test")
+            return False
+        
+        # Get image IDs from upload response
+        uploaded_images = upload_response.get('images', [])
+        image_ids = [img['id'] for img in uploaded_images]
+        
+        if len(image_ids) < 2:
+            print(f"❌ Expected 2 image IDs, got {len(image_ids)}")
+            return False
+        
+        # Now test interior design processing
+        process_data = {
+            "image_ids": image_ids,
+            "room_type": "living_room",
+            "designer": "alessia_duval",
+            "color_scheme": "glacial_muse"
+        }
+        
+        success, response = self.run_test(
+            "Process Listing Interior Design",
+            "POST",
+            f"listings/{self.test_listing_id}/interior-design/process",
+            200,
+            data=process_data,
+            headers=headers
+        )
+        
+        if success and response:
+            # Verify response structure
+            required_fields = ['success', 'credits_used', 'remaining_credits', 'processed_images']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing required field '{field}' in response")
+                    return False
+            
+            # Verify credits were calculated correctly (5 per image)
+            expected_credits = len(image_ids) * 5
+            if response.get('credits_used') != expected_credits:
+                print(f"❌ Expected {expected_credits} credits used, got {response.get('credits_used')}")
+                return False
+            
+            # Verify processing was initiated
+            processed_images = response.get('processed_images', 0)
+            if processed_images != len(image_ids):
+                print(f"❌ Expected {len(image_ids)} processed images, got {processed_images}")
+                return False
+            
+            print(f"✅ Interior design processing initiated successfully")
+            print(f"   Credits used: {response.get('credits_used')}")
+            print(f"   Remaining credits: {response.get('remaining_credits')}")
+            print(f"   Images processed: {processed_images}")
+            return True
+        
+        return success
+
+    def test_module_generation_without_auth(self):
+        """Test module generation endpoints require authentication"""
+        test_data = {
+            "module_name": "listing_copy",
+            "additional_context": "Test without auth"
+        }
+        
+        success, response = self.run_test(
+            "Generate Module Content Without Auth (Should Fail)",
+            "POST",
+            f"listings/fake-id/modules/listing_copy/generate",
+            401,
+            data=test_data
+        )
+        
+        if success:
+            print("✅ Module generation correctly requires authentication")
+            return True
+        
+        return success
+
+    def test_chat_improve_without_auth(self):
+        """Test chat improvement endpoints require authentication"""
+        test_data = {
+            "message": "Make it better",
+            "module_name": "marketing_copy"
+        }
+        
+        success, response = self.run_test(
+            "Chat Improve Without Auth (Should Fail)",
+            "POST",
+            f"listings/fake-id/modules/marketing_copy/chat",
+            401,
+            data=test_data
+        )
+        
+        if success:
+            print("✅ Chat improvement correctly requires authentication")
+            return True
+        
+        return success
+
+    def test_interior_design_processing_without_auth(self):
+        """Test interior design processing requires authentication"""
+        test_data = {
+            "image_ids": ["fake-id-1", "fake-id-2"],
+            "room_type": "living_room"
+        }
+        
+        success, response = self.run_test(
+            "Interior Design Processing Without Auth (Should Fail)",
+            "POST",
+            f"listings/fake-id/interior-design/process",
+            401,
+            data=test_data
+        )
+        
+        if success:
+            print("✅ Interior design processing correctly requires authentication")
+            return True
+        
+        return success
+
     # ========== NEW LISTING-CENTRIC ENDPOINTS TESTS ==========
     
     def test_listing_image_upload(self):
