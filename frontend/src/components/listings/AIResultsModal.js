@@ -117,6 +117,44 @@ const AIResultsModal = ({ listingId, onClose }) => {
     return formatted;
   };
 
+  const renderFormattedOutput = (text) => {
+    // Convert markdown-style formatting to JSX
+    const lines = text.split('\n');
+    const elements = [];
+    
+    lines.forEach((line, index) => {
+      if (line.startsWith('**') && line.endsWith(':**')) {
+        // Header
+        const headerText = line.slice(2, -3);
+        elements.push(
+          <h4 key={index} className="font-semibold text-gray-900 mt-4 mb-2">
+            {headerText}
+          </h4>
+        );
+      } else if (line.match(/^\d+\./)) {
+        // List item
+        elements.push(
+          <p key={index} className="ml-4 mb-1 text-gray-700">
+            {line}
+          </p>
+        );
+      } else if (line.trim()) {
+        // Regular paragraph
+        elements.push(
+          <p key={index} className="mb-2 text-gray-700">
+            {line}
+          </p>
+        );
+      }
+    });
+    
+    return elements.length > 0 ? elements : (
+      <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
+        {text}
+      </pre>
+    );
+  };
+
   const getCategoryIcon = (category) => {
     const icons = {
       'Marketing & Creative': '🎨',
