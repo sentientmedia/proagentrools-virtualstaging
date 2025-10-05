@@ -1104,6 +1104,167 @@ async def get_listing_ai_results(
         logger.error(f"Get AI results error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch AI results")
 
+# Agent Branding & Watermarking Endpoints
+@api_router.post("/branding/upload-logo")
+async def upload_agent_logo(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Upload agent logo for watermarking"""
+    try:
+        # Validate file type
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
+        # Create branding directory if it doesn't exist
+        branding_dir = Path("storage/branding")
+        branding_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate unique filename
+        file_extension = Path(file.filename).suffix.lower()
+        filename = f"{current_user.id}_logo{file_extension}"
+        file_path = branding_dir / filename
+        
+        # Save the file
+        async with aiofiles.open(file_path, 'wb') as f:
+            content = await file.read()
+            await f.write(content)
+        
+        # Update or create agent branding record
+        branding_data = {
+            "user_id": current_user.id,
+            "logo_url": f"/api/branding/logo/{filename}",
+            "watermark_position": "bottom-right",
+            "watermark_opacity": 0.7,
+            "brand_colors": {},
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Check if branding already exists
+        existing_branding = await db.agent_branding.find_one({"user_id": current_user.id})
+        
+        if existing_branding:
+            await db.agent_branding.update_one(
+                {"user_id": current_user.id},
+                {"$set": branding_data}
+            )
+        else:
+            branding_data["id"] = str(uuid.uuid4())
+            branding_data["created_at"] = datetime.utcnow()
+            await db.agent_branding.insert_one(branding_data)
+        
+        return {
+            "success": True,
+            "logo_url": branding_data["logo_url"],
+            "message": "Logo uploaded successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Logo upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to upload logo")
+
+@api_router.get("/branding/logo/{filename}")
+async def serve_agent_logo(filename: str):
+    """Serve agent logo files"""
+    try:
+        file_path = Path("storage/branding") / filename
+        
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="Logo not found")
+        
+        # Determine media type
+        media_type = "image/jpeg"
+        if filename.lower().endswith('.png'):
+            media_type = "image/png"
+        elif filename.lower().endswith('.gif'):
+            media_type = "image/gif"
+        
+        return FileResponse(
+            path=str(file_path),
+            media_type=media_type,
+            headers={
+                "Cache-Control": "public, max-age=3600",
+                "Content-Disposition": f"inline; filename={filename}"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Serve logo error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to serve logo")
+
+@api_router.get("/branding/settings", response_model=AgentBranding)
+async def get_agent_branding(
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get agent branding settings"""
+    try:
+        branding = await db.agent_branding.find_one({"user_id": current_user.id})
+        
+        if not branding:
+            # Create default branding
+            default_branding = {
+                "id": str(uuid.uuid4()),
+                "user_id": current_user.id,
+                "logo_url": None,
+                "watermark_position": "bottom-right",
+                "watermark_opacity": 0.7,
+                "brand_colors": {},
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            await db.agent_branding.insert_one(default_branding)
+            return AgentBranding(**default_branding)
+        
+        return AgentBranding(**{k: v for k, v in branding.items() if k != '_id'})
+        
+    except Exception as e:
+        logger.error(f"Get branding error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch branding settings")
+
+@api_router.put("/branding/settings")
+async def update_agent_branding(
+    position: str = "bottom-right",
+    opacity: float = 0.7,
+    brand_colors: Dict[str, str] = {},
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Update agent branding settings"""
+    try:
+        # Validate inputs
+        valid_positions = ["bottom-right", "bottom-left", "top-right", "top-left", "center"]
+        if position not in valid_positions:
+            raise HTTPException(status_code=400, detail="Invalid watermark position")
+        
+        if not 0 <= opacity <= 1:
+            raise HTTPException(status_code=400, detail="Opacity must be between 0 and 1")
+        
+        update_data = {
+            "watermark_position": position,
+            "watermark_opacity": opacity,
+            "brand_colors": brand_colors,
+            "updated_at": datetime.utcnow()
+        }
+        
+        result = await db.agent_branding.update_one(
+            {"user_id": current_user.id},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Branding settings not found")
+        
+        return {"success": True, "message": "Branding settings updated"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update branding error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update branding settings")
+
 # AI Tools Configuration
 AI_TOOLS_CATALOG = {
     # Marketing & Creative
