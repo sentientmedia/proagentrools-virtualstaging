@@ -239,6 +239,9 @@
         - working: "NA"
           agent: "main"
           comment: "🔍 ROOT CAUSE IDENTIFIED: process_image_async updates interior_designs collection with completion status but NEVER updates the listing's interior_design_variants array. Frontend reads from variants array and sees status='processing' forever. CRITICAL FIX APPLIED: Modified process_image_async (lines 2935-2965) to also update listing's interior_design_variants array when processing completes or fails, using MongoDB positional operator to match by design_request_id. Now syncs completion status, processed_image_url, watermarked_image_url to the listing. Needs comprehensive testing to verify fix works."
+        - working: true
+          agent: "testing"
+          comment: "🎉 CRITICAL FIX VERIFIED: Comprehensive testing confirms the interior design processing fix is working perfectly! Complete flow tested: 1) Created listing and uploaded 2 test images, 2) Processed images with interior design API (POST /api/listings/{listing_id}/interior-design/process), 3) Verified initial response shows variants with status='processing', 4) Confirmed async processing completed within 10 seconds, 5) CRITICAL VALIDATION: Verified listing's interior_design_variants array is properly updated with status='completed', processed_image_url populated, and completed_at timestamp. 6) Frontend GET /api/listings/{listing_id}/images now returns completed variants with images. The bug where images showed 'Processing...' forever is FIXED. Both success and failure cases update the listing variants array correctly."
 
 
   - task: "PHASE 2: MCP Mega-Agent AI Tools Processing - POST /api/listings/{listing_id}/process-ai"
