@@ -948,6 +948,67 @@
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+
+  - task: "NEW: Individual Listing Page - Module Navigation"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/listings/IndividualListingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Created comprehensive individual listing page with flexible module-based navigation (8 modules: Details, AI Copy, Marketing, Social Media, Email, Market Intel, Images, Interior Design). Tab-based interface with completion indicators. Needs testing."
+
+  - task: "NEW: Individual Listing Page - AI Content Generation"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/listings/IndividualListingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented AI content generation for modules using GPT-5. 1 credit per generation. Shows loading states, displays formatted content. Needs testing."
+
+  - task: "NEW: Individual Listing Page - Content Editing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/listings/IndividualListingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented inline editing for all module content. Users can edit AI-generated content directly. Save/Cancel functionality. Needs testing."
+
+  - task: "NEW: Individual Listing Page - Chat Improvement"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/listings/IndividualListingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented chat interface for improving module content. 1 credit per message. Input field with send button. Needs better chat history display. Needs testing."
+
+  - task: "NEW: ListingsDashboard - Navigation to Individual Listing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/listings/ListingsDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated 'View Details' button to navigate to individual listing page. Back navigation implemented with listing refresh. Needs testing."
+
     status_history:
         - working: "pending"
           agent: "main"
