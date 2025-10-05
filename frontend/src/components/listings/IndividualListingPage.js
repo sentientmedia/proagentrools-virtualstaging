@@ -683,6 +683,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                           <div className="text-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
                             <div className="text-sm text-gray-600">Processing...</div>
+                            <div className="text-xs text-gray-500 mt-1">Check back in 2-3 minutes</div>
                           </div>
                         </div>
                       )}
@@ -691,12 +692,28 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                           {variant.room_type} • {variant.designer}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {variant.status === 'processing' ? 'Processing...' : 'Completed'}
+                          {variant.status === 'completed' ? '✓ Completed' : '⏳ Processing...'}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Process Images Button at Bottom */}
+            {selectedImages.length > 0 && (
+              <div className="border-t border-gray-200 pt-6">
+                <button
+                  onClick={handleProcessInteriorDesign}
+                  disabled={processingDesign}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:bg-gray-400 font-bold text-lg shadow-lg"
+                >
+                  {processingDesign ? 'Processing...' : `🎨 Process ${selectedImages.length} Image${selectedImages.length !== 1 ? 's' : ''} with AI Interior Design (${selectedImages.length * 5} Credits)`}
+                </button>
+                <p className="text-sm text-gray-600 text-center mt-2">
+                  Processing takes 2-3 minutes per image. You'll be notified when complete.
+                </p>
               </div>
             )}
           </div>
