@@ -20,15 +20,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   // Image management state
   const [images, setImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
-  const [selectedImageIds, setSelectedImageIds] = useState([]);
+  const [selectedImages, setSelectedImages] = useState([]); // Array of {image_id, room_type, designer, color_scheme}
   
   // Interior design state
   const [processingDesign, setProcessingDesign] = useState(false);
-  const [designSettings, setDesignSettings] = useState({
-    room_type: 'living_room',
-    designer: 'alessia_duval',
-    color_scheme: 'glacial_muse'
-  });
 
   const modules = [
     { id: 'listing_copy', name: 'Listing Description', icon: '✍️', ai: true, credits: 1, description: 'Generate professional property listing description' },
