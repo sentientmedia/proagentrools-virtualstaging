@@ -24,9 +24,11 @@ class ProAgentToolsMegaAgent:
     """
     
     def __init__(self):
-        # Use the emergent LLM key for unified access to OpenAI, Claude, and Gemini
-        self.emergent_key = "sk-emergent-12cA71fB42626FeFd7"
-        self.client = openai.OpenAI(api_key=self.emergent_key)
+        # Use the actual OpenAI API key from environment
+        self.openai_key = os.environ.get('OPENAI_API_KEY')
+        if not self.openai_key:
+            raise ValueError("OPENAI_API_KEY environment variable is required")
+        self.client = openai.OpenAI(api_key=self.openai_key)
         self.session_id = str(uuid.uuid4())
         
     async def process_listing_tools(self, listing_data: Dict[str, Any], selected_tools: List[Dict[str, Any]]) -> Dict[str, Any]:
