@@ -9,7 +9,7 @@ import os
 import uuid
 
 class ProAgentToolsAPITester:
-    def __init__(self, base_url="https://aihomedesign.preview.emergentagent.com"):
+    def __init__(self, base_url="https://smart-listing-pro-2.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0

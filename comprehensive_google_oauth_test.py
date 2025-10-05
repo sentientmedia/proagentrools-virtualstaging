@@ -8,7 +8,7 @@ import uuid
 def comprehensive_google_oauth_test():
     """Comprehensive test of Google OAuth integration addressing the review request"""
     
-    base_url = "https://aihomedesign.preview.emergentagent.com"
+    base_url = "https://smart-listing-pro-2.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 COMPREHENSIVE GOOGLE OAUTH INTEGRATION TEST")

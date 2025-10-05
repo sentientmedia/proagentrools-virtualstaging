@@ -7,7 +7,7 @@ from datetime import datetime
 
 class AIStatusChecker:
     def __init__(self):
-        self.base_url = "https://aihomedesign.preview.emergentagent.com"
+        self.base_url = "https://smart-listing-pro-2.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.user_token = None
 
