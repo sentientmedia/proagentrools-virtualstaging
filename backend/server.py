@@ -808,8 +808,18 @@ async def create_listing(
     listing_data: CreateListingRequest,
     current_user: User = Depends(get_current_user_enhanced)
 ):
-    """Create a new property listing"""
+    """Create a new property listing with auto-generated foundation content"""
     try:
+        # Foundation generation cost
+        FOUNDATION_CREDITS = 20
+        
+        # Check credits
+        if current_user.credits < FOUNDATION_CREDITS:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient credits. Need {FOUNDATION_CREDITS} credits to create listing with foundation content."
+            )
+        
         listing_id = str(uuid.uuid4())
         
         # Convert selected tool IDs to AIToolSelection objects
@@ -833,10 +843,14 @@ async def create_listing(
             "property_details": listing_data.property_details.dict(),
             "description": listing_data.description,
             "photos": [],
+            "interior_design_variants": [],
             "selected_ai_tools": [tool.dict() for tool in selected_tools],
             "interior_designs": [],
+            "module_outputs": {},
+            "chat_history": {},
             "status": "draft",
-            "ai_processing_status": "pending" if selected_tools else "completed",
+            "ai_processing_status": "generating_foundation",  # New status
+            "foundation_status": "processing",  # Track foundation generation
             "ai_output": None,
             "agent_notes": listing_data.agent_notes,
             "created_at": now,
@@ -845,9 +859,21 @@ async def create_listing(
         
         await db.listings.insert_one(new_listing)
         
+        # Deduct foundation credits
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$inc": {"credits": -FOUNDATION_CREDITS}}
+        )
+        
+        # Trigger foundation generation asynchronously
+        import asyncio
+        asyncio.create_task(generate_listing_foundation(listing_id, listing_data.property_details.dict()))
+        
         # Convert back to Pydantic model for response
         return Listing(**new_listing)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Create listing error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to create listing")
