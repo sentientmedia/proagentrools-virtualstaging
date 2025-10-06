@@ -786,52 +786,50 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                 return (
                   <div
                     key={image.id}
-                    className={`border-2 rounded-lg overflow-hidden transition-all ${
+                    className={`border-2 rounded-lg overflow-hidden transition-all cursor-pointer ${
                       isSelected
-                        ? 'border-blue-600 shadow-lg bg-blue-50'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        ? 'border-blue-600 shadow-lg'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
+                    onClick={() => {
+                      if (!isSelected) {
+                        setSelectedImages(prev => [...prev, {
+                          image_id: image.id,
+                          room_type: 'living_room'
+                        }]);
+                      }
+                    }}
                   >
                     {/* Image */}
                     <div className="relative">
                       <img
                         src={`${BACKEND_URL}${image.url}`}
                         alt={image.filename}
-                        className="w-full h-64 object-cover"
+                        className="w-full h-40 object-cover"
                       />
                       {isSelected && (
-                        <div className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded-full font-semibold">
-                          ✓ Selected
+                        <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-full font-semibold text-xs">
+                          ✓
                         </div>
                       )}
                     </div>
 
-                    {/* Settings */}
-                    <div className="p-4 space-y-3">
-                      {/* Room Type */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
+                    {/* Room Type Selection */}
+                    {isSelected && (
+                      <div className="p-3 bg-blue-50 space-y-2">
                         <select
-                          value={imageSettings?.room_type || 'living_room'}
+                          value={imageSettings.room_type}
                           onChange={(e) => {
-                            const newSettings = {
-                              image_id: image.id,
-                              room_type: e.target.value,
-                              designer: imageSettings?.designer || 'alessia_duval',
-                              color_scheme: imageSettings?.color_scheme || 'glacial_muse'
-                            };
-                            
-                            if (isSelected) {
-                              // Update existing
-                              setSelectedImages(prev => 
-                                prev.map(s => s.image_id === image.id ? newSettings : s)
-                              );
-                            } else {
-                              // Add new
-                              setSelectedImages(prev => [...prev, newSettings]);
-                            }
+                            e.stopPropagation();
+                            setSelectedImages(prev =>
+                              prev.map(s => s.image_id === image.id 
+                                ? {...s, room_type: e.target.value}
+                                : s
+                              )
+                            );
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          className="w-full px-2 py-2 border border-gray-300 rounded text-xs"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <option value="living_room">Living Room</option>
                           <option value="bedroom">Bedroom</option>
@@ -841,102 +839,24 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                           <option value="office">Office</option>
                           <option value="exterior">Exterior</option>
                         </select>
-                      </div>
-
-                      {/* Designer & Color Scheme (only show if selected) */}
-                      {isSelected && (
-                        <>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Designer Style</label>
-                            <select
-                              value={imageSettings.designer}
-                              onChange={(e) => {
-                                setSelectedImages(prev =>
-                                  prev.map(s => s.image_id === image.id 
-                                    ? {...s, designer: e.target.value}
-                                    : s
-                                  )
-                                );
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                            >
-                              <option value="alessia_duval">Alessia Duval - Parisian Eclectic</option>
-                              <option value="adrian_mercer">Adrian Mercer - Industrial Poetry</option>
-                              <option value="lucien_hart">Lucien Hart - Couture Glamour</option>
-                              <option value="elinor_hartwell">Elinor Hartwell - Mindful Comfort</option>
-                              <option value="bianca_morelli">Bianca Morelli - Organic Elegance</option>
-                              <option value="eleanor_reed">Eleanor Reed - Vintage Eclectic</option>
-                              <option value="oliver_renard">Oliver Renard - Maximalist Theater</option>
-                              <option value="gabrielle_marlowe">Gabrielle Marlowe - Southern Refinement</option>
-                              <option value="elise_marceau">Elise Marceau - Zen Minimalism</option>
-                              <option value="alexander_bennett">Alexander Bennett - Classical Grandeur</option>
-                              <option value="allegra_marquez">Allegra Marquez - Cultural Fusion</option>
-                              <option value="olivia_bennett">Olivia Bennett - Approachable Elegance</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Color Scheme</label>
-                            <select
-                              value={imageSettings.color_scheme}
-                              onChange={(e) => {
-                                setSelectedImages(prev =>
-                                  prev.map(s => s.image_id === image.id 
-                                    ? {...s, color_scheme: e.target.value}
-                                    : s
-                                  )
-                                );
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                            >
-                              <option value="glacial_muse">Glacial Muse</option>
-                              <option value="nomad_prism">Nomad Prism</option>
-                              <option value="urban_alloy">Urban Alloy</option>
-                              <option value="aegean_whisper">Aegean Whisper</option>
-                              <option value="velvet_deco">Velvet Deco</option>
-                              <option value="desert_modern">Desert Modern</option>
-                              <option value="enchanted_forest">Enchanted Forest</option>
-                              <option value="savannah_bloom">Savannah Bloom</option>
-                              <option value="canyon_clay">Canyon Clay</option>
-                              <option value="lunar_drift">Lunar Drift</option>
-                              <option value="sienna_smoke">Sienna Smoke</option>
-                              <option value="retro_zest">Retro Zest</option>
-                              <option value="twilight_grove">Twilight Grove</option>
-                              <option value="citrus_pop">Citrus Pop</option>
-                              <option value="oxblood_study">Oxblood Study</option>
-                              <option value="sunken_studio">Sunken Studio</option>
-                              <option value="charred_cotton">Charred Cotton</option>
-                              <option value="silken_ember">Silken Ember</option>
-                              <option value="mineral_tonic">Mineral Tonic</option>
-                              <option value="bauhaus_dusk">Bauhaus Dusk</option>
-                            </select>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Select/Remove Button */}
-                      <button
-                        onClick={() => {
-                          if (isSelected) {
+                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedImages(prev => prev.filter(s => s.image_id !== image.id));
-                          } else {
-                            setSelectedImages(prev => [...prev, {
-                              image_id: image.id,
-                              room_type: 'living_room',
-                              designer: 'alessia_duval',
-                              color_scheme: 'glacial_muse'
-                            }]);
-                          }
-                        }}
-                        className={`w-full py-2 rounded-lg font-medium transition-colors ${
-                          isSelected
-                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
-                      >
-                        {isSelected ? 'Remove from Selection' : 'Select for Processing'}
-                      </button>
-                    </div>
+                          }}
+                          className="w-full py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded text-xs font-medium transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                    
+                    {!isSelected && (
+                      <div className="p-3 bg-white text-center">
+                        <span className="text-xs text-gray-500">Click to select</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
