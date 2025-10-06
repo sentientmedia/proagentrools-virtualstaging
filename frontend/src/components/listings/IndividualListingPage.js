@@ -996,6 +996,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
         {/* End 2-Column Grid */}
       </div>
       {/* End AI Interior Design Section */}
+    </div>
     );
   };
 
