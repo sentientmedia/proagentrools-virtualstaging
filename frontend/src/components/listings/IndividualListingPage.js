@@ -697,10 +697,6 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                       globalDesigner === designer.id ? 'border-blue-600 shadow-lg' : 'border-gray-200 hover:border-blue-400'
                     }`}
                     onClick={() => setGlobalDesigner(designer.id)}
-                    onDoubleClick={() => {
-                      setSelectedDesigner(designer);
-                      setShowDesignerModal(true);
-                    }}
                   >
                     <div className="h-40 overflow-hidden">
                       <img 
