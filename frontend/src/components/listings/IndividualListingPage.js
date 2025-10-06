@@ -1061,12 +1061,13 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                 <button
                   key={module.id}
                   onClick={() => {
-                    if (!isLocked) {
+                    if (isLocked) {
+                      setShowFoundationModal(true);
+                    } else {
                       setActiveModule(module.id);
                       setActiveView('module');
                     }
                   }}
-                  disabled={isLocked}
                   className={`text-left p-6 rounded-lg border-2 transition-all ${
                     isLocked
                       ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50'
