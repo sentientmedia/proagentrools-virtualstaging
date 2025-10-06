@@ -727,11 +727,15 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             {/* Info Banner */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-blue-800">
-                🎨 <strong>AI Interior Design:</strong> Enter your design preferences below, then select images and set room types. Process with AI (5 credits per image)
+                🎨 <strong>AI Interior Design:</strong> Choose designer and colors on the left, then upload and select images on the right. Process with AI (5 credits per image)
               </p>
             </div>
 
-            {/* Designer Gallery */}
+            {/* 2-Column Layout: Designers/Colors Left, Photos Right */}
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* LEFT COLUMN - Designers & Colors */}
+              <div className="space-y-8">
+                {/* Designer Gallery */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Designer</h2>
               <p className="text-gray-600 mb-4">Click any designer card to select their style</p>
