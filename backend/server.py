@@ -866,10 +866,10 @@ Be specific and factual. Format as clear, readable paragraphs."""
 Property Details:
 - Address: {full_address}
 - Type: {property_type}
-- Bedrooms: {beds}
-- Bathrooms: {baths}
-- Square Feet: {sqft:,}
-- Listing Price: ${listing_price:,}
+- Bedrooms: {beds if beds else 'TBD'}
+- Bathrooms: {baths if baths else 'TBD'}
+- Square Feet: {f"{sqft:,}" if sqft else 'TBD'}
+- Listing Price: {f"${listing_price:,}" if listing_price else 'TBD'}
 
 Neighborhood Context:
 {neighborhood_research}
