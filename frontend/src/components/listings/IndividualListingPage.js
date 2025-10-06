@@ -342,6 +342,46 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
   };
 
+  const handleRerunDesign = async (variant) => {
+    if (!window.confirm(`Rerun interior design for this image? This will cost 5 credits and regenerate using the same settings:\n\nRoom: ${variant.room_type}\nDesigner: ${variant.designer}\nColor: ${variant.color_scheme}`)) {
+      return;
+    }
+
+    try {
+      // Find the original image
+      const originalImage = images.find(img => img.id === variant.original_image_id);
+      if (!originalImage) {
+        alert('Original image not found');
+        return;
+      }
+
+      // Process with the same settings
+      const response = await axios.post(
+        `${BACKEND_URL}/api/listings/${listingId}/interior-design/process`,
+        {
+          images: [{
+            image_id: variant.original_image_id,
+            room_type: variant.room_type,
+            designer: variant.designer || globalDesigner,
+            color_scheme: variant.color_scheme || globalColorScheme,
+            custom_description: customDescription || undefined,
+            custom_colors: customColors || undefined
+          }]
+        },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert('Rerunning interior design! Check back in 2-3 minutes.');
+        await loadListing();
+        await loadImages();
+      }
+    } catch (err) {
+      console.error('Failed to rerun interior design:', err);
+      alert(err.response?.data?.detail || 'Failed to rerun design');
+    }
+  };
+
   const renderModuleContent = (module) => {
     const content = moduleContent[module.id];
 
