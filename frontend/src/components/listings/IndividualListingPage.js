@@ -84,6 +84,22 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     return () => clearInterval(checkFoundation);
   }, [listing?.foundation_status]);
 
+  // Auto-refresh for processing interior designs
+  useEffect(() => {
+    if (!listing || !listing.interior_design_variants) return;
+    
+    // Check if any variants are processing
+    const hasProcessing = listing.interior_design_variants.some(v => v.status === 'processing');
+    
+    if (!hasProcessing) return;
+    
+    const checkDesigns = setInterval(() => {
+      loadListing();
+    }, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(checkDesigns);
+  }, [listing?.interior_design_variants]);
+
   const loadListing = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}`, {
