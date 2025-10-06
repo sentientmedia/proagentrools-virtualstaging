@@ -662,67 +662,8 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         )}
 
-        {/* Upload Section */}
-        <div className="border-t border-gray-200 pt-8">
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Property Photos</h3>
-            <div className="flex items-center space-x-4">
-              <label className="cursor-pointer bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploadingImages}
-                />
-                {uploadingImages ? 'Uploading...' : '📤 Upload Images'}
-              </label>
-              <span className="text-sm text-gray-600">Select multiple images to upload at once</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Images Grid */}
-        {images.length > 0 ? (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Property Images ({images.length})
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {images.map(image => (
-                <div key={image.id} className="relative group">
-                  <img
-                    src={`${BACKEND_URL}${image.url}`}
-                    alt={image.filename}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity rounded-lg flex items-center justify-center">
-                    <button
-                      onClick={() => handleDeleteImage(image.id)}
-                      className="opacity-0 group-hover:opacity-100 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                  {image.is_primary && (
-                    <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                      Primary
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <span className="text-4xl mb-2 block">📸</span>
-            <p className="text-gray-600">No images uploaded yet</p>
-          </div>
-        )}
-
         {/* AI Interior Design Section */}
-        {images.length > 0 && (
+        <div className="border-t border-gray-200 pt-6">
           <div className="border-t border-gray-200 pt-6">
             {/* Info Banner */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
