@@ -900,8 +900,8 @@ Do not use bold or special formatting. Write in clear, flowing paragraphs."""
         market_prompt = f"""Provide market intelligence and positioning strategy for:
 
 Property: {full_address}
-Type: {property_type}, {beds} bed, {baths} bath, {sqft:,} sq ft
-Price: ${listing_price:,}
+Type: {property_type}, {beds if beds else 'TBD'} bed, {baths if baths else 'TBD'} bath, {f"{sqft:,}" if sqft else 'TBD'} sq ft
+Price: {f"${listing_price:,}" if listing_price else 'TBD'}
 
 Neighborhood Context:
 {neighborhood_research}
