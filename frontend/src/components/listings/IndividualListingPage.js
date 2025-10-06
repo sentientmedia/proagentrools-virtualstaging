@@ -20,9 +20,13 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   // Image management state
   const [images, setImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
-  const [selectedImages, setSelectedImages] = useState([]); // Array of {image_id, room_type, designer, color_scheme}
+  const [selectedImages, setSelectedImages] = useState([]); // Array of {image_id, room_type}
   
-  // Interior design state
+  // Global interior design settings (applied to all selected images)
+  const [globalDesigner, setGlobalDesigner] = useState('alessia_duval');
+  const [globalColorScheme, setGlobalColorScheme] = useState('glacial_muse');
+  const [customDescription, setCustomDescription] = useState('');
+  const [customColors, setCustomColors] = useState('');
   const [processingDesign, setProcessingDesign] = useState(false);
   
   // Designer bio modal
