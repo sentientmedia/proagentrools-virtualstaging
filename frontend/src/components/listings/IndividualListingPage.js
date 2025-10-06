@@ -1655,33 +1655,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-8">
             {!activeModule ? (
-              <div className="text-center py-20">
-                <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-6xl">🏠</span>
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {listing.property_details.address}
-                </h2>
-                <p className="text-lg text-gray-600 mb-2">
-                  {listing.property_details.beds} bed • {listing.property_details.baths} bath • 
-                  {listing.property_details.sqft && ` ${listing.property_details.sqft.toLocaleString()} sq ft`}
-                </p>
-                {listing.property_details.listing_price && (
-                  <p className="text-3xl font-bold text-blue-600 mb-8">
-                    ${listing.property_details.listing_price.toLocaleString()}
-                  </p>
-                )}
-                <p className="text-gray-600 mb-4">
-                  Select a tool from the left sidebar to get started
-                </p>
-                {foundationProcessing && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
-                    <p className="text-sm text-blue-800">
-                      Foundation content is being generated. This takes 1-2 minutes.
-                    </p>
-                  </div>
-                )}
-              </div>
+              renderOverview()
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-6">
