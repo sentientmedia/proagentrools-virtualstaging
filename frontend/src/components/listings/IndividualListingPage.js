@@ -675,7 +675,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             {/* Designer Gallery */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Designer</h2>
-              <p className="text-gray-600 mb-6">Select from 12 award-winning interior designers • Click to select • Double-click to read full bio</p>
+              <p className="text-gray-600 mb-6">Select from 12 award-winning interior designers • Click any card to select</p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[
                   { id: 'alessia_duval', name: 'Alessia Duval', style: 'Parisian Eclectic', bio: 'Infuses Parisian elegance with global eclecticism', image: '/images/designers/alessia_duval.jpg' },
