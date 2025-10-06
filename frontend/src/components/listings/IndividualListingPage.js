@@ -1042,10 +1042,8 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                 </div>
               </div>
             )}
-              </div>
-            </div>
-            {/* End 2-Column Layout */}
           </div>
+        </div>
 
         {listing.description && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -1302,10 +1300,8 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                 </div>
               </div>
             )}
-              </div>
-            </div>
-            {/* End 2-Column Layout */}
           </div>
+        </div>
 
         {listing.description && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
