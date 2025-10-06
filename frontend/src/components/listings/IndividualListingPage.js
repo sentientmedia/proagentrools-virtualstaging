@@ -525,6 +525,92 @@ const IndividualListingPage = ({ listingId, onBack }) => {
 
     return (
       <div className="space-y-8">
+        {/* Foundation Lock Modal */}
+        {showFoundationModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowFoundationModal(false)}>
+            <div className="bg-white rounded-lg max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="p-8">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-5xl">🔒</div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Foundation Content Required</h2>
+                      <p className="text-sm text-gray-600 mt-1">These tools are locked until foundation content is ready</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowFoundationModal(false)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                  <h3 className="font-semibold text-blue-900 mb-3">What are Foundation Modules?</h3>
+                  <p className="text-blue-800 mb-4">
+                    When you create a listing, we automatically generate 3 essential pieces of content that form the "foundation":
+                  </p>
+                  <ul className="space-y-2 text-blue-800">
+                    <li className="flex items-start">
+                      <span className="mr-2">📍</span>
+                      <span><strong>Neighborhood Research</strong> - Local amenities, schools, transportation, community vibe</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">📝</span>
+                      <span><strong>Property Description</strong> - Compelling listing copy highlighting key features</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">📊</span>
+                      <span><strong>Market Intelligence</strong> - Target buyers, positioning, pricing strategy</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+                  <h3 className="font-semibold text-yellow-900 mb-3">Why are other tools locked?</h3>
+                  <p className="text-yellow-800 mb-3">
+                    Other AI tools (marketing copy, social posts, emails, buyer profiles) need the foundation content to create relevant, contextual results.
+                  </p>
+                  <p className="text-yellow-800">
+                    <strong>Foundation Status:</strong> {listing?.foundation_status === 'processing' ? '⏳ Processing...' : listing?.foundation_status === 'completed' ? '✅ Complete' : '❌ Not started'}
+                  </p>
+                </div>
+
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                  <h3 className="font-semibold text-green-900 mb-3">What to do now?</h3>
+                  {listing?.foundation_status === 'processing' ? (
+                    <div className="text-green-800">
+                      <p className="mb-2">✅ Foundation content is currently being generated (usually takes 30-60 seconds)</p>
+                      <p className="mb-2">✅ This page will auto-refresh every 5 seconds</p>
+                      <p>✅ Once complete, all tools will unlock automatically</p>
+                    </div>
+                  ) : listing?.foundation_status === 'completed' ? (
+                    <div className="text-green-800">
+                      <p className="mb-2">✅ Foundation content is complete!</p>
+                      <p>✅ Close this modal and try clicking the tool again</p>
+                    </div>
+                  ) : (
+                    <div className="text-green-800">
+                      <p className="mb-2">The foundation content hasn't been generated yet.</p>
+                      <p>Please refresh the page or contact support if this persists.</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowFoundationModal(false)}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                  >
+                    Got it!
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Designer Bio Modal */}
         {showDesignerModal && selectedDesigner && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowDesignerModal(false)}>
