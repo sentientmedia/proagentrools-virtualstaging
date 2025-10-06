@@ -664,7 +664,6 @@ const IndividualListingPage = ({ listingId, onBack }) => {
 
         {/* AI Interior Design Section */}
         <div className="border-t border-gray-200 pt-6">
-          <div className="border-t border-gray-200 pt-6">
             {/* Info Banner */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-blue-800">
