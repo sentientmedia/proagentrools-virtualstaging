@@ -1130,43 +1130,96 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   const renderOverview = () => {
     if (!listing) return null;
     
-    const foundationComplete = listing.foundation_status === 'completed';
-    const foundationProcessing = listing.foundation_status === 'processing';
-    const foundationModules = modules.filter(m => m.isFoundation);
-    const dependentModules = modules.filter(m => m.requiresFoundation);
-    const otherModules = modules.filter(m => !m.isFoundation && !m.requiresFoundation && !m.ai);
+    const { property_details } = listing;
+    const approvedDesigns = listing.interior_design_variants?.filter(v => v.status === 'completed') || [];
+    const heroImage = approvedDesigns[0]?.processed_image_url || (images[0]?.url);
+    
+    // Get coordinates for map (default to center of US if not available)
+    const latitude = property_details.latitude || 39.8283;
+    const longitude = property_details.longitude || -98.5795;
 
     return (
-      <div className="space-y-8">
-        {/* Property Details Card */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {listing.property_details.address}
-              </h2>
-              <p className="text-gray-600 mb-4">
-                {listing.property_details.city}, {listing.property_details.state} • 
-                {listing.property_details.beds} bed, {listing.property_details.baths} bath • 
-                {listing.property_details.sqft && ` ${listing.property_details.sqft.toLocaleString()} sq ft`}
+      <div className="space-y-6">
+        {/* Hero Image */}
+        {heroImage && (
+          <div className="relative h-96 rounded-lg overflow-hidden shadow-lg">
+            <img
+              src={`${BACKEND_URL}${heroImage}`}
+              alt={property_details.address}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+              <h1 className="text-4xl font-bold text-white mb-2">
+                {property_details.address}
+              </h1>
+              <p className="text-xl text-white/90">
+                {property_details.city}, {property_details.state} {property_details.zip_code}
               </p>
-              <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">
-                  📸 {images.length} photos
-                </div>
-                <div className="text-sm text-gray-600">
-                  ✅ {Object.keys(moduleContent).length} content pieces
-                </div>
-              </div>
             </div>
-            {listing.property_details.listing_price && (
-              <div className="text-right">
-                <div className="text-sm text-gray-600">Listing Price</div>
-                <div className="text-3xl font-bold text-blue-600">
-                  ${listing.property_details.listing_price.toLocaleString()}
-                </div>
+            {property_details.listing_price && (
+              <div className="absolute top-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg">
+                <div className="text-sm opacity-90">Listed at</div>
+                <div className="text-2xl font-bold">${property_details.listing_price.toLocaleString()}</div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Map Section */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900">Location</h2>
+            <p className="text-gray-600 mt-1">
+              {property_details.address}, {property_details.city}, {property_details.state}
+            </p>
+          </div>
+          <div className="h-96 relative">
+            <MapContainer
+              center={[latitude, longitude]}
+              zoom={15}
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={false}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker position={[latitude, longitude]}>
+                <Popup>
+                  <div className="text-center">
+                    <strong>{property_details.address}</strong>
+                    <br />
+                    {property_details.city}, {property_details.state}
+                  </div>
+                </Popup>
+              </Marker>
+            </MapContainer>
+          </div>
+          
+          {/* Future API Integration Placeholders */}
+          <div className="p-6 bg-gray-50 border-t border-gray-200">
+            <div className="grid md:grid-cols-4 gap-4 text-center">
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl mb-1">🏫</div>
+                <div className="text-sm text-gray-600">School Ratings</div>
+                <div className="text-xs text-gray-400 mt-1">Coming soon</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl mb-1">🚶</div>
+                <div className="text-sm text-gray-600">Walk Score</div>
+                <div className="text-xs text-gray-400 mt-1">Coming soon</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl mb-1">🚇</div>
+                <div className="text-sm text-gray-600">Transit Score</div>
+                <div className="text-xs text-gray-400 mt-1">Coming soon</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-2xl mb-1">🛡️</div>
+                <div className="text-sm text-gray-600">Safety Rating</div>
+                <div className="text-xs text-gray-400 mt-1">Coming soon</div>
+              </div>
+            </div>
           </div>
         </div>
 
