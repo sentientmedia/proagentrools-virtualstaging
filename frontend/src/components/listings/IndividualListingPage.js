@@ -678,30 +678,30 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               <p className="text-sm text-gray-600 mb-4">Describe the interior design style and colors you want for all selected images</p>
               
               <div className="space-y-4">
-                {/* Custom Description */}
+                {/* Design Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Custom Design Description
+                    Design Style Description
                   </label>
                   <textarea
                     value={customDescription}
                     onChange={(e) => setCustomDescription(e.target.value)}
-                    placeholder="e.g., Modern coastal vibes with natural textures and airy atmosphere..."
+                    placeholder="e.g., Modern coastal vibes with natural textures and airy atmosphere, Scandinavian minimalism with warm woods..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm resize-none"
                     rows="3"
                   />
                 </div>
 
-                {/* Custom Colors */}
+                {/* Color Preferences */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Custom Colors
+                    Color Palette
                   </label>
                   <input
                     type="text"
                     value={customColors}
                     onChange={(e) => setCustomColors(e.target.value)}
-                    placeholder="e.g., Soft sage green, warm beige, ivory white..."
+                    placeholder="e.g., Soft sage green, warm beige, ivory white, natural wood tones..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm"
                   />
                 </div>
