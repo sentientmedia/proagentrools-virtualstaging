@@ -961,13 +961,34 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                           </div>
                         </div>
                       )}
-                      <div className="p-3 bg-white">
+                      <div className="p-3 bg-white space-y-2">
                         <div className="text-xs text-gray-600">
                           {variant.room_type} • {variant.designer}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500">
+                          {variant.color_scheme}
+                        </div>
+                        <div className="text-xs text-gray-500">
                           {variant.status === 'completed' ? '✓ Completed' : '⏳ Processing...'}
                         </div>
+                        
+                        {variant.status === 'completed' && variant.processed_image_url && (
+                          <div className="flex space-x-2 pt-2">
+                            <a
+                              href={`${BACKEND_URL}${variant.processed_image_url}`}
+                              download={`interior-design-${variant.room_type}-${variant.designer}.jpg`}
+                              className="flex-1 bg-green-600 text-white text-xs py-2 px-3 rounded hover:bg-green-700 transition-colors text-center"
+                            >
+                              📥 Download
+                            </a>
+                            <button
+                              onClick={() => handleRerunDesign(variant)}
+                              className="flex-1 bg-blue-600 text-white text-xs py-2 px-3 rounded hover:bg-blue-700 transition-colors"
+                            >
+                              🔄 Rerun
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
