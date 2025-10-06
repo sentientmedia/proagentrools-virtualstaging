@@ -668,120 +668,14 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             {/* Info Banner */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-blue-800">
-                🎨 <strong>AI Interior Design:</strong> Select designer and colors below, then select images and set room types. Process with AI (5 credits per image)
+                🎨 <strong>AI Interior Design:</strong> Enter your design preferences below, then select images and set room types. Process with AI (5 credits per image)
               </p>
             </div>
 
-            {/* Designer Gallery */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Designer</h2>
-              <p className="text-gray-600 mb-6">Select from 12 award-winning interior designers • Click any card to select</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {[
-                  { id: 'alessia_duval', name: 'Alessia Duval', style: 'Parisian Eclectic', bio: 'Infuses Parisian elegance with global eclecticism', image: '/images/designers/alessia_duval.jpg' },
-                  { id: 'adrian_mercer', name: 'Adrian Mercer', style: 'Industrial Poetry', bio: 'Transforms post-industrial materials into poetic interiors', image: '/images/designers/adrian_mercer.jpg' },
-                  { id: 'lucien_hart', name: 'Lucien Hart', style: 'Couture Glamour', bio: 'Fuses runway glamour with architectural audacity', image: '/images/designers/lucien_hart.jpg' },
-                  { id: 'elinor_hartwell', name: 'Elinor Hartwell', style: 'Mindful Comfort', bio: 'Creates warm, soulful rooms with tactile comfort', image: '/images/designers/elinor_hartwell.jpg' },
-                  { id: 'bianca_morelli', name: 'Bianca Morelli', style: 'Organic Elegance', bio: 'Weaves fluid, organic forms into elegant interiors', image: '/images/designers/bianca_morelli.jpg' },
-                  { id: 'eleanor_reed', name: 'Eleanor Reed', style: 'Vintage Eclectic', bio: 'Mixes vintage patina with contemporary comfort', image: '/images/designers/eleanor_reed.jpg' },
-                  { id: 'oliver_renard', name: 'Oliver Renard', style: 'Maximalist Theater', bio: 'Stages maximalist fantasies with jewel-tone palettes', image: '/images/designers/oliver_renard.jpg' },
-                  { id: 'gabrielle_marlowe', name: 'Gabrielle Marlowe', style: 'Southern Refinement', bio: 'Blends Southern graciousness with European classicism', image: '/images/designers/gabrielle_marlowe.jpg' },
-                  { id: 'elise_marceau', name: 'Elise Marceau', style: 'Zen Minimalism', bio: 'Balances minimalist restraint with tactile warmth', image: '/images/designers/elise_marceau.jpg' },
-                  { id: 'alexander_bennett', name: 'Alexander Bennett', style: 'Classical Grandeur', bio: 'Revives classical grandeur with American sophistication', image: '/images/designers/alexander_bennett.jpg' },
-                  { id: 'allegra_marquez', name: 'Allegra Marquez', style: 'Cultural Fusion', bio: 'Combines cultural authenticity with modern lines', image: '/images/designers/allegra_marquez.jpg' },
-                  { id: 'olivia_bennett', name: 'Olivia Bennett', style: 'Approachable Elegance', bio: 'Creates approachable elegance through thoughtful styling', image: '/images/designers/olivia_bennett.jpg' }
-                ].map(designer => (
-                  <div 
-                    key={designer.id} 
-                    className={`bg-white border-2 rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer ${
-                      globalDesigner === designer.id ? 'border-blue-600 shadow-lg' : 'border-gray-200 hover:border-blue-400'
-                    }`}
-                    onClick={() => setGlobalDesigner(designer.id)}
-                  >
-                    <div className="h-40 overflow-hidden">
-                      <img 
-                        src={designer.image} 
-                        alt={designer.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23e5e7eb" width="200" height="200"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="60">👤</text></svg>';
-                        }}
-                      />
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-bold text-gray-900 text-sm">{designer.name}</h3>
-                      <div className="text-xs font-semibold text-blue-600 mb-1">{designer.style}</div>
-                      <p className="text-xs text-gray-600 line-clamp-2">{designer.bio}</p>
-                    </div>
-                    {globalDesigner === designer.id && (
-                      <div className="bg-blue-600 text-white text-center py-1 text-xs font-semibold">
-                        ✓ Selected
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Schemes Gallery */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Color Schemes</h2>
-              <p className="text-gray-600 mb-6">20 carefully curated palettes to match any style and mood • Click to select</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {[
-                  { id: 'glacial_muse', name: 'Glacial Muse', colors: ['#E8F4F8', '#B8D8E8', '#89B5CE'], description: 'Icy pastels and frosted neutrals evoking Nordic serenity' },
-                  { id: 'nomad_prism', name: 'Nomad Prism', colors: ['#D4A574', '#8B7355', '#E6D5C3'], description: 'Vibrant gems and wanderlust tones for eclectic tastes' },
-                  { id: 'urban_alloy', name: 'Urban Alloy', colors: ['#4A4A4A', '#7D7D7D', '#A8A8A8'], description: 'Iron hues and industrial patina—gritty and raw' },
-                  { id: 'aegean_whisper', name: 'Aegean Whisper', colors: ['#5B9AA9', '#D4C5A9', '#E8DCC4'], description: 'Oceanic blues and sun-kissed earth tones' },
-                  { id: 'velvet_deco', name: 'Velvet Deco', colors: ['#4A1E3D', '#8B6F47', '#C9A961'], description: 'Deep jewel tones and metallic glamour' },
-                  { id: 'desert_modern', name: 'Desert Modern', colors: ['#C79F6B', '#8D6346', '#E8DCC4'], description: 'Burnt earth and washed neutrals with desert grace' },
-                  { id: 'enchanted_forest', name: 'Enchanted Forest', colors: ['#2D5016', '#4A7C2F', '#8B9E6B'], description: 'Lush emeralds and bark browns meet mossy whispers' },
-                  { id: 'savannah_bloom', name: 'Savannah Bloom', colors: ['#D4A960', '#B8935F', '#E8C98E'], description: 'Sunburnt petals and golden grass' },
-                  { id: 'canyon_clay', name: 'Canyon Clay', colors: ['#B85C3F', '#8D5241', '#D4A07A'], description: 'Terracotta cliffs under a molten sky' },
-                  { id: 'lunar_drift', name: 'Lunar Drift', colors: ['#B8B8C8', '#9494A8', '#D4D4E0'], description: 'Icy greys, pale lavenders, and shadows in motion' },
-                  { id: 'sienna_smoke', name: 'Sienna Smoke', colors: ['#A67C52', '#8D6E5A', '#C9B4A0'], description: 'Warm neutrals drifting through dusty clay and chalk' },
-                  { id: 'retro_zest', name: 'Retro Zest', colors: ['#8B9E4A', '#E89B4F', '#E8D960'], description: 'Avocado green, popsicle orange, lemony optimism' },
-                  { id: 'twilight_grove', name: 'Twilight Grove', colors: ['#6B5B7C', '#4A5941', '#8D8E9E'], description: 'Smoky violet, ash green, and forest shadows' },
-                  { id: 'citrus_pop', name: 'Citrus Pop', colors: ['#E89B4F', '#E8D960', '#FFB84D'], description: 'Grapefruit zest and neon fizz—sunrise energy' },
-                  { id: 'oxblood_study', name: 'Oxblood Study', colors: ['#5B1E1E', '#3D2929', '#8D6B6B'], description: 'Oxblood, ink, and old paper tones—academic luxury' },
-                  { id: 'sunken_studio', name: 'Sunken Studio', colors: ['#3D4A5B', '#2D3D4F', '#6B7C8D'], description: 'Undersea study in moody ink and shale' },
-                  { id: 'charred_cotton', name: 'Charred Cotton', colors: ['#5B5B5B', '#8D8D8D', '#C9C9C9'], description: 'Ash, linen, and charcoal smudge' },
-                  { id: 'silken_ember', name: 'Silken Ember', colors: ['#A66B5F', '#8D5747', '#C9A89E'], description: 'Firelight meets silk—subdued luxury with spice' },
-                  { id: 'mineral_tonic', name: 'Mineral Tonic', colors: ['#5B7C8D', '#7C8E9E', '#A0B4C0'], description: 'Mineral blue, flint, and dried herbs' },
-                  { id: 'bauhaus_dusk', name: 'Bauhaus Dusk', colors: ['#8D8E9E', '#4A5B7C', '#C9A961'], description: 'Modernist primary accents on greys and pastels' }
-                ].map(scheme => (
-                  <div 
-                    key={scheme.id} 
-                    className={`bg-white border-2 rounded-lg p-3 hover:shadow-lg transition-all cursor-pointer ${
-                      globalColorScheme === scheme.id ? 'border-blue-600 shadow-lg' : 'border-gray-200 hover:border-blue-400'
-                    }`}
-                    onClick={() => setGlobalColorScheme(scheme.id)}
-                  >
-                    <div className="flex space-x-1 mb-2">
-                      {scheme.colors.map((color, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 h-12 rounded"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                    <h3 className="font-semibold text-gray-900 text-sm mb-1">{scheme.name}</h3>
-                    <p className="text-xs text-gray-600">{scheme.description}</p>
-                    {globalColorScheme === scheme.id && (
-                      <div className="mt-2 bg-blue-600 text-white text-center py-1 rounded text-xs font-semibold">
-                        ✓ Selected
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Custom Options */}
+            {/* Design Preferences */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Custom Options (Optional)</h3>
-              <p className="text-sm text-gray-600 mb-4">Add your own description or specific colors to override the selected designer and color scheme</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Design Preferences</h3>
+              <p className="text-sm text-gray-600 mb-4">Describe the interior design style and colors you want for all selected images</p>
               
               <div className="space-y-4">
                 {/* Custom Description */}
