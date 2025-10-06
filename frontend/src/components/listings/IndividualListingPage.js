@@ -1000,8 +1000,6 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     );
   };
 
-  // renderInteriorDesign function removed - functionality integrated into renderImages
-
   const renderDetails = () => {
     if (!listing) return null;
     const { property_details } = listing;
