@@ -819,16 +819,16 @@ async def generate_listing_foundation(listing_id: str, property_details: dict):
         if not api_key:
             raise Exception("No API key available")
         
-        # Extract property info
+        # Extract property info with safe defaults
         address = property_details.get('address', '')
         city = property_details.get('city', '')
         state = property_details.get('state', '')
         zip_code = property_details.get('zip_code', '')
-        property_type = property_details.get('property_type', '')
-        beds = property_details.get('beds', 0)
-        baths = property_details.get('baths', 0)
-        sqft = property_details.get('sqft', 0)
-        listing_price = property_details.get('listing_price', 0)
+        property_type = property_details.get('property_type', 'Property')
+        beds = property_details.get('beds') or 0
+        baths = property_details.get('baths') or 0
+        sqft = property_details.get('sqft') or 0
+        listing_price = property_details.get('listing_price') or 0
         
         full_address = f"{address}, {city}, {state} {zip_code}"
         
