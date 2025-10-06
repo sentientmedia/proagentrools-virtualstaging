@@ -990,8 +990,11 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               </div>
             )}
           </div>
-        )}
+          {/* End Right Column */}
+        </div>
+        {/* End 2-Column Grid */}
       </div>
+      {/* End AI Interior Design Section */}
     );
   };
 
