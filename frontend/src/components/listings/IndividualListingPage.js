@@ -815,6 +815,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               </div>
             </div>
               </div>
+              {/* End Left Column */}
               
               {/* RIGHT COLUMN - Photos & Upload */}
               <div className="space-y-6">
