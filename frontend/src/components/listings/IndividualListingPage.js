@@ -874,12 +874,34 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                 </div>
               </div>
             </div>
+              </div>
+              
+              {/* RIGHT COLUMN - Photos & Upload */}
+              <div className="space-y-6">
+                {/* Upload Section */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Property Photos</h3>
+                  <div className="flex items-center space-x-4">
+                    <label className="cursor-pointer bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={uploadingImages}
+                      />
+                      {uploadingImages ? 'Uploading...' : '📤 Upload Images'}
+                    </label>
+                    <span className="text-sm text-gray-600">Select multiple images at once</span>
+                  </div>
+                </div>
 
-            {/* Action Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Select Images & Set Room Types ({selectedImages.length} selected)
-              </h3>
+                {/* Action Header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Select Images & Set Room Types ({selectedImages.length} selected)
+                  </h3>
               <button
                 onClick={handleProcessInteriorDesign}
                 disabled={selectedImages.length === 0 || processingDesign}
