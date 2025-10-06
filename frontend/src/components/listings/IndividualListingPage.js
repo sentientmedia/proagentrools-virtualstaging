@@ -32,6 +32,9 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   // Designer bio modal
   const [selectedDesigner, setSelectedDesigner] = useState(null);
   const [showDesignerModal, setShowDesignerModal] = useState(false);
+  
+  // Foundation lock modal
+  const [showFoundationModal, setShowFoundationModal] = useState(false);
 
   const modules = [
     // Foundation modules (auto-generated, always unlocked)
