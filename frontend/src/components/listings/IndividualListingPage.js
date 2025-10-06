@@ -73,6 +73,17 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
   }, [listingId]);
 
+  // Auto-refresh foundation status if processing
+  useEffect(() => {
+    if (!listing || listing.foundation_status !== 'processing') return;
+    
+    const checkFoundation = setInterval(() => {
+      loadListing();
+    }, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(checkFoundation);
+  }, [listing?.foundation_status]);
+
   const loadListing = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}`, {
