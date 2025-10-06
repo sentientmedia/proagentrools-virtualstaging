@@ -775,33 +775,91 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             {/* Design Preferences */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Design Preferences</h3>
-              <p className="text-sm text-gray-600 mb-4">Describe the interior design style and colors you want for all selected images</p>
+              <p className="text-sm text-gray-600 mb-4">Choose a designer style and color scheme, or describe your own preferences</p>
               
               <div className="space-y-4">
-                {/* Design Description */}
+                {/* Designer Style Dropdown */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Design Style Description
+                    Designer Style
+                  </label>
+                  <select
+                    value={globalDesigner}
+                    onChange={(e) => setGlobalDesigner(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="alessia_duval">Alessia Duval - Parisian Eclectic</option>
+                    <option value="adrian_mercer">Adrian Mercer - Industrial Poetry</option>
+                    <option value="lucien_hart">Lucien Hart - Couture Glamour</option>
+                    <option value="elinor_hartwell">Elinor Hartwell - Mindful Comfort</option>
+                    <option value="bianca_morelli">Bianca Morelli - Organic Elegance</option>
+                    <option value="eleanor_reed">Eleanor Reed - Vintage Eclectic</option>
+                    <option value="oliver_renard">Oliver Renard - Maximalist Theater</option>
+                    <option value="gabrielle_marlowe">Gabrielle Marlowe - Southern Refinement</option>
+                    <option value="elise_marceau">Elise Marceau - Zen Minimalism</option>
+                    <option value="alexander_bennett">Alexander Bennett - Classical Grandeur</option>
+                    <option value="allegra_marquez">Allegra Marquez - Cultural Fusion</option>
+                    <option value="olivia_bennett">Olivia Bennett - Approachable Elegance</option>
+                  </select>
+                </div>
+
+                {/* Color Scheme Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Color Scheme
+                  </label>
+                  <select
+                    value={globalColorScheme}
+                    onChange={(e) => setGlobalColorScheme(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="glacial_muse">Glacial Muse - Icy pastels and frosted neutrals</option>
+                    <option value="nomad_prism">Nomad Prism - Vibrant gems and wanderlust tones</option>
+                    <option value="urban_alloy">Urban Alloy - Iron hues and industrial patina</option>
+                    <option value="aegean_whisper">Aegean Whisper - Oceanic blues and sun-kissed earth</option>
+                    <option value="velvet_deco">Velvet Deco - Deep jewel tones and metallic glamour</option>
+                    <option value="desert_modern">Desert Modern - Burnt earth and washed neutrals</option>
+                    <option value="enchanted_forest">Enchanted Forest - Lush emeralds and bark browns</option>
+                    <option value="savannah_bloom">Savannah Bloom - Sunburnt petals and golden grass</option>
+                    <option value="canyon_clay">Canyon Clay - Terracotta cliffs under molten sky</option>
+                    <option value="lunar_drift">Lunar Drift - Icy greys and pale lavenders</option>
+                    <option value="sienna_smoke">Sienna Smoke - Warm neutrals and dusty clay</option>
+                    <option value="retro_zest">Retro Zest - Avocado green and popsicle orange</option>
+                    <option value="twilight_grove">Twilight Grove - Smoky violet and forest shadows</option>
+                    <option value="citrus_pop">Citrus Pop - Grapefruit zest and neon fizz</option>
+                    <option value="oxblood_study">Oxblood Study - Oxblood and old paper tones</option>
+                    <option value="sunken_studio">Sunken Studio - Undersea study in moody ink</option>
+                    <option value="charred_cotton">Charred Cotton - Ash, linen, and charcoal</option>
+                    <option value="silken_ember">Silken Ember - Firelight meets silk with spice</option>
+                    <option value="mineral_tonic">Mineral Tonic - Mineral blue and dried herbs</option>
+                    <option value="bauhaus_dusk">Bauhaus Dusk - Modernist accents on pastels</option>
+                  </select>
+                </div>
+
+                {/* Custom Design Description (Optional) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Custom Design Description (Optional - Override designer style)
                   </label>
                   <textarea
                     value={customDescription}
                     onChange={(e) => setCustomDescription(e.target.value)}
-                    placeholder="e.g., Modern coastal vibes with natural textures and airy atmosphere, Scandinavian minimalism with warm woods..."
+                    placeholder="e.g., Modern coastal vibes with natural textures and airy atmosphere..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm resize-none"
                     rows="3"
                   />
                 </div>
 
-                {/* Color Preferences */}
+                {/* Custom Color Preferences (Optional) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color Palette
+                    Custom Colors (Optional - Override color scheme)
                   </label>
                   <input
                     type="text"
                     value={customColors}
                     onChange={(e) => setCustomColors(e.target.value)}
-                    placeholder="e.g., Soft sage green, warm beige, ivory white, natural wood tones..."
+                    placeholder="e.g., Soft sage green, warm beige, ivory white..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm"
                   />
                 </div>
