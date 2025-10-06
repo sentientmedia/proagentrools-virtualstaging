@@ -782,70 +782,16 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               </div>
             </div>
 
-            {/* Global Design Settings */}
+            {/* Custom Options */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Design Settings (Applied to All Selected Images)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Custom Options (Optional)</h3>
+              <p className="text-sm text-gray-600 mb-4">Add your own description or specific colors to override the selected designer and color scheme</p>
               
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Designer Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Designer Style</label>
-                  <select
-                    value={globalDesigner}
-                    onChange={(e) => setGlobalDesigner(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="alessia_duval">Alessia Duval - Parisian Eclectic</option>
-                    <option value="adrian_mercer">Adrian Mercer - Industrial Poetry</option>
-                    <option value="lucien_hart">Lucien Hart - Couture Glamour</option>
-                    <option value="elinor_hartwell">Elinor Hartwell - Mindful Comfort</option>
-                    <option value="bianca_morelli">Bianca Morelli - Organic Elegance</option>
-                    <option value="eleanor_reed">Eleanor Reed - Vintage Eclectic</option>
-                    <option value="oliver_renard">Oliver Renard - Maximalist Theater</option>
-                    <option value="gabrielle_marlowe">Gabrielle Marlowe - Southern Refinement</option>
-                    <option value="elise_marceau">Elise Marceau - Zen Minimalism</option>
-                    <option value="alexander_bennett">Alexander Bennett - Classical Grandeur</option>
-                    <option value="allegra_marquez">Allegra Marquez - Cultural Fusion</option>
-                    <option value="olivia_bennett">Olivia Bennett - Approachable Elegance</option>
-                  </select>
-                </div>
-
-                {/* Color Scheme Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
-                  <select
-                    value={globalColorScheme}
-                    onChange={(e) => setGlobalColorScheme(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="glacial_muse">Glacial Muse</option>
-                    <option value="nomad_prism">Nomad Prism</option>
-                    <option value="urban_alloy">Urban Alloy</option>
-                    <option value="aegean_whisper">Aegean Whisper</option>
-                    <option value="velvet_deco">Velvet Deco</option>
-                    <option value="desert_modern">Desert Modern</option>
-                    <option value="enchanted_forest">Enchanted Forest</option>
-                    <option value="savannah_bloom">Savannah Bloom</option>
-                    <option value="canyon_clay">Canyon Clay</option>
-                    <option value="lunar_drift">Lunar Drift</option>
-                    <option value="sienna_smoke">Sienna Smoke</option>
-                    <option value="retro_zest">Retro Zest</option>
-                    <option value="twilight_grove">Twilight Grove</option>
-                    <option value="citrus_pop">Citrus Pop</option>
-                    <option value="oxblood_study">Oxblood Study</option>
-                    <option value="sunken_studio">Sunken Studio</option>
-                    <option value="charred_cotton">Charred Cotton</option>
-                    <option value="silken_ember">Silken Ember</option>
-                    <option value="mineral_tonic">Mineral Tonic</option>
-                    <option value="bauhaus_dusk">Bauhaus Dusk</option>
-                  </select>
-                </div>
-
+              <div className="space-y-4">
                 {/* Custom Description */}
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Custom Design Description (Optional)
-                    <span className="text-gray-500 font-normal ml-2">Describe the style or mood you want</span>
+                    Custom Design Description
                   </label>
                   <textarea
                     value={customDescription}
@@ -857,10 +803,9 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                 </div>
 
                 {/* Custom Colors */}
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Custom Colors (Optional)
-                    <span className="text-gray-500 font-normal ml-2">Specific colors or palette you prefer</span>
+                    Custom Colors
                   </label>
                   <input
                     type="text"
