@@ -1223,6 +1223,83 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         </div>
 
+        {/* Property Details Grid */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Property Details</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Property Type</div>
+              <div className="text-lg font-semibold text-gray-900">{property_details.property_type}</div>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Bedrooms</div>
+              <div className="text-lg font-semibold text-gray-900">{property_details.beds} beds</div>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Bathrooms</div>
+              <div className="text-lg font-semibold text-gray-900">{property_details.baths} baths</div>
+            </div>
+            {property_details.sqft && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="text-sm text-gray-600 mb-1">Square Feet</div>
+                <div className="text-lg font-semibold text-gray-900">{property_details.sqft.toLocaleString()} sq ft</div>
+              </div>
+            )}
+            {property_details.listing_price && (
+              <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                <div className="text-sm text-blue-600 mb-1">Listing Price</div>
+                <div className="text-2xl font-bold text-blue-600">${property_details.listing_price.toLocaleString()}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Approved Interior Designs */}
+        {approvedDesigns.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">AI Interior Designs</h2>
+              <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium">
+                {approvedDesigns.length} Approved
+              </span>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {approvedDesigns.map(design => (
+                <div key={design.id} className="group relative">
+                  <div className="aspect-w-16 aspect-h-12 rounded-lg overflow-hidden shadow-md">
+                    <img
+                      src={`${BACKEND_URL}${design.processed_image_url}`}
+                      alt={`${design.room_type} - ${design.designer}`}
+                      className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-sm font-semibold text-gray-900">{design.room_type.replace('_', ' ')}</div>
+                    <div className="text-xs text-gray-600">{design.designer.replace('_', ' ')} • {design.color_scheme.replace('_', ' ')}</div>
+                  </div>
+                  <div className="flex space-x-2 mt-2">
+                    <a
+                      href={`${BACKEND_URL}${design.processed_image_url}`}
+                      download={`interior-design-${design.room_type}.jpg`}
+                      className="flex-1 bg-blue-600 text-white text-xs py-2 px-3 rounded hover:bg-blue-700 transition-colors text-center"
+                    >
+                      📥 Download
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Description */}
+        {listing.description && (
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Description</h2>
+            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{listing.description}</p>
+          </div>
+        )}
+
         {/* Foundation Status Banner */}
         {foundationProcessing && (
           <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
