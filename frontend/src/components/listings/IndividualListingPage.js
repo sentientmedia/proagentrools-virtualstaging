@@ -646,63 +646,6 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         )}
 
-        {/* Designer Gallery */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Designer</h2>
-          <p className="text-gray-600 mb-6">Select from 12 award-winning interior designers • Double-click to read full bio</p>
-          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {designers.map(designer => (
-              <div 
-                key={designer.id} 
-                className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer"
-                onDoubleClick={() => {
-                  setSelectedDesigner(designer);
-                  setShowDesignerModal(true);
-                }}
-              >
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src={designer.image} 
-                    alt={designer.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23e5e7eb" width="200" height="200"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="60">👤</text></svg>';
-                    }}
-                  />
-                </div>
-                <div className="p-3">
-                  <h3 className="font-bold text-gray-900 text-sm">{designer.name}</h3>
-                  <div className="text-xs font-semibold text-blue-600 mb-1">{designer.style}</div>
-                  <p className="text-xs text-gray-600 line-clamp-2">{designer.bio}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Color Schemes */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Color Schemes</h2>
-          <p className="text-gray-600 mb-6">20 carefully curated palettes to match any style and mood</p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {colorSchemes.map(scheme => (
-              <div key={scheme.id} className="bg-white border-2 border-gray-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer">
-                <div className="flex space-x-1 mb-2">
-                  {scheme.colors.map((color, i) => (
-                    <div
-                      key={i}
-                      className="flex-1 h-12 rounded"
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-                <h3 className="font-semibold text-gray-900 text-sm mb-1">{scheme.name}</h3>
-                <p className="text-xs text-gray-600">{scheme.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Upload Section */}
         <div className="border-t border-gray-200 pt-8">
           <div className="bg-white border border-gray-200 rounded-lg p-6">
