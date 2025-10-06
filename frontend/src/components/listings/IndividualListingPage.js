@@ -278,10 +278,20 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     try {
       setProcessingDesign(true);
 
+      // Apply global settings to all selected images
+      const imagesWithSettings = selectedImages.map(img => ({
+        image_id: img.image_id,
+        room_type: img.room_type,
+        designer: globalDesigner,
+        color_scheme: globalColorScheme,
+        custom_description: customDescription || undefined,
+        custom_colors: customColors || undefined
+      }));
+
       const response = await axios.post(
         `${BACKEND_URL}/api/listings/${listingId}/interior-design/process`,
         {
-          images: selectedImages  // Send per-image settings
+          images: imagesWithSettings
         },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
@@ -289,6 +299,8 @@ const IndividualListingPage = ({ listingId, onBack }) => {
       if (response.data.success) {
         alert(`${response.data.message}\n\nProcessed: ${response.data.processed_count} image(s)`);
         setSelectedImages([]);
+        setCustomDescription('');
+        setCustomColors('');
         await loadListing();
         await loadImages();
       }
