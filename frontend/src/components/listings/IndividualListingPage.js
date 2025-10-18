@@ -1223,6 +1223,32 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         </div>
 
+        {/* Foundation Processing Indicator */}
+        {listing.foundation_status === 'processing' && (
+          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg shadow-lg p-6 animate-pulse">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">🔄 Generating Your Foundation Content...</h3>
+                <p className="text-gray-700 mb-3">Our AI is creating professional content for your listing. This typically takes 1-2 minutes.</p>
+                <div className="bg-white rounded-lg p-3 border border-blue-200">
+                  <div className="text-sm font-medium text-gray-700 mb-2">What's being created:</div>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <div>✓ Neighborhood Research (schools, amenities, demographics)</div>
+                    <div>✓ Professional Property Description (listing copy)</div>
+                    <div>✓ Market Intelligence (buyer targeting & positioning)</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-sm text-gray-600">
+                  💡 This page will auto-refresh when complete. Feel free to wait or come back in a minute!
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* What's Next Guidance - Show after foundation completes */}
         {listing.foundation_status === 'completed' && (
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg shadow-lg p-6">
