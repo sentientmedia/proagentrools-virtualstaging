@@ -118,6 +118,46 @@ const CreateListingPage = ({ onClose, onListingCreated }) => {
           </div>
         </div>
 
+        {/* 20-Credit Foundation Value Banner */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg p-6 mb-6 text-white">
+          <div className="flex items-start space-x-4">
+            <div className="bg-white/20 rounded-full p-3 flex-shrink-0">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold mb-3">Your First Listing - 20 Credits</h3>
+              <p className="text-blue-100 mb-4">Creating a listing automatically generates professional AI content in under 2 minutes:</p>
+              <div className="grid md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-white/10 rounded-lg p-3">
+                  <div className="text-2xl mb-1">📍</div>
+                  <div className="font-semibold text-sm">Neighborhood Research</div>
+                  <div className="text-xs text-blue-100 mt-1">Schools, amenities, demographics</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <div className="text-2xl mb-1">📝</div>
+                  <div className="font-semibold text-sm">Property Description</div>
+                  <div className="text-xs text-blue-100 mt-1">Professional listing copy</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <div className="text-2xl mb-1">📊</div>
+                  <div className="font-semibold text-sm">Market Intelligence</div>
+                  <div className="text-xs text-blue-100 mt-1">Positioning & buyer targeting</div>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="bg-green-400 text-green-900 px-3 py-1 rounded-full font-semibold">
+                  You have {user?.credits || 0} credits
+                </div>
+                <div className="text-blue-100">
+                  • After foundation, unlock 20+ AI marketing tools
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Property Information */}
