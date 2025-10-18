@@ -656,27 +656,39 @@ class ProAgentToolsAPITester:
         print("\n📖 STEP 3: Foundation Content Retrieval")
         print("-" * 45)
         
+        # Get the listing to access foundation content
+        content_success, content_response = self.run_test(
+            "3.1 Get Listing with Foundation Content",
+            "GET",
+            f"listings/{listing_id}",
+            200,
+            headers=headers
+        )
+        
+        if not content_success:
+            print("❌ Could not retrieve listing for content verification")
+            return False
+        
+        module_outputs = content_response.get('module_outputs', {})
         foundation_modules = ['neighborhood_research', 'listing_copy', 'market_intel']
         
         for module_name in foundation_modules:
-            module_success, module_response = self.run_test(
-                f"3.{foundation_modules.index(module_name) + 1} Get {module_name.replace('_', ' ').title()}",
-                "GET",
-                f"listings/{listing_id}/modules/{module_name}",
-                200,
-                headers=headers
-            )
-            
-            if not module_success:
-                print(f"❌ Could not retrieve {module_name}")
+            if module_name not in module_outputs:
+                print(f"❌ Missing foundation module: {module_name}")
                 return False
             
-            content = module_response.get('content', '')
+            module_data = module_outputs[module_name]
+            content = module_data.get('content', '')
             if not content or len(content) < 50:
                 print(f"❌ {module_name} content is insufficient: {len(content)} characters")
                 return False
             
-            print(f"✅ {module_name} content retrieved: {len(content)} characters")
+            is_foundation = module_data.get('is_foundation', False)
+            if not is_foundation:
+                print(f"❌ {module_name} not marked as foundation content")
+                return False
+            
+            print(f"✅ {module_name} content retrieved: {len(content)} characters (foundation: {is_foundation})")
         
         # ========== 4. DERIVATIVE AI TOOLS (POST-FOUNDATION) ==========
         print("\n🤖 STEP 4: Derivative AI Tools (Post-Foundation)")
