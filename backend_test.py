@@ -901,7 +901,7 @@ class ProAgentToolsAPITester:
             print("❌ Could not retrieve user listings")
             return False
         
-        user_listings = all_listings_response.get('listings', [])
+        user_listings = all_listings_response if isinstance(all_listings_response, list) else []
         if len(user_listings) < 1:
             print("❌ Expected at least 1 listing, got 0")
             return False
