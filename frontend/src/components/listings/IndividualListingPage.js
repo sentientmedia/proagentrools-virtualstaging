@@ -1143,6 +1143,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     const foundationProcessing = listing.foundation_status === 'processing';
     const foundationModules = modules.filter(m => m.isFoundation);
     const dependentModules = modules.filter(m => m.requiresFoundation);
+    const otherModules = modules.filter(m => !m.isFoundation && !m.requiresFoundation && !m.ai);
 
     return (
       <div className="space-y-6">
