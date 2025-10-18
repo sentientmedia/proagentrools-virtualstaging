@@ -683,12 +683,12 @@ class ProAgentToolsAPITester:
                 print(f"❌ {module_name} content is insufficient: {len(content)} characters")
                 return False
             
-            is_foundation = module_data.get('is_foundation', False)
-            if not is_foundation:
-                print(f"❌ {module_name} not marked as foundation content")
+            is_ai_generated = module_data.get('is_ai_generated', False)
+            if not is_ai_generated:
+                print(f"❌ {module_name} not marked as AI generated")
                 return False
             
-            print(f"✅ {module_name} content retrieved: {len(content)} characters (foundation: {is_foundation})")
+            print(f"✅ {module_name} content retrieved: {len(content)} characters (AI generated: {is_ai_generated})")
         
         # ========== 4. DERIVATIVE AI TOOLS (POST-FOUNDATION) ==========
         print("\n🤖 STEP 4: Derivative AI Tools (Post-Foundation)")
