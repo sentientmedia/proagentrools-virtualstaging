@@ -950,7 +950,7 @@ class ProAgentToolsAPITester:
                 )
                 
                 if final_listings_success:
-                    final_user_listings = final_listings_response.get('listings', [])
+                    final_user_listings = final_listings_response if isinstance(final_listings_response, list) else []
                     if len(final_user_listings) >= 2:
                         print(f"✅ Multiple listings management verified: {len(final_user_listings)} listings")
                     else:
