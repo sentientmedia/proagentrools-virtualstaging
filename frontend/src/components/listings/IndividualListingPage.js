@@ -1223,6 +1223,54 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         </div>
 
+        {/* What's Next Guidance - Show after foundation completes */}
+        {listing.foundation_status === 'completed' && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg shadow-lg p-6">
+            <div className="flex items-start space-x-4">
+              <div className="bg-green-500 rounded-full p-3 flex-shrink-0">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">🎉 Foundation Complete!</h3>
+                <p className="text-gray-700 mb-4">Your property foundation content is ready. Here's what you can do next:</p>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-white rounded-lg p-4 border border-green-200">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-2xl">📸</span>
+                      <div>
+                        <div className="font-semibold text-gray-900">Upload Photos</div>
+                        <div className="text-sm text-gray-600">5 credits per image</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">Transform property photos with AI interior design</p>
+                    <button
+                      onClick={() => { setActiveModule('images'); setActiveView('module'); }}
+                      className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Go to Photos
+                    </button>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-4 border border-green-200">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-2xl">📝</span>
+                      <div>
+                        <div className="font-semibold text-gray-900">Marketing Content</div>
+                        <div className="text-sm text-gray-600">Varies by tool</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">Generate social posts, emails, and more</p>
+                    <div className="text-sm text-gray-500">← Select tools from sidebar</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Property Details Grid */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Property Details</h2>
