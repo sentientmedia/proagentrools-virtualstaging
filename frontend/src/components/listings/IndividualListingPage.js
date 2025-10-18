@@ -1137,6 +1137,12 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     // Get coordinates for map (default to center of US if not available)
     const latitude = property_details.latitude || 39.8283;
     const longitude = property_details.longitude || -98.5795;
+    
+    // Define foundation status variables
+    const foundationComplete = listing.foundation_status === 'completed';
+    const foundationProcessing = listing.foundation_status === 'processing';
+    const foundationModules = modules.filter(m => m.isFoundation);
+    const dependentModules = modules.filter(m => m.requiresFoundation);
 
     return (
       <div className="space-y-6">
