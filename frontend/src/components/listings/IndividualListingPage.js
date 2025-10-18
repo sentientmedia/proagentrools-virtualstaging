@@ -445,9 +445,47 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         ) : (
           <div>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="max-w-none whitespace-pre-wrap text-gray-900 leading-relaxed">
-                {content.content.replace(/\*\*/g, '')}
+            <div className="bg-white border border-gray-200 rounded-lg p-8">
+              <div className="prose prose-lg max-w-none">
+                <div className="text-gray-800 leading-relaxed space-y-4" style={{ whiteSpace: 'pre-wrap' }}>
+                  {content.content.split('\n\n').map((paragraph, idx) => {
+                    // Handle headers (lines starting with ##)
+                    if (paragraph.trim().startsWith('## ')) {
+                      return (
+                        <h2 key={idx} className="text-2xl font-bold text-gray-900 mt-6 mb-3">
+                          {paragraph.replace(/^##\s*/, '')}
+                        </h2>
+                      );
+                    }
+                    // Handle headers (lines starting with #)
+                    if (paragraph.trim().startsWith('# ')) {
+                      return (
+                        <h1 key={idx} className="text-3xl font-bold text-gray-900 mt-8 mb-4">
+                          {paragraph.replace(/^#\s*/, '')}
+                        </h1>
+                      );
+                    }
+                    // Handle bullet points
+                    if (paragraph.trim().startsWith('- ') || paragraph.trim().startsWith('* ')) {
+                      const items = paragraph.split('\n').filter(line => line.trim());
+                      return (
+                        <ul key={idx} className="list-disc list-inside space-y-2 ml-4">
+                          {items.map((item, i) => (
+                            <li key={i} className="text-gray-800">
+                              {item.replace(/^[-*]\s*/, '').replace(/\*\*/g, '')}
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    }
+                    // Regular paragraphs
+                    return (
+                      <p key={idx} className="text-gray-800 leading-relaxed">
+                        {paragraph.replace(/\*\*/g, '')}
+                      </p>
+                    );
+                  })}
+                </div>
               </div>
             </div>
             <div className="flex items-center justify-between mt-2">
