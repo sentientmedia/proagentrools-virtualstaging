@@ -7,7 +7,7 @@ import CreditConfirmationModal from '../common/CreditConfirmationModal';
 import axios from 'axios';
 
 const ListingsDashboard = () => {
-  const { user, token } = useAuth();
+  const { user, token, logout } = useAuth();
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   
   const [listings, setListings] = useState([]);
