@@ -25,7 +25,7 @@ const BrokerProfileSetup = ({ onComplete, onSkip }) => {
     twitter_url: '',
     
     // Preferences
-    default_writing_style: 'professional',
+    default_writing_style: 'straight_shooter',
     include_contact_in_content: true
   });
 
