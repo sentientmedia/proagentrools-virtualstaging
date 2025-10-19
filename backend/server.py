@@ -830,6 +830,47 @@ async def logout_user(current_user: User = Depends(get_current_user_enhanced)):
         logger.error(f"Logout error: {str(e)}")
         raise HTTPException(status_code=500, detail="Logout failed")
 
+# Broker Profile Endpoints
+@api_router.get("/profile")
+async def get_broker_profile(current_user: User = Depends(get_current_user_enhanced)):
+    """Get current user's broker profile"""
+    return {
+        "broker_profile": current_user.broker_profile,
+        "profile_completed": current_user.profile_completed,
+        "user": {
+            "email": current_user.email,
+            "full_name": current_user.full_name,
+            "credits": current_user.credits
+        }
+    }
+
+@api_router.put("/profile")
+async def update_broker_profile(
+    profile_data: BrokerProfile,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Update broker profile"""
+    try:
+        # Update user profile
+        await db.users.update_one(
+            {"id": current_user.id},
+            {
+                "$set": {
+                    "broker_profile": profile_data.dict(),
+                    "profile_completed": True
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "message": "Profile updated successfully",
+            "broker_profile": profile_data.dict()
+        }
+    except Exception as e:
+        logger.error(f"Profile update error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update profile")
+
 # Listing Management Endpoints
 
 # Foundation Generation System
