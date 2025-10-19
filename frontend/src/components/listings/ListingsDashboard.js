@@ -222,28 +222,57 @@ const ListingsDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       
-      {/* Header */}
+      {/* Header with Navigation */}
+      <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-8">
+              <h1 className="text-2xl font-bold">ProAgentTools</h1>
+              <nav className="flex space-x-6">
+                <a href="/listings" className="text-white hover:text-blue-200 font-medium">
+                  My Listings
+                </a>
+                <a href="/dashboard" className="text-blue-200 hover:text-white font-medium">
+                  Dashboard
+                </a>
+              </nav>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-xs text-blue-200">Credits</div>
+                <div className="text-xl font-bold">{user?.credits || 0}</div>
+              </div>
+              <div className="text-right border-l border-blue-500 pl-4">
+                <div className="text-xs text-blue-200">Account</div>
+                <div className="text-sm font-medium">{user?.full_name || user?.email}</div>
+              </div>
+              <button
+                onClick={logout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Page Title */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Listings</h1>
+              <h2 className="text-2xl font-bold text-gray-900">My Listings</h2>
               <p className="text-gray-600 mt-1">
                 Manage your properties and AI-generated marketing materials
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm">
-                <div className="text-gray-600">Available Credits</div>
-                <div className="text-2xl font-bold text-blue-600">{user?.credits || 0}</div>
-              </div>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-              >
-                + New Listing
-              </button>
-            </div>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              + New Listing
+            </button>
           </div>
         </div>
       </div>
