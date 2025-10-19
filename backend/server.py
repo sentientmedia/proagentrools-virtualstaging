@@ -310,6 +310,29 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class BrokerProfile(BaseModel):
+    # Contact Information
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    bio: Optional[str] = None
+    
+    # Brokerage Details
+    brokerage_name: Optional[str] = None
+    brokerage_logo_url: Optional[str] = None
+    
+    # Social Media
+    facebook_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    
+    # Writing Preferences
+    default_writing_style: str = "professional"  # professional, casual, luxury, friendly
+    include_contact_in_content: bool = True
+    
+    # Profile Photo
+    profile_photo_url: Optional[str] = None
+
 class User(UserBase):
     id: str
     credits: int = 100  # Free tier starts with 100 credits
@@ -320,6 +343,10 @@ class User(UserBase):
     total_referrals: int = 0
     created_at: datetime
     last_login: Optional[datetime] = None
+    
+    # Broker Profile
+    broker_profile: Optional[BrokerProfile] = None
+    profile_completed: bool = False
 
 class Token(BaseModel):
     access_token: str
