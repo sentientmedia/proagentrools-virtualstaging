@@ -327,7 +327,7 @@ class BrokerProfile(BaseModel):
     twitter_url: Optional[str] = None
     
     # Writing Preferences
-    default_writing_style: str = "professional"  # professional, casual, luxury, friendly
+    default_writing_style: str = "straight_shooter"  # 15 real estate writing styles available
     include_contact_in_content: bool = True
     
     # Profile Photo
