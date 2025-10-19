@@ -204,9 +204,9 @@ const BrokerProfileSetup = ({ onComplete, onSkip }) => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Default Writing Style
+          Default Writing Style (Choose from 15 real estate tones)
         </label>
-        <div className="space-y-3">
+        <div className="max-h-96 overflow-y-auto space-y-3 pr-2">
           {writingStyles.map(style => (
             <div
               key={style.value}
