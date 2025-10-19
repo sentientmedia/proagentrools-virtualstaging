@@ -30,10 +30,21 @@ const BrokerProfileSetup = ({ onComplete, onSkip }) => {
   });
 
   const writingStyles = [
-    { value: 'professional', label: 'Professional', description: 'Formal, polished, industry-standard' },
-    { value: 'casual', label: 'Casual & Friendly', description: 'Approachable, conversational, warm' },
-    { value: 'luxury', label: 'Luxury & Premium', description: 'Sophisticated, high-end, exclusive' },
-    { value: 'friendly', label: 'Friendly & Personal', description: 'Personal touch, relationship-focused' }
+    { value: 'data_driven_dossier', label: 'Data-Driven Dossier', description: 'Factual, comprehensive, analytical with statistics and research' },
+    { value: 'storybook_sanctuary', label: 'Storybook Sanctuary', description: 'Enchanting, whimsical, creates wonder and peace' },
+    { value: 'coastal_canvas', label: 'Coastal Canvas', description: 'Light, airy, seaside essence with natural beauty' },
+    { value: 'urban_quip', label: 'Urban Quip', description: 'Witty, sophisticated, modern city-centric vocabulary' },
+    { value: 'material_minimalist', label: 'Material Minimalist', description: 'Clean, uncluttered, focuses on textures and finishes' },
+    { value: 'high_voltage_hype', label: 'High-Voltage Hype', description: 'Exciting, energetic, creates urgency and appeal' },
+    { value: 'homestead_harmony', label: 'Homestead Harmony', description: 'Warm, traditional, welcoming family home feel' },
+    { value: 'worldly_opulence', label: 'Worldly Opulence', description: 'Luxury, sophisticated, global influences and refined taste' },
+    { value: 'roi_realtalk', label: 'ROI RealTalk', description: 'Practical, value-focused, straightforward financial emphasis' },
+    { value: 'loft_luxe', label: 'Loft Luxe', description: 'Industrial meets sophisticated luxury, raw with high-end finishes' },
+    { value: 'retro_modernist', label: 'Retro Modernist', description: 'Mid-century modern with contemporary twist' },
+    { value: 'alpine_air', label: 'Alpine Air', description: 'Fresh, crisp, invigorating mountain environment feel' },
+    { value: 'block_by_block_chronicle', label: 'Block-by-Block Chronicle', description: 'Detailed, sequential narrative of development process' },
+    { value: 'skyline_sonnet', label: 'Skyline Sonnet', description: 'Poetic, grand urban imagery with contemplative beauty' },
+    { value: 'straight_shooter', label: 'Straight Shooter', description: 'Direct, honest, no-nonsense gets straight to the point' }
   ];
 
   const handleSubmit = async (e) => {
