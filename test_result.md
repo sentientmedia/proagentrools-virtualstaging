@@ -1066,6 +1066,28 @@
           agent: "testing"
           comment: "✅ VERIFIED: Navigation to individual listing working correctly. 'View Details' button navigates to individual listing page with proper listing ID. Back navigation returns to listings dashboard and refreshes listing data. State preservation working correctly throughout navigation flow."
 
+  - task: "NEW: Map Functionality - Leaflet Integration"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/listings/IndividualListingPage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "user"
+          comment: "User reports 'map still not working' on individual listing pages"
+        - working: "NA"
+          agent: "testing"
+          comment: "❌ UNABLE TO COMPLETE UI TESTING: Browser automation issues prevented full testing, but code analysis shows proper implementation. Map uses react-leaflet v5.0.0 and leaflet v1.9.4 with correct MapContainer, TileLayer, Marker components. Leaflet CSS imported, icon fix applied. Renders in Location section with OpenStreetMap tiles and property marker. ⚠️ POTENTIAL ISSUES: 1) Leaflet CSS loading, 2) React-Leaflet compatibility, 3) Missing coordinates, 4) Icon path resolution, 5) CSS height/width issues. Requires main agent investigation of browser console errors and Leaflet CSS loading."
+
+  - task: "GPT Tools Authentication"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
     status_history:
         - working: "pending"
           agent: "main"
