@@ -1068,7 +1068,7 @@
 
   - task: "NEW: Map Functionality - Leaflet Integration"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/components/listings/IndividualListingPage.js"
     stuck_count: 1
     priority: "high"
@@ -1080,6 +1080,9 @@
         - working: "NA"
           agent: "testing"
           comment: "❌ UNABLE TO COMPLETE UI TESTING: Browser automation issues prevented full testing, but code analysis shows proper implementation. Map uses react-leaflet v5.0.0 and leaflet v1.9.4 with correct MapContainer, TileLayer, Marker components. Leaflet CSS imported, icon fix applied. Renders in Location section with OpenStreetMap tiles and property marker. ⚠️ POTENTIAL ISSUES: 1) Leaflet CSS loading, 2) React-Leaflet compatibility, 3) Missing coordinates, 4) Icon path resolution, 5) CSS height/width issues. Requires main agent investigation of browser console errors and Leaflet CSS loading."
+        - working: true
+          agent: "testing"
+          comment: "✅ MARKER ICON FIX VERIFIED: Comprehensive testing confirms the Leaflet marker icon fix is working! Key findings: 1) ✅ Bundle contains proper ES6 imports for marker-icon.png, marker-icon-2x.png, and marker-shadow.png, 2) ✅ No old require() statements found in bundle, 3) ✅ Leaflet JavaScript properly loaded, 4) ✅ Map creation and marker placement functional, 5) ✅ Marker icons now use data URLs instead of broken require() paths. The fix successfully replaced require('leaflet/dist/images/marker-icon.png') with proper import statements. Maps will now display with visible blue marker pins on individual listing pages. Minor: Leaflet CSS not loading on homepage but this doesn't affect functionality since CSS is imported in the component."
 
   - task: "GPT Tools Authentication"
     implemented: true
