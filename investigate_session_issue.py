@@ -8,7 +8,7 @@ import uuid
 def investigate_session_token_issue():
     """Investigate why session tokens are failing in the backend_test.py"""
     
-    base_url = "https://proagent-realty.preview.emergentagent.com"
+    base_url = "https://realestate-ai-65.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 INVESTIGATING SESSION TOKEN ISSUE")

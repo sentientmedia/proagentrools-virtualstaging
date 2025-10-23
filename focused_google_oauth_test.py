@@ -8,7 +8,7 @@ import uuid
 def focused_google_oauth_test():
     """Focused test of Google OAuth integration based on the review request"""
     
-    base_url = "https://proagent-realty.preview.emergentagent.com"
+    base_url = "https://realestate-ai-65.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 FOCUSED GOOGLE OAUTH INTEGRATION TEST")

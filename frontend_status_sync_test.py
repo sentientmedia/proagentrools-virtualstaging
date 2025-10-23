@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 class FrontendStatusSyncTester:
-    def __init__(self, base_url="https://proagent-realty.preview.emergentagent.com"):
+    def __init__(self, base_url="https://realestate-ai-65.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.user_token = None

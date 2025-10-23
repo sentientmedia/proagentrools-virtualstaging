@@ -7,7 +7,7 @@ import sys
 def test_google_oauth_debug():
     """Debug Google OAuth integration with the specific mock data from the review request"""
     
-    base_url = "https://proagent-realty.preview.emergentagent.com"
+    base_url = "https://realestate-ai-65.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 DEBUGGING GOOGLE OAUTH INTEGRATION")
