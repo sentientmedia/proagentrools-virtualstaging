@@ -1702,7 +1702,7 @@ Description: {listing.get('description', 'N/A')}
             "buyer_followup": "Create follow-up message templates for after property showings. Include questions to ask, feedback requests, and next step suggestions."
         }
         
-        system_message = f"You are an expert real estate copywriter and marketing professional. Generate high-quality, professional content for real estate listings."
+        system_message = f"You are an expert real estate copywriter and marketing professional. Generate high-quality, professional content for real estate listings. When previous module outputs are provided, use them as context and ensure your content is consistent with and builds upon the information already generated. Maintain consistency in tone, facts, and messaging across all modules."
         prompt = f"{module_prompts.get(module_name, 'Generate professional content for this property listing.')}\n\nProperty Information:\n{context}"
         
         # Try with Emergent LLM key first, fall back to OpenAI key if it fails
