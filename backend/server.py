@@ -1649,9 +1649,38 @@ Bathrooms: {property_details.get('baths', 'N/A')}
 Square Feet: {property_details.get('sqft', 'N/A')}
 Listing Price: ${property_details.get('listing_price', 'TBD')}
 Description: {listing.get('description', 'N/A')}
-
-Additional Context: {request.additional_context or 'None provided'}
 """
+        
+        # Add completed module content as context if specified
+        module_outputs = listing.get("module_outputs", {})
+        if request.include_module_context and module_outputs:
+            context += "\n\n=== PREVIOUSLY COMPLETED MODULES (Use as context to inform your response) ===\n"
+            
+            for module_id in request.include_module_context:
+                if module_id in module_outputs:
+                    module_data = module_outputs[module_id]
+                    module_content = module_data.get("content", "")
+                    if module_content:
+                        # Get friendly module name
+                        module_name_map = {
+                            "neighborhood_research": "Neighborhood Research",
+                            "listing_copy": "Property Description",
+                            "market_intel": "Market Intelligence",
+                            "marketing_copy": "Marketing Materials",
+                            "social_media": "Social Media Posts",
+                            "email_template": "Email Campaign",
+                            "buyer_profile": "Target Buyer Profile",
+                            "price_justification": "Price Justification",
+                            "competitor_comparison": "Competitor Analysis"
+                        }
+                        friendly_name = module_name_map.get(module_id, module_id.replace('_', ' ').title())
+                        
+                        context += f"\n--- {friendly_name} ---\n{module_content}\n"
+            
+            context += "\n=== END OF PREVIOUS MODULES ===\n"
+        
+        if request.additional_context:
+            context += f"\n\nAdditional User Instructions: {request.additional_context}\n"
         
         # Define module-specific prompts
         module_prompts = {
