@@ -2055,6 +2055,16 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         </div>
       </div>
+      
+      {/* Module Questionnaire Modal */}
+      <ModuleQuestionnaireModal
+        isOpen={showQuestionnaireModal}
+        onClose={() => setShowQuestionnaireModal(false)}
+        moduleName={questionnaireModule}
+        writingStyles={writingStyles}
+        onSubmit={(formInputs) => handleGenerateContent(questionnaireModule, formInputs)}
+        isGenerating={generatingModule === questionnaireModule}
+      />
     </div>
   );
 };
