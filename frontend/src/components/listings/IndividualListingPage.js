@@ -657,9 +657,19 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               </div>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <div className="text-xs text-gray-500">
-                {content.is_ai_generated ? '🤖 AI Generated' : '✏️ Manually Edited'} • 
-                Last updated: {new Date(content.last_edited || content.generated_at).toLocaleString()}
+              <div className="flex items-center space-x-3">
+                <div className="text-xs text-gray-500">
+                  {content.is_ai_generated ? '🤖 AI Generated' : '✏️ Manually Edited'} • 
+                  Last updated: {new Date(content.last_edited || content.generated_at).toLocaleString()}
+                </div>
+                {content.used_context_from && content.used_context_from.length > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs text-blue-600 font-medium">🔗</span>
+                    <span className="text-xs text-blue-600">
+                      Built upon {content.used_context_from.length} module{content.used_context_from.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <button
