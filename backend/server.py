@@ -906,6 +906,20 @@ async def update_broker_profile(
         logger.error(f"Profile update error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to update profile")
 
+@api_router.get("/profile/writing-styles")
+async def get_writing_styles():
+    """Get available writing styles/tones"""
+    return {
+        "styles": [
+            {
+                "id": key,
+                "name": value["name"],
+                "description": value["description"]
+            }
+            for key, value in WRITING_STYLES.items()
+        ]
+    }
+
 # Listing Management Endpoints
 
 # Foundation Generation System
