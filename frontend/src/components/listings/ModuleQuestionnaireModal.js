@@ -21,7 +21,8 @@ const ModuleQuestionnaireModal = ({
     pricing_strategy: '',
     recent_upgrades: [],
     known_objections: [],
-    showing_feedback: []
+    showing_feedback: [],
+    additional_context: ''
   });
 
   if (!isOpen) return null;
