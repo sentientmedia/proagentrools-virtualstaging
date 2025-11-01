@@ -633,7 +633,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             )}
             
             <button
-              onClick={() => handleGenerateContent(module.id)}
+              onClick={() => openQuestionnaire(module.id)}
               disabled={generatingModule === module.id}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400"
             >
