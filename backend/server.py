@@ -1730,6 +1730,52 @@ Description: {listing.get('description', 'N/A')}
         if request.additional_context:
             context += f"\n\nAdditional User Instructions: {request.additional_context}\n"
         
+        # Add structured form inputs to context
+        form_data_context = ""
+        
+        if request.tone:
+            tone_info = WRITING_STYLES.get(request.tone, {})
+            form_data_context += f"\nPreferred Tone/Style: {tone_info.get('name', request.tone)} - {tone_info.get('description', '')}"
+        
+        if request.target_buyer_type:
+            form_data_context += f"\nTarget Buyer Type: {request.target_buyer_type}"
+        
+        if request.property_highlights:
+            form_data_context += f"\nKey Selling Points to Emphasize: {', '.join(request.property_highlights)}"
+        
+        if request.competitive_advantages:
+            form_data_context += f"\nCompetitive Advantages: {', '.join(request.competitive_advantages)}"
+        
+        if request.open_house_date:
+            form_data_context += f"\nOpen House Date: {request.open_house_date}"
+        
+        if request.open_house_time:
+            form_data_context += f"\nOpen House Time: {request.open_house_time}"
+        
+        if request.open_house_features:
+            form_data_context += f"\nOpen House Features: {', '.join(request.open_house_features)}"
+        
+        if request.video_length:
+            form_data_context += f"\nVideo Length Target: {request.video_length}"
+        
+        if request.rooms_to_highlight:
+            form_data_context += f"\nRooms to Highlight: {', '.join(request.rooms_to_highlight)}"
+        
+        if request.pricing_strategy:
+            form_data_context += f"\nPricing Strategy: {request.pricing_strategy}"
+        
+        if request.recent_upgrades:
+            form_data_context += f"\nRecent Upgrades/Renovations: {', '.join(request.recent_upgrades)}"
+        
+        if request.known_objections:
+            form_data_context += f"\nKnown Buyer Concerns: {', '.join(request.known_objections)}"
+        
+        if request.showing_feedback:
+            form_data_context += f"\nFeedback from Recent Showings: {', '.join(request.showing_feedback)}"
+        
+        if form_data_context:
+            context += f"\n\n=== AGENT-PROVIDED CONTEXT ===\n{form_data_context}\n=== END AGENT CONTEXT ===\n"
+        
         # Define module-specific prompts
         module_prompts = {
             "listing_copy": "Write a compelling, professional property listing description that highlights key features and creates buyer interest. Be specific and engaging.",
