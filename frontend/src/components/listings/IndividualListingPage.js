@@ -4,6 +4,7 @@ import axios from 'axios';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import ModuleQuestionnaireModal from './ModuleQuestionnaireModal';
 
 // Fix Leaflet default icon issue - Use CDN URLs to bypass webpack issues
 delete L.Icon.Default.prototype._getIconUrl;
