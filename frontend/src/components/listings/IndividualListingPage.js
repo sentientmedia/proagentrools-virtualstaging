@@ -79,6 +79,9 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     { id: 'listing_copy', name: 'Property Description', icon: '✍️', ai: true, credits: 0, description: 'Professional listing copy', isFoundation: true, category: 'Foundation' },
     { id: 'market_intel', name: 'Market Intelligence', icon: '📊', ai: true, credits: 0, description: 'Strategic market positioning', isFoundation: true, category: 'Foundation' },
     
+    // Media - AI Photo Editor (moved to top)
+    { id: 'images', name: 'Photos & Interior Design', icon: '📸', description: 'Upload and enhance images', category: 'Media' },
+    
     // Marketing & Content
     { id: 'marketing_copy', name: 'Marketing Materials', icon: '📢', ai: true, credits: 1, description: 'Brochures and flyers', requiresFoundation: true, category: 'Marketing' },
     { id: 'social_media', name: 'Social Media Posts', icon: '📱', ai: true, credits: 1, description: 'Facebook, Instagram posts', requiresFoundation: true, category: 'Marketing' },
@@ -98,9 +101,6 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     // Client Communications  
     { id: 'seller_updates', name: 'Seller Updates', icon: '📝', ai: true, credits: 1, description: 'Weekly seller reports', requiresFoundation: true, category: 'Communications' },
     { id: 'buyer_followup', name: 'Buyer Follow-up', icon: '📞', ai: true, credits: 1, description: 'Post-showing messages', requiresFoundation: true, category: 'Communications' },
-    
-    // Media
-    { id: 'images', name: 'Photos & Interior Design', icon: '📸', description: 'Upload and enhance images', category: 'Media' },
   ];
 
   useEffect(() => {
