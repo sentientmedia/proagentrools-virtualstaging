@@ -87,6 +87,89 @@ const IndividualListingPage = ({ listingId, onBack }) => {
       loadImages();
     }
   }, [listingId]);
+  
+  // Geocode address to get coordinates
+  const geocodeAddress = async (property_details) => {
+    if (geocodingAddress) return; // Prevent duplicate requests
+    
+    // If we already have coordinates, use them
+    if (property_details.latitude && property_details.longitude) {
+      setMapCoordinates({
+        lat: property_details.latitude,
+        lng: property_details.longitude
+      });
+      return;
+    }
+    
+    setGeocodingAddress(true);
+    
+    try {
+      // Build full address string
+      const fullAddress = `${property_details.address}, ${property_details.city}, ${property_details.state} ${property_details.zip_code}`;
+      
+      // Use Nominatim (OpenStreetMap) geocoding service
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'ProAgentTools/1.0' // Required by Nominatim
+          }
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setMapCoordinates({
+          lat: parseFloat(lat),
+          lng: parseFloat(lon)
+        });
+        
+        console.log(`✅ Geocoded address: ${fullAddress} -> [${lat}, ${lon}]`);
+      } else {
+        // Fallback to city/state if full address doesn't work
+        const cityStateAddress = `${property_details.city}, ${property_details.state}`;
+        const fallbackResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityStateAddress)}&limit=1`,
+          {
+            headers: {
+              'User-Agent': 'ProAgentTools/1.0'
+            }
+          }
+        );
+        
+        const fallbackData = await fallbackResponse.json();
+        
+        if (fallbackData && fallbackData.length > 0) {
+          const { lat, lon } = fallbackData[0];
+          setMapCoordinates({
+            lat: parseFloat(lat),
+            lng: parseFloat(lon)
+          });
+          
+          console.log(`⚠️ Used city geocoding: ${cityStateAddress} -> [${lat}, ${lon}]`);
+        } else {
+          // Last resort: default coordinates
+          console.warn('❌ Geocoding failed, using default coordinates');
+          setMapCoordinates({ lat: 39.8283, lng: -98.5795 });
+        }
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      // Use default coordinates on error
+      setMapCoordinates({ lat: 39.8283, lng: -98.5795 });
+    } finally {
+      setGeocodingAddress(false);
+    }
+  };
+
+  useEffect(() => {
+    if (listingId) {
+      loadListing();
+      loadImages();
+    }
+  }, [listingId]);
 
   // Auto-refresh foundation status if processing
   useEffect(() => {
