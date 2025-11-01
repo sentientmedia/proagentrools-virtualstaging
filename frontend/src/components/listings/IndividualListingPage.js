@@ -181,6 +181,13 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     
     return () => clearInterval(checkFoundation);
   }, [listing?.foundation_status]);
+  
+  // Geocode address when listing loads
+  useEffect(() => {
+    if (listing && listing.property_details && !mapCoordinates && !geocodingAddress) {
+      geocodeAddress(listing.property_details);
+    }
+  }, [listing]);
 
   // Auto-refresh for processing interior designs
   useEffect(() => {
