@@ -50,6 +50,26 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   // Map coordinates state
   const [mapCoordinates, setMapCoordinates] = useState(null);
   const [geocodingAddress, setGeocodingAddress] = useState(false);
+  
+  // Module questionnaire modal state
+  const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
+  const [questionnaireModule, setQuestionnaireModule] = useState(null);
+  const [writingStyles, setWritingStyles] = useState([]);
+  const [formData, setFormData] = useState({
+    tone: '',
+    target_buyer_type: '',
+    property_highlights: [],
+    competitive_advantages: [],
+    open_house_date: '',
+    open_house_time: '',
+    open_house_features: [],
+    video_length: '',
+    rooms_to_highlight: [],
+    pricing_strategy: '',
+    recent_upgrades: [],
+    known_objections: [],
+    showing_feedback: []
+  });
 
   const modules = [
     // Foundation modules (auto-generated, always unlocked)
