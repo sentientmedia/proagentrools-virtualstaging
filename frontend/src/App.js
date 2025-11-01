@@ -46,6 +46,14 @@ const Header = () => {
                   >
                     Dashboard
                   </button>
+                  {user?.is_admin && (
+                    <button
+                      onClick={() => window.location.href = '/admin'}
+                      className="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded font-medium transition-colors"
+                    >
+                      Admin
+                    </button>
+                  )}
                 </>
               ) : (
                 <>
