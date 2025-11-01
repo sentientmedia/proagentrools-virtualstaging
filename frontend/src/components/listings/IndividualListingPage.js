@@ -1218,12 +1218,18 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               {property_details.address}, {property_details.city}, {property_details.state}
             </p>
           </div>
-          <div className="h-96 relative">
+          <div style={{ height: '400px', width: '100%' }} className="relative">
             <MapContainer
+              key={`map-${listing.id}`}
               center={[latitude, longitude]}
               zoom={15}
-              style={{ height: '100%', width: '100%' }}
+              style={{ height: '100%', width: '100%', zIndex: 1 }}
               scrollWheelZoom={false}
+              whenCreated={(map) => {
+                setTimeout(() => {
+                  map.invalidateSize();
+                }, 100);
+              }}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
