@@ -456,6 +456,7 @@ class UpdateListingRequest(BaseModel):
 class GenerateModuleRequest(BaseModel):
     module_name: str
     additional_context: Optional[str] = None
+    include_module_context: Optional[List[str]] = None  # List of module IDs to include as context
 
 class UpdateModuleRequest(BaseModel):
     content: str
