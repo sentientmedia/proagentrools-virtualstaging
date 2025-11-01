@@ -748,7 +748,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleGenerateContent(module.id)}
+                  onClick={() => openQuestionnaire(module.id)}
                   disabled={generatingModule === module.id}
                   className="text-sm text-purple-600 hover:text-purple-700 font-medium disabled:text-gray-400"
                 >
