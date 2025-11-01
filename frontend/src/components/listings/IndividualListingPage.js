@@ -69,7 +69,8 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     pricing_strategy: '',
     recent_upgrades: [],
     known_objections: [],
-    showing_feedback: []
+    showing_feedback: [],
+    additional_context: ''
   });
 
   const modules = [
