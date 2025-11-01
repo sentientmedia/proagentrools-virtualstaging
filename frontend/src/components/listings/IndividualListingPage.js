@@ -234,9 +234,47 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     try {
       setGeneratingModule(moduleName);
       
+      // Determine which modules to include as context
+      const includeModuleContext = [];
+      
+      // Always include foundation modules if they exist
+      const foundationModules = ['neighborhood_research', 'listing_copy', 'market_intel'];
+      for (const foundationId of foundationModules) {
+        if (moduleContent[foundationId] && moduleContent[foundationId].content) {
+          includeModuleContext.push(foundationId);
+        }
+      }
+      
+      // Include other completed modules that come "before" this one in the logical flow
+      // This creates a cascade effect where later modules build on earlier ones
+      const moduleOrder = [
+        'neighborhood_research', 'listing_copy', 'market_intel', // Foundation
+        'buyer_profile', 'price_justification', 'competitor_comparison', // Analysis first
+        'marketing_copy', 'social_media', 'email_template', // Then marketing
+        'property_highlights', 'agent_talking_points', 'objection_handling', // Sales support
+        'virtual_tour_script', 'open_house_promo', 'negotiation_tips', // Advanced
+        'seller_updates', 'buyer_followup' // Communications
+      ];
+      
+      const currentModuleIndex = moduleOrder.indexOf(moduleName);
+      if (currentModuleIndex > 0) {
+        // Include all previously completed modules in order
+        for (let i = 0; i < currentModuleIndex; i++) {
+          const priorModuleId = moduleOrder[i];
+          if (moduleContent[priorModuleId] && moduleContent[priorModuleId].content) {
+            if (!includeModuleContext.includes(priorModuleId)) {
+              includeModuleContext.push(priorModuleId);
+            }
+          }
+        }
+      }
+      
       const response = await axios.post(
         `${BACKEND_URL}/api/listings/${listingId}/modules/${moduleName}/generate`,
-        { module_name: moduleName },
+        { 
+          module_name: moduleName,
+          include_module_context: includeModuleContext.length > 0 ? includeModuleContext : null
+        },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
@@ -246,9 +284,13 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           [moduleName]: {
             content: response.data.content,
             generated_at: new Date().toISOString(),
-            is_ai_generated: true
+            is_ai_generated: true,
+            used_context_from: includeModuleContext // Track which modules were used as context
           }
         }));
+        
+        // Reload listing to get updated module_outputs
+        loadListing();
       }
     } catch (err) {
       console.error('Failed to generate content:', err);
