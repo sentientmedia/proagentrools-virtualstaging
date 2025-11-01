@@ -46,6 +46,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   
   // Foundation lock modal
   const [showFoundationModal, setShowFoundationModal] = useState(false);
+  
+  // Map coordinates state
+  const [mapCoordinates, setMapCoordinates] = useState(null);
+  const [geocodingAddress, setGeocodingAddress] = useState(false);
 
   const modules = [
     // Foundation modules (auto-generated, always unlocked)
