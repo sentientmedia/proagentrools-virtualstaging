@@ -260,7 +260,29 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
   };
 
-  const handleGenerateContent = async (moduleName) => {
+  const openQuestionnaire = (moduleName) => {
+    // Reset form data
+    setFormData({
+      tone: '',
+      target_buyer_type: '',
+      property_highlights: [],
+      competitive_advantages: [],
+      open_house_date: '',
+      open_house_time: '',
+      open_house_features: [],
+      video_length: '',
+      rooms_to_highlight: [],
+      pricing_strategy: '',
+      recent_upgrades: [],
+      known_objections: [],
+      showing_feedback: []
+    });
+    
+    setQuestionnaireModule(moduleName);
+    setShowQuestionnaireModal(true);
+  };
+  
+  const handleGenerateContent = async (moduleName, formInputs = null) => {
     try {
       setGeneratingModule(moduleName);
       
@@ -299,12 +321,16 @@ const IndividualListingPage = ({ listingId, onBack }) => {
         }
       }
       
+      // Prepare request payload
+      const payload = { 
+        module_name: moduleName,
+        include_module_context: includeModuleContext.length > 0 ? includeModuleContext : null,
+        ...formInputs // Spread form inputs if provided
+      };
+      
       const response = await axios.post(
         `${BACKEND_URL}/api/listings/${listingId}/modules/${moduleName}/generate`,
-        { 
-          module_name: moduleName,
-          include_module_context: includeModuleContext.length > 0 ? includeModuleContext : null
-        },
+        payload,
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
@@ -321,6 +347,9 @@ const IndividualListingPage = ({ listingId, onBack }) => {
         
         // Reload listing to get updated module_outputs
         loadListing();
+        
+        // Close modal if open
+        setShowQuestionnaireModal(false);
       }
     } catch (err) {
       console.error('Failed to generate content:', err);
