@@ -162,14 +162,8 @@ const ModuleQuestionnaireModal = ({
           {
             field: 'open_house_date',
             label: 'Open House Date',
-            type: 'select',
-            required: true,
-            options: [
-              { value: 'this_saturday', label: 'This Saturday' },
-              { value: 'this_sunday', label: 'This Sunday' },
-              { value: 'next_weekend', label: 'Next Weekend' },
-              { value: 'tbd', label: 'Date TBD' }
-            ]
+            type: 'date',
+            required: true
           },
           {
             field: 'open_house_time',
