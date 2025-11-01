@@ -362,6 +362,7 @@ class User(UserBase):
     total_referrals: int = 0
     created_at: datetime
     last_login: Optional[datetime] = None
+    is_admin: bool = False  # Admin flag for platform management
     
     # Broker Profile
     broker_profile: Optional[BrokerProfile] = None
