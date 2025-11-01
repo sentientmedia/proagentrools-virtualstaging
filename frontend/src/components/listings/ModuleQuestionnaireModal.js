@@ -396,6 +396,16 @@ const ModuleQuestionnaireModal = ({
                 </select>
               )}
 
+              {question.type === 'date' && (
+                <input
+                  type="date"
+                  value={formData[question.field]}
+                  onChange={(e) => setFormData(prev => ({ ...prev, [question.field]: e.target.value }))}
+                  required={question.required}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              )}
+
               {question.type === 'checkbox' && (
                 <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                   {question.options.map(option => (
