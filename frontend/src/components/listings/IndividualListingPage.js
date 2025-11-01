@@ -534,13 +534,45 @@ const IndividualListingPage = ({ listingId, onBack }) => {
 
     if (!content) {
       if (module.ai) {
+        // Determine which modules will be used as context for this generation
+        const foundationModules = ['neighborhood_research', 'listing_copy', 'market_intel'];
+        const contextModules = foundationModules.filter(fId => 
+          moduleContent[fId] && moduleContent[fId].content
+        );
+        
         return (
           <div className="text-center py-12">
             <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-4xl">{module.icon}</span>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Generate {module.name}</h3>
-            <p className="text-gray-600 mb-6">Use AI to generate professional content for this module</p>
+            <p className="text-gray-600 mb-4">Use AI to generate professional content for this module</p>
+            
+            {contextModules.length > 0 && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-md mx-auto">
+                <p className="text-sm font-semibold text-blue-900 mb-2">
+                  🔗 This will build upon:
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {contextModules.map(moduleId => {
+                    const moduleNames = {
+                      'neighborhood_research': 'Neighborhood Research',
+                      'listing_copy': 'Property Description',
+                      'market_intel': 'Market Intelligence'
+                    };
+                    return (
+                      <span key={moduleId} className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        {moduleNames[moduleId]}
+                      </span>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-blue-700 mt-2">
+                  Content will be consistent with previously generated modules
+                </p>
+              </div>
+            )}
+            
             <button
               onClick={() => handleGenerateContent(module.id)}
               disabled={generatingModule === module.id}
