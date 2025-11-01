@@ -424,6 +424,24 @@ const ModuleQuestionnaireModal = ({
             </div>
           ))}
 
+          {/* Additional Context Field - Available for all modules */}
+          <div className="space-y-2 pt-4 border-t border-gray-200">
+            <label className="block text-sm font-semibold text-gray-900">
+              Additional Notes or Context
+              <span className="text-gray-500 font-normal ml-2">(Optional)</span>
+            </label>
+            <textarea
+              value={formData.additional_context}
+              onChange={(e) => setFormData(prev => ({ ...prev, additional_context: e.target.value }))}
+              placeholder="Add any specific details, preferences, or context that should be included..."
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            />
+            <p className="text-xs text-gray-500">
+              This information will be used to customize the generated content to your specific needs.
+            </p>
+          </div>
+
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">
             <button
               type="button"
