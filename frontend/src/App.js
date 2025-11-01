@@ -1269,6 +1269,14 @@ const AppRouter = () => {
   // Handle routes
   const path = window.location.pathname;
   
+  if (path === '/admin') {
+    return (
+      <ProtectedRoute>
+        <AdminDashboard />
+      </ProtectedRoute>
+    );
+  }
+  
   if (path === '/dashboard') {
     if (isAuthenticated) {
       return <UserDashboard />;
