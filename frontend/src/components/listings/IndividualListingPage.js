@@ -1311,34 +1311,46 @@ const IndividualListingPage = ({ listingId, onBack }) => {
             <p className="text-gray-600 mt-1">
               {property_details.address}, {property_details.city}, {property_details.state}
             </p>
+            {geocodingAddress && (
+              <p className="text-sm text-blue-600 mt-1">📍 Finding exact location...</p>
+            )}
           </div>
           <div style={{ height: '400px', width: '100%' }} className="relative">
-            <MapContainer
-              key={`map-${listing.id}`}
-              center={[latitude, longitude]}
-              zoom={15}
-              style={{ height: '100%', width: '100%', zIndex: 1 }}
-              scrollWheelZoom={false}
-              whenCreated={(map) => {
-                setTimeout(() => {
-                  map.invalidateSize();
-                }, 100);
-              }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={[latitude, longitude]}>
-                <Popup>
-                  <div className="text-center">
-                    <strong>{property_details.address}</strong>
-                    <br />
-                    {property_details.city}, {property_details.state}
-                  </div>
-                </Popup>
-              </Marker>
-            </MapContainer>
+            {!mapCoordinates && geocodingAddress ? (
+              <div className="flex items-center justify-center h-full bg-gray-100">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading map...</p>
+                </div>
+              </div>
+            ) : (
+              <MapContainer
+                key={`map-${listing.id}-${latitude}-${longitude}`}
+                center={[latitude, longitude]}
+                zoom={15}
+                style={{ height: '100%', width: '100%', zIndex: 1 }}
+                scrollWheelZoom={false}
+                whenCreated={(map) => {
+                  setTimeout(() => {
+                    map.invalidateSize();
+                  }, 100);
+                }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={[latitude, longitude]}>
+                  <Popup>
+                    <div className="text-center">
+                      <strong>{property_details.address}</strong>
+                      <br />
+                      {property_details.city}, {property_details.state}
+                    </div>
+                  </Popup>
+                </Marker>
+              </MapContainer>
+            )}
           </div>
           
           {/* Future API Integration Placeholders */}
