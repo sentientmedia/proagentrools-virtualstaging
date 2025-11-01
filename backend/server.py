@@ -32,6 +32,25 @@ load_dotenv(ROOT_DIR / '.env')
 PROCESSED_IMAGES_DIR = ROOT_DIR / "storage" / "processed_images"
 PROCESSED_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
+# Real Estate Writing Styles (Tone Catalog)
+WRITING_STYLES = {
+    "straight_shooter": {"name": "Straight Shooter", "description": "Direct, honest, no-fluff communication"},
+    "luxury_maven": {"name": "Luxury Maven", "description": "Sophisticated, elegant, upscale language"},
+    "neighborhood_champion": {"name": "Neighborhood Champion", "description": "Community-focused, local expertise"},
+    "data_driven": {"name": "Data Driven", "description": "Facts, figures, market analysis focused"},
+    "storyteller": {"name": "Storyteller", "description": "Narrative-driven, emotional connection"},
+    "investment_guru": {"name": "Investment Guru", "description": "ROI-focused, investor-oriented"},
+    "family_first": {"name": "Family First", "description": "Family-friendly, safety and schools emphasis"},
+    "eco_advocate": {"name": "Eco Advocate", "description": "Sustainability, green living focused"},
+    "urban_expert": {"name": "Urban Expert", "description": "City living, walkability, amenities"},
+    "relocation_specialist": {"name": "Relocation Specialist", "description": "Moving logistics, area guidance"},
+    "first_time_friend": {"name": "First-Time Friend", "description": "Patient, educational, supportive"},
+    "luxury_lifestyle": {"name": "Luxury Lifestyle", "description": "Aspirational, exclusive, prestigious"},
+    "value_seeker": {"name": "Value Seeker", "description": "Affordability, best deals, smart buying"},
+    "design_enthusiast": {"name": "Design Enthusiast", "description": "Architecture, aesthetics, style focus"},
+    "practical_advisor": {"name": "Practical Advisor", "description": "Pragmatic, functional, realistic"}
+}
+
 # Authentication
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 ALGORITHM = "HS256"
