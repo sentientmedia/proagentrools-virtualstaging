@@ -457,6 +457,21 @@ class GenerateModuleRequest(BaseModel):
     module_name: str
     additional_context: Optional[str] = None
     include_module_context: Optional[List[str]] = None  # List of module IDs to include as context
+    
+    # Structured form inputs
+    tone: Optional[str] = None
+    target_buyer_type: Optional[str] = None
+    property_highlights: Optional[List[str]] = None
+    competitive_advantages: Optional[List[str]] = None
+    open_house_date: Optional[str] = None
+    open_house_time: Optional[str] = None
+    open_house_features: Optional[List[str]] = None
+    video_length: Optional[str] = None
+    rooms_to_highlight: Optional[List[str]] = None
+    pricing_strategy: Optional[str] = None
+    recent_upgrades: Optional[List[str]] = None
+    known_objections: Optional[List[str]] = None
+    showing_feedback: Optional[List[str]] = None
 
 class UpdateModuleRequest(BaseModel):
     content: str
