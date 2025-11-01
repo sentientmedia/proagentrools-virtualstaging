@@ -105,8 +105,18 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     if (listingId) {
       loadListing();
       loadImages();
+      loadWritingStyles();
     }
   }, [listingId]);
+  
+  const loadWritingStyles = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/profile/writing-styles`);
+      setWritingStyles(response.data.styles || []);
+    } catch (err) {
+      console.error('Failed to load writing styles:', err);
+    }
+  };
   
   // Geocode address to get coordinates
   const geocodeAddress = async (property_details) => {
