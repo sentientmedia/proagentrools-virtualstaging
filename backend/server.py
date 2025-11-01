@@ -921,6 +921,89 @@ async def get_writing_styles():
         ]
     }
 
+# Admin Endpoints
+@api_router.get("/admin/users")
+async def get_all_users(current_user: User = Depends(get_current_user_enhanced)):
+    """Get all users (admin only)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        users = await db.users.find().sort('created_at', -1).to_list(length=1000)
+        
+        # Format user data
+        user_list = []
+        for user in users:
+            user_list.append({
+                "id": user.get("id"),
+                "email": user.get("email"),
+                "full_name": user.get("full_name"),
+                "credits": user.get("credits", 0),
+                "subscription_status": user.get("subscription_status", "free"),
+                "subscription_plan": user.get("subscription_plan"),
+                "is_admin": user.get("is_admin", False),
+                "created_at": user.get("created_at"),
+                "last_login": user.get("last_login"),
+                "total_referrals": user.get("total_referrals", 0)
+            })
+        
+        return {"users": user_list, "total": len(user_list)}
+    except Exception as e:
+        logger.error(f"Admin get users error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch users")
+
+@api_router.put("/admin/users/{user_id}/credits")
+async def update_user_credits(
+    user_id: str,
+    credits: int,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Update a user's credits (admin only)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        result = await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"credits": credits}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {"success": True, "message": f"Credits updated to {credits}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Admin update credits error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update credits")
+
+@api_router.put("/admin/users/{user_id}/admin")
+async def toggle_admin_status(
+    user_id: str,
+    is_admin: bool,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Toggle admin status for a user (admin only)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        result = await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"is_admin": is_admin}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {"success": True, "message": f"Admin status updated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Admin toggle status error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update admin status")
+
 # Listing Management Endpoints
 
 # Foundation Generation System
