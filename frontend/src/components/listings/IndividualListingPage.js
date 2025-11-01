@@ -1266,9 +1266,9 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     const approvedDesigns = listing.interior_design_variants?.filter(v => v.status === 'completed') || [];
     const heroImage = approvedDesigns[0]?.processed_image_url || (images[0]?.url);
     
-    // Get coordinates for map (default to center of US if not available)
-    const latitude = property_details.latitude || 39.8283;
-    const longitude = property_details.longitude || -98.5795;
+    // Use geocoded coordinates if available, otherwise use stored coordinates or default
+    const latitude = mapCoordinates?.lat || property_details.latitude || 39.8283;
+    const longitude = mapCoordinates?.lng || property_details.longitude || -98.5795;
     
     // Define foundation status variables
     const foundationComplete = listing.foundation_status === 'completed';
