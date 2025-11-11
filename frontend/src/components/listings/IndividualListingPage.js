@@ -124,6 +124,21 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
   };
   
+  const loadTrails = async () => {
+    try {
+      setLoadingTrails(true);
+      const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}/trails`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setTrails(response.data.trails || []);
+    } catch (err) {
+      console.error('Failed to load trails:', err);
+      setTrails([]);
+    } finally {
+      setLoadingTrails(false);
+    }
+  };
+  
   // Geocode address to get coordinates
   const geocodeAddress = async (property_details) => {
     if (geocodingAddress) return; // Prevent duplicate requests
