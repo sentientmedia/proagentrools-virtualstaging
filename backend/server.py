@@ -1004,6 +1004,104 @@ async def toggle_admin_status(
         logger.error(f"Admin toggle status error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to update admin status")
 
+# External API Integrations - Trails
+@api_router.get("/listings/{listing_id}/trails")
+async def get_nearby_trails(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get nearby trails and outdoor activities for a listing"""
+    try:
+        # Get listing
+        listing = await db.listings.find_one({"id": listing_id, "user_id": current_user.id})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        property_details = listing.get("property_details", {})
+        
+        # Get coordinates - use property coordinates if available
+        latitude = property_details.get("latitude")
+        longitude = property_details.get("longitude")
+        
+        if not latitude or not longitude:
+            # Fallback: geocode address if no coordinates
+            address_parts = [
+                property_details.get("address", ""),
+                property_details.get("city", ""),
+                property_details.get("state", ""),
+                property_details.get("zip_code", "")
+            ]
+            full_address = ", ".join(filter(None, address_parts))
+            
+            if not full_address:
+                return {"trails": [], "message": "No address information available"}
+            
+            # Simple geocoding fallback (can be enhanced)
+            # For now, return empty if no coordinates
+            return {"trails": [], "message": "Unable to determine property location"}
+        
+        # Query Trail API via RapidAPI
+        rapidapi_key = os.environ.get('RAPIDAPI_KEY')
+        if not rapidapi_key:
+            logger.error("RAPIDAPI_KEY not configured")
+            return {"trails": [], "message": "Trail API not configured"}
+        
+        # Trail API request
+        url = "https://trailapi-trailapi.p.rapidapi.com/activity/"
+        params = {
+            "lat": latitude,
+            "lon": longitude,
+            "radius": 5,  # 5 miles
+            "limit": 5    # 3-5 results
+        }
+        headers = {
+            "x-rapidapi-host": "trailapi-trailapi.p.rapidapi.com",
+            "x-rapidapi-key": rapidapi_key
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    trails = data.get("places", [])
+                    
+                    # Format trail data
+                    formatted_trails = []
+                    for trail in trails[:5]:  # Limit to 5
+                        formatted_trails.append({
+                            "name": trail.get("name", "Unknown Trail"),
+                            "city": trail.get("city", ""),
+                            "state": trail.get("state", ""),
+                            "country": trail.get("country", ""),
+                            "activities": trail.get("activities", []),
+                            "distance": trail.get("distance", 0),
+                            "lat": trail.get("lat"),
+                            "lon": trail.get("lon"),
+                            "description": trail.get("description", ""),
+                            "directions": trail.get("directions", ""),
+                            "url": trail.get("url", "")
+                        })
+                    
+                    return {
+                        "trails": formatted_trails,
+                        "total": len(formatted_trails),
+                        "search_location": {
+                            "lat": latitude,
+                            "lon": longitude,
+                            "radius": 5
+                        }
+                    }
+                else:
+                    logger.error(f"Trail API error: {response.status}")
+                    return {"trails": [], "message": f"API error: {response.status}"}
+                    
+    except asyncio.TimeoutError:
+        logger.error("Trail API timeout")
+        return {"trails": [], "message": "Trail API request timed out"}
+    except Exception as e:
+        logger.error(f"Trail API error: {str(e)}")
+        return {"trails": [], "message": "Failed to fetch trails"}
+
 # Listing Management Endpoints
 
 # Foundation Generation System
