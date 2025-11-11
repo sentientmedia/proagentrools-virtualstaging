@@ -1657,6 +1657,86 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           </div>
         </div>
 
+        {/* Nearby Trails & Recreation */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Nearby Trails & Recreation</h2>
+                <p className="text-gray-600 mt-1">Outdoor activities within 5 miles</p>
+              </div>
+              {loadingTrails && (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              )}
+            </div>
+          </div>
+          
+          {loadingTrails ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Finding nearby trails...</p>
+            </div>
+          ) : trails.length > 0 ? (
+            <div className="p-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {trails.map((trail, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-gray-900 flex-1">{trail.name}</h3>
+                      <span className="text-2xl ml-2">🥾</span>
+                    </div>
+                    
+                    {(trail.city || trail.state) && (
+                      <p className="text-sm text-gray-600 mb-2">
+                        📍 {[trail.city, trail.state].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                    
+                    {trail.distance > 0 && (
+                      <p className="text-sm text-blue-600 font-medium mb-2">
+                        {trail.distance.toFixed(1)} miles away
+                      </p>
+                    )}
+                    
+                    {trail.activities && trail.activities.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {trail.activities.slice(0, 3).map((activity, idx) => (
+                          <span key={idx} className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                            {activity.activity_type_name || activity.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {trail.description && (
+                      <p className="text-sm text-gray-700 mb-3 line-clamp-3">
+                        {trail.description}
+                      </p>
+                    )}
+                    
+                    {trail.url && (
+                      <a
+                        href={trail.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        View Details →
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <div className="text-4xl mb-3">🏞️</div>
+              <p className="text-gray-600">No trails found within 5 miles</p>
+              <p className="text-sm text-gray-500 mt-1">Try searching for parks or recreation areas in the neighborhood</p>
+            </div>
+          )}
+        </div>
+
         {/* Approved Interior Designs */}
         {approvedDesigns.length > 0 && (
           <div className="bg-white rounded-lg shadow-lg p-6">
