@@ -52,6 +52,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   const [mapCoordinates, setMapCoordinates] = useState(null);
   const [geocodingAddress, setGeocodingAddress] = useState(false);
   
+  // Trails state
+  const [trails, setTrails] = useState([]);
+  const [loadingTrails, setLoadingTrails] = useState(false);
+  
   // Module questionnaire modal state
   const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
   const [questionnaireModule, setQuestionnaireModule] = useState(null);
