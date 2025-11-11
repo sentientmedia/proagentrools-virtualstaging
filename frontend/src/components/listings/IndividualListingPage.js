@@ -239,6 +239,13 @@ const IndividualListingPage = ({ listingId, onBack }) => {
       geocodeAddress(listing.property_details);
     }
   }, [listing]);
+  
+  // Load trails when coordinates are available
+  useEffect(() => {
+    if (mapCoordinates && listingId) {
+      loadTrails();
+    }
+  }, [mapCoordinates, listingId]);
 
   // Auto-refresh for processing interior designs
   useEffect(() => {
