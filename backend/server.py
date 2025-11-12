@@ -1063,19 +1063,30 @@ async def get_nearby_trails(
             async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
                 if response.status == 200:
                     data = await response.json()
-                    logger.info(f"Trail API response: {data}")
-                    trails = data.get("places", [])
+                    logger.info(f"Trail API response status: 200, data type: {type(data)}, keys: {list(data.keys())[:5] if isinstance(data, dict) else 'N/A'}")
+                    
+                    # Trail API returns a dict with numeric keys, not a "places" array
+                    trails = list(data.values()) if isinstance(data, dict) else []
                     
                     # Format trail data
                     formatted_trails = []
                     for trail in trails[:5]:  # Limit to 5
+                        # Get activity info
+                        activities_list = []
+                        if 'activities' in trail and isinstance(trail['activities'], dict):
+                            for activity_type, activity_data in trail['activities'].items():
+                                activities_list.append({
+                                    'name': activity_type,
+                                    'activity_type_name': activity_data.get('activity_type_name', activity_type)
+                                })
+                        
                         formatted_trails.append({
                             "name": trail.get("name", "Unknown Trail"),
                             "city": trail.get("city", ""),
                             "state": trail.get("state", ""),
                             "country": trail.get("country", ""),
-                            "activities": trail.get("activities", []),
-                            "distance": trail.get("distance", 0),
+                            "activities": activities_list,
+                            "distance": float(trail.get("distance", 0)) if trail.get("distance") else 0,
                             "lat": trail.get("lat"),
                             "lon": trail.get("lon"),
                             "description": trail.get("description", ""),
@@ -1083,7 +1094,7 @@ async def get_nearby_trails(
                             "url": trail.get("url", "")
                         })
                     
-                    logger.info(f"Formatted {len(formatted_trails)} trails")
+                    logger.info(f"Formatted {len(formatted_trails)} trails for listing {listing_id}")
                     
                     return {
                         "trails": formatted_trails,
@@ -1095,7 +1106,8 @@ async def get_nearby_trails(
                         }
                     }
                 else:
-                    logger.error(f"Trail API error: {response.status}, Body: {await response.text()}")
+                    error_text = await response.text()
+                    logger.error(f"Trail API error: {response.status}, Body: {error_text}")
                     return {"trails": [], "message": f"API error: {response.status}"}
                     
     except asyncio.TimeoutError:
