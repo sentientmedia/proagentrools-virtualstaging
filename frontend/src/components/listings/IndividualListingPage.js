@@ -149,10 +149,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
       const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}/area-info`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setAreaInfo(response.data.area_info || null);
+      setAreaCities(response.data.cities || []);
     } catch (err) {
       console.error('Failed to load area info:', err);
-      setAreaInfo(null);
+      setAreaCities([]);
     } finally {
       setLoadingAreaInfo(false);
     }
