@@ -1208,7 +1208,8 @@ async def get_area_info(
             "location": location_str,
             "radius": 50,  # 50 km radius
             "limit": 5,  # Get 5 nearby cities
-            "sort": "-population"  # Sort by population descending
+            "sort": "-population",  # Sort by population descending
+            "types": "CITY"  # Only cities, not counties or other place types
         }
         headers = {
             "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
