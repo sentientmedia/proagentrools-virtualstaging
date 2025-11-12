@@ -263,6 +263,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   useEffect(() => {
     if (mapCoordinates && listingId) {
       loadTrails();
+      loadAreaInfo();
     }
   }, [mapCoordinates, listingId]);
 
