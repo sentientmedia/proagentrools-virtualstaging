@@ -60,6 +60,10 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   const [areaCities, setAreaCities] = useState([]);
   const [loadingAreaInfo, setLoadingAreaInfo] = useState(false);
   
+  // Zillow data state
+  const [zillowData, setZillowData] = useState(null);
+  const [loadingZillow, setLoadingZillow] = useState(false);
+  
   // Module questionnaire modal state
   const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
   const [questionnaireModule, setQuestionnaireModule] = useState(null);
