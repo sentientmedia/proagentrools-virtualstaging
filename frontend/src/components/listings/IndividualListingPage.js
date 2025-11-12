@@ -162,6 +162,21 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     }
   };
   
+  const loadZillowData = async () => {
+    try {
+      setLoadingZillow(true);
+      const response = await axios.get(`${BACKEND_URL}/api/listings/${listingId}/zillow-data`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setZillowData(response.data.property_data || null);
+    } catch (err) {
+      console.error('Failed to load Zillow data:', err);
+      setZillowData(null);
+    } finally {
+      setLoadingZillow(false);
+    }
+  };
+  
   // Geocode address to get coordinates
   const geocodeAddress = async (property_details) => {
     if (geocodingAddress) return; // Prevent duplicate requests
