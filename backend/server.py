@@ -1207,7 +1207,8 @@ async def get_area_info(
         params = {
             "location": location_str,
             "radius": 50,  # 50 km radius
-            "limit": 1
+            "limit": 5,  # Get 5 nearby cities
+            "sort": "-population"  # Sort by population descending
         }
         headers = {
             "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
@@ -1221,23 +1222,32 @@ async def get_area_info(
                     cities = data.get("data", [])
                     
                     if cities and len(cities) > 0:
-                        city = cities[0]
-                        return {
-                            "area_info": {
+                        # Format all cities
+                        formatted_cities = []
+                        for city in cities:
+                            formatted_cities.append({
                                 "city": city.get("city"),
                                 "region": city.get("region"),
+                                "region_code": city.get("regionCode"),
                                 "country": city.get("country"),
+                                "country_code": city.get("countryCode"),
                                 "population": city.get("population"),
                                 "distance": city.get("distance"),
                                 "latitude": city.get("latitude"),
-                                "longitude": city.get("longitude")
-                            }
+                                "longitude": city.get("longitude"),
+                                "elevation": city.get("elevationMeters"),
+                                "timezone": city.get("timezone")
+                            })
+                        
+                        return {
+                            "cities": formatted_cities,
+                            "total": len(formatted_cities)
                         }
                     else:
-                        return {"area_info": None, "message": "No city data found"}
+                        return {"cities": [], "total": 0, "message": "No city data found"}
                 else:
                     logger.error(f"GeoDB API error: {response.status}")
-                    return {"area_info": None, "message": f"API error: {response.status}"}
+                    return {"cities": [], "total": 0, "message": f"API error: {response.status}"}
                     
     except asyncio.TimeoutError:
         return {"area_info": None, "message": "GeoDB API timeout"}
