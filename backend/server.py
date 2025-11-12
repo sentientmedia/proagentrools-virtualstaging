@@ -1024,7 +1024,7 @@ async def get_nearby_trails(
         longitude = property_details.get("longitude")
         
         if not latitude or not longitude:
-            # Fallback: geocode address if no coordinates
+            # Geocode address
             address_parts = [
                 property_details.get("address", ""),
                 property_details.get("city", ""),
@@ -1036,9 +1036,35 @@ async def get_nearby_trails(
             if not full_address:
                 return {"trails": [], "message": "No address information available"}
             
-            # Simple geocoding fallback (can be enhanced)
-            # For now, return empty if no coordinates
-            return {"trails": [], "message": "Unable to determine property location"}
+            # Use Nominatim to geocode
+            try:
+                geocode_url = "https://nominatim.openstreetmap.org/search"
+                geocode_params = {
+                    "format": "json",
+                    "q": full_address,
+                    "limit": 1
+                }
+                geocode_headers = {
+                    "User-Agent": "ProAgentTools/1.0"
+                }
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(geocode_url, params=geocode_params, headers=geocode_headers, timeout=aiohttp.ClientTimeout(total=5)) as geo_response:
+                        if geo_response.status == 200:
+                            geo_data = await geo_response.json()
+                            if geo_data and len(geo_data) > 0:
+                                latitude = float(geo_data[0]["lat"])
+                                longitude = float(geo_data[0]["lon"])
+                                logger.info(f"Geocoded address '{full_address}' to {latitude}, {longitude}")
+                            else:
+                                logger.warning(f"No geocoding results for '{full_address}'")
+                                return {"trails": [], "message": "Unable to geocode address"}
+                        else:
+                            logger.error(f"Geocoding failed: {geo_response.status}")
+                            return {"trails": [], "message": "Geocoding service unavailable"}
+            except Exception as e:
+                logger.error(f"Geocoding error: {str(e)}")
+                return {"trails": [], "message": "Failed to geocode address"}
         
         # Query Trail API via RapidAPI
         rapidapi_key = os.environ.get('RAPIDAPI_KEY')
