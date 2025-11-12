@@ -1757,6 +1757,68 @@ const IndividualListingPage = ({ listingId, onBack }) => {
           )}
         </div>
 
+        {/* Area Demographics */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Area Demographics</h2>
+                <p className="text-gray-600 mt-1">Local area information</p>
+              </div>
+              {loadingAreaInfo && (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              )}
+            </div>
+          </div>
+          
+          {loadingAreaInfo ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading area information...</p>
+            </div>
+          ) : areaInfo ? (
+            <div className="p-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <span className="text-2xl mr-2">🏙️</span>
+                    <h3 className="text-sm font-semibold text-gray-700">City</h3>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{areaInfo.city}</p>
+                  <p className="text-sm text-gray-600 mt-1">{areaInfo.region}</p>
+                </div>
+                
+                {areaInfo.population && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">👥</span>
+                      <h3 className="text-sm font-semibold text-gray-700">Population</h3>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{areaInfo.population.toLocaleString()}</p>
+                    <p className="text-sm text-gray-600 mt-1">residents</p>
+                  </div>
+                )}
+                
+                {areaInfo.distance !== undefined && (
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">📍</span>
+                      <h3 className="text-sm font-semibold text-gray-700">Distance</h3>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{areaInfo.distance.toFixed(1)} km</p>
+                    <p className="text-sm text-gray-600 mt-1">to city center</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <div className="text-4xl mb-3">📊</div>
+              <p className="text-gray-600">No area data available</p>
+            </div>
+          )}
+        </div>
+
         {/* Approved Interior Designs */}
         {approvedDesigns.length > 0 && (
           <div className="bg-white rounded-lg shadow-lg p-6">
