@@ -1250,10 +1250,10 @@ async def get_area_info(
                     return {"cities": [], "total": 0, "message": f"API error: {response.status}"}
                     
     except asyncio.TimeoutError:
-        return {"area_info": None, "message": "GeoDB API timeout"}
+        return {"cities": [], "total": 0, "message": "GeoDB API timeout"}
     except Exception as e:
         logger.error(f"GeoDB API error: {str(e)}")
-        return {"area_info": None, "message": "Failed to fetch area info"}
+        return {"cities": [], "total": 0, "message": "Failed to fetch area info"}
 async def get_nearby_trails(
     listing_id: str,
     current_user: User = Depends(get_current_user_enhanced)
