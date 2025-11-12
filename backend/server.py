@@ -1343,7 +1343,17 @@ async def get_zillow_data(
                                 "has_fireplace": reso_facts.get("hasFireplace"),
                                 "heating": None,
                                 "cooling": None,
-                                "zillow_url": f"https://www.zillow.com/homedetails/{zpid}_zpid/"
+                                "zillow_url": f"https://www.zillow.com/homedetails/{zpid}_zpid/",
+                                # NEW: Price History
+                                "price_history": prop_data.get("priceHistory", [])[:5],  # Last 5 events
+                                # NEW: Tax History
+                                "tax_history": prop_data.get("taxHistory", [])[:3],  # Last 3 years
+                                # NEW: Schools
+                                "schools": prop_data.get("schools", [])[:5],  # Up to 5 schools
+                                # NEW: HOA
+                                "hoa_fee": prop_data.get("hoaFee"),
+                                # NEW: Property Tax Rate
+                                "property_tax_rate": prop_data.get("propertyTaxRate")
                             }
                             
                             # Extract from atAGlanceFacts
