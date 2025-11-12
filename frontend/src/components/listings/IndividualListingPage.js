@@ -283,6 +283,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
     if (mapCoordinates && listingId) {
       loadTrails();
       loadAreaInfo();
+      loadZillowData();
     }
   }, [mapCoordinates, listingId]);
 
