@@ -1810,7 +1810,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
               </div>
               
               {/* Additional Features */}
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-gray-200 pt-4 mb-6">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Additional Features</h3>
                 <div className="flex flex-wrap gap-2">
                   {zillowData.has_garage && (
@@ -1833,8 +1833,90 @@ const IndividualListingPage = ({ listingId, onBack }) => {
                       {zillowData.cooling}
                     </span>
                   )}
+                  {zillowData.hoa_fee && (
+                    <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full">
+                      HOA: ${zillowData.hoa_fee}/mo
+                    </span>
+                  )}
                 </div>
               </div>
+              
+              {/* Schools */}
+              {zillowData.schools && zillowData.schools.length > 0 && (
+                <div className="border-t border-gray-200 pt-6 mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🎓 Nearby Schools</h3>
+                  <div className="space-y-3">
+                    {zillowData.schools.map((school, index) => (
+                      <div key={index} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{school.name}</div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {school.level} • {school.type} • {school.distance} mi away
+                          </div>
+                        </div>
+                        {school.rating && (
+                          <div className={`ml-4 flex-shrink-0 px-3 py-1 rounded-full text-sm font-bold ${
+                            school.rating >= 8 ? 'bg-green-100 text-green-800' :
+                            school.rating >= 6 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {school.rating}/10
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Price History */}
+              {zillowData.price_history && zillowData.price_history.length > 0 && (
+                <div className="border-t border-gray-200 pt-6 mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">📈 Price History</h3>
+                  <div className="space-y-2">
+                    {zillowData.price_history.map((event, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200">
+                        <div>
+                          <div className="font-medium text-gray-900">{event.event || 'Price Event'}</div>
+                          <div className="text-sm text-gray-600">{new Date(event.date).toLocaleDateString()}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-gray-900">${event.price?.toLocaleString()}</div>
+                          {event.pricePerSquareFoot && (
+                            <div className="text-sm text-gray-600">${event.pricePerSquareFoot}/sqft</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Tax History */}
+              {zillowData.tax_history && zillowData.tax_history.length > 0 && (
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">💰 Tax History</h3>
+                  <div className="space-y-2">
+                    {zillowData.tax_history.map((tax, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200">
+                        <div>
+                          <div className="font-medium text-gray-900">Tax Year {new Date(tax.time).getFullYear()}</div>
+                          <div className="text-sm text-gray-600">Assessment: ${tax.value?.toLocaleString()}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-gray-900">${tax.taxPaid?.toLocaleString()}</div>
+                          <div className="text-sm text-gray-600">Tax Paid</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {zillowData.property_tax_rate && (
+                    <div className="mt-3 text-sm text-gray-600 text-center">
+                      Property Tax Rate: {zillowData.property_tax_rate}%
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="p-8 text-center">
