@@ -1143,6 +1143,244 @@ async def get_nearby_trails(
         logger.error(f"Trail API error: {str(e)}")
         return {"trails": [], "message": "Failed to fetch trails"}
 
+# GeoDB Cities - Area Demographics
+@api_router.get("/listings/{listing_id}/area-info")
+async def get_area_info(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get area demographics and city information for a listing"""
+    try:
+        # Get listing and coordinates (same pattern as trails)
+        listing = await db.listings.find_one({"id": listing_id, "user_id": current_user.id})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        property_details = listing.get("property_details", {})
+        latitude = property_details.get("latitude")
+        longitude = property_details.get("longitude")
+        
+        # Geocode if needed (same as trails endpoint)
+        if not latitude or not longitude:
+            address_parts = [
+                property_details.get("address", ""),
+                property_details.get("city", ""),
+                property_details.get("state", ""),
+                property_details.get("zip_code", "")
+            ]
+            full_address = ", ".join(filter(None, address_parts))
+            
+            if not full_address:
+                return {"area_info": None, "message": "No address information available"}
+            
+            try:
+                geocode_url = "https://nominatim.openstreetmap.org/search"
+                geocode_params = {"format": "json", "q": full_address, "limit": 1}
+                geocode_headers = {"User-Agent": "ProAgentTools/1.0"}
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(geocode_url, params=geocode_params, headers=geocode_headers, timeout=aiohttp.ClientTimeout(total=5)) as geo_response:
+                        if geo_response.status == 200:
+                            geo_data = await geo_response.json()
+                            if geo_data and len(geo_data) > 0:
+                                latitude = float(geo_data[0]["lat"])
+                                longitude = float(geo_data[0]["lon"])
+                            else:
+                                return {"area_info": None, "message": "Unable to geocode address"}
+                        else:
+                            return {"area_info": None, "message": "Geocoding service unavailable"}
+            except Exception as e:
+                logger.error(f"Geocoding error: {str(e)}")
+                return {"area_info": None, "message": "Failed to geocode address"}
+        
+        # Query GeoDB Cities API
+        rapidapi_key = os.environ.get('RAPIDAPI_KEY')
+        if not rapidapi_key:
+            return {"area_info": None, "message": "GeoDB API not configured"}
+        
+        # Format coordinates in ISO 6709 format (+DD.DDDD+DDD.DDDD or +DD.DDDD-DDD.DDDD)
+        lat_str = f"+{latitude:.4f}" if latitude >= 0 else f"{latitude:.4f}"
+        lon_str = f"+{longitude:.4f}" if longitude >= 0 else f"{longitude:.4f}"
+        location_str = f"{lat_str}{lon_str}"
+        
+        url = "https://wft-geo-db.p.rapidapi.com/v1/geo/cities"
+        params = {
+            "location": location_str,
+            "radius": 50,  # 50 km radius
+            "limit": 1
+        }
+        headers = {
+            "x-rapidapi-host": "wft-geo-db.p.rapidapi.com",
+            "x-rapidapi-key": rapidapi_key
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    cities = data.get("data", [])
+                    
+                    if cities and len(cities) > 0:
+                        city = cities[0]
+                        return {
+                            "area_info": {
+                                "city": city.get("city"),
+                                "region": city.get("region"),
+                                "country": city.get("country"),
+                                "population": city.get("population"),
+                                "distance": city.get("distance"),
+                                "latitude": city.get("latitude"),
+                                "longitude": city.get("longitude")
+                            }
+                        }
+                    else:
+                        return {"area_info": None, "message": "No city data found"}
+                else:
+                    logger.error(f"GeoDB API error: {response.status}")
+                    return {"area_info": None, "message": f"API error: {response.status}"}
+                    
+    except asyncio.TimeoutError:
+        return {"area_info": None, "message": "GeoDB API timeout"}
+    except Exception as e:
+        logger.error(f"GeoDB API error: {str(e)}")
+        return {"area_info": None, "message": "Failed to fetch area info"}
+async def get_nearby_trails(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get nearby trails and outdoor activities for a listing"""
+    try:
+        # Get listing
+        listing = await db.listings.find_one({"id": listing_id, "user_id": current_user.id})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        property_details = listing.get("property_details", {})
+        
+        # Get coordinates - use property coordinates if available
+        latitude = property_details.get("latitude")
+        longitude = property_details.get("longitude")
+        
+        if not latitude or not longitude:
+            # Geocode address
+            address_parts = [
+                property_details.get("address", ""),
+                property_details.get("city", ""),
+                property_details.get("state", ""),
+                property_details.get("zip_code", "")
+            ]
+            full_address = ", ".join(filter(None, address_parts))
+            
+            if not full_address:
+                return {"trails": [], "message": "No address information available"}
+            
+            # Use Nominatim to geocode
+            try:
+                geocode_url = "https://nominatim.openstreetmap.org/search"
+                geocode_params = {
+                    "format": "json",
+                    "q": full_address,
+                    "limit": 1
+                }
+                geocode_headers = {
+                    "User-Agent": "ProAgentTools/1.0"
+                }
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(geocode_url, params=geocode_params, headers=geocode_headers, timeout=aiohttp.ClientTimeout(total=5)) as geo_response:
+                        if geo_response.status == 200:
+                            geo_data = await geo_response.json()
+                            if geo_data and len(geo_data) > 0:
+                                latitude = float(geo_data[0]["lat"])
+                                longitude = float(geo_data[0]["lon"])
+                                logger.info(f"Geocoded address '{full_address}' to {latitude}, {longitude}")
+                            else:
+                                logger.warning(f"No geocoding results for '{full_address}'")
+                                return {"trails": [], "message": "Unable to geocode address"}
+                        else:
+                            logger.error(f"Geocoding failed: {geo_response.status}")
+                            return {"trails": [], "message": "Geocoding service unavailable"}
+            except Exception as e:
+                logger.error(f"Geocoding error: {str(e)}")
+                return {"trails": [], "message": "Failed to geocode address"}
+        
+        # Query Trail API via RapidAPI
+        rapidapi_key = os.environ.get('RAPIDAPI_KEY')
+        if not rapidapi_key:
+            logger.error("RAPIDAPI_KEY not configured")
+            return {"trails": [], "message": "Trail API not configured"}
+        
+        # Trail API request
+        url = "https://trailapi-trailapi.p.rapidapi.com/activity/"
+        params = {
+            "lat": latitude,
+            "lon": longitude,
+            "radius": 5,  # 5 miles
+            "limit": 5    # 3-5 results
+        }
+        headers = {
+            "x-rapidapi-host": "trailapi-trailapi.p.rapidapi.com",
+            "x-rapidapi-key": rapidapi_key
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    logger.info(f"Trail API response status: 200, data type: {type(data)}, keys: {list(data.keys())[:5] if isinstance(data, dict) else 'N/A'}")
+                    
+                    # Trail API returns a dict with numeric keys, not a "places" array
+                    trails = list(data.values()) if isinstance(data, dict) else []
+                    
+                    # Format trail data
+                    formatted_trails = []
+                    for trail in trails[:5]:  # Limit to 5
+                        # Get activity info
+                        activities_list = []
+                        if 'activities' in trail and isinstance(trail['activities'], dict):
+                            for activity_type, activity_data in trail['activities'].items():
+                                activities_list.append({
+                                    'name': activity_type,
+                                    'activity_type_name': activity_data.get('activity_type_name', activity_type)
+                                })
+                        
+                        formatted_trails.append({
+                            "name": trail.get("name", "Unknown Trail"),
+                            "city": trail.get("city", ""),
+                            "state": trail.get("state", ""),
+                            "country": trail.get("country", ""),
+                            "activities": activities_list,
+                            "distance": float(trail.get("distance", 0)) if trail.get("distance") else 0,
+                            "lat": trail.get("lat"),
+                            "lon": trail.get("lon"),
+                            "description": trail.get("description", ""),
+                            "directions": trail.get("directions", ""),
+                            "url": trail.get("url", "")
+                        })
+                    
+                    logger.info(f"Formatted {len(formatted_trails)} trails for listing {listing_id}")
+                    
+                    return {
+                        "trails": formatted_trails,
+                        "total": len(formatted_trails),
+                        "search_location": {
+                            "lat": latitude,
+                            "lon": longitude,
+                            "radius": 5
+                        }
+                    }
+                else:
+                    error_text = await response.text()
+                    logger.error(f"Trail API error: {response.status}, Body: {error_text}")
+                    return {"trails": [], "message": f"API error: {response.status}"}
+                    
+    except asyncio.TimeoutError:
+        logger.error("Trail API timeout")
+        return {"trails": [], "message": "Trail API request timed out"}
+    except Exception as e:
+        logger.error(f"Trail API error: {str(e)}")
+        return {"trails": [], "message": "Failed to fetch trails"}
+
 # Listing Management Endpoints
 
 # Foundation Generation System
