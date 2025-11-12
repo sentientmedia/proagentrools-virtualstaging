@@ -57,7 +57,7 @@ const IndividualListingPage = ({ listingId, onBack }) => {
   const [loadingTrails, setLoadingTrails] = useState(false);
   
   // Area info state
-  const [areaInfo, setAreaInfo] = useState(null);
+  const [areaCities, setAreaCities] = useState([]);
   const [loadingAreaInfo, setLoadingAreaInfo] = useState(false);
   
   // Module questionnaire modal state
