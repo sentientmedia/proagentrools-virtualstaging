@@ -1255,6 +1255,131 @@ async def get_area_info(
     except Exception as e:
         logger.error(f"GeoDB API error: {str(e)}")
         return {"cities": [], "total": 0, "message": "Failed to fetch area info"}
+
+# Zillow API - Property Market Data
+@api_router.get("/listings/{listing_id}/zillow-data")
+async def get_zillow_data(
+    listing_id: str,
+    current_user: User = Depends(get_current_user_enhanced)
+):
+    """Get Zillow property data and market information"""
+    try:
+        # Get listing
+        listing = await db.listings.find_one({"id": listing_id, "user_id": current_user.id})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        property_details = listing.get("property_details", {})
+        
+        # Build full address
+        address_parts = [
+            property_details.get("address", ""),
+            property_details.get("city", ""),
+            property_details.get("state", ""),
+            property_details.get("zip_code", "")
+        ]
+        full_address = ", ".join(filter(None, address_parts))
+        
+        if not full_address:
+            return {"property_data": None, "message": "No address information available"}
+        
+        rapidapi_key = os.environ.get('RAPIDAPI_KEY')
+        if not rapidapi_key:
+            return {"property_data": None, "message": "Zillow API not configured"}
+        
+        headers = {
+            "x-rapidapi-host": "zillow-com4.p.rapidapi.com",
+            "x-rapidapi-key": rapidapi_key
+        }
+        
+        # Step 1: Auto-complete to get zpid
+        autocomplete_url = "https://zillow-com4.p.rapidapi.com/properties/auto-complete"
+        autocomplete_params = {"query": full_address}
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(autocomplete_url, params=autocomplete_params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    results = data.get("data", [])
+                    
+                    if not results or len(results) == 0:
+                        return {"property_data": None, "message": "Property not found on Zillow"}
+                    
+                    # Get first result's zpid
+                    zpid = results[0].get("metaData", {}).get("zpid")
+                    if not zpid:
+                        return {"property_data": None, "message": "No Zillow property ID found"}
+                    
+                    # Step 2: Get property details
+                    details_url = "https://zillow-com4.p.rapidapi.com/properties/others"
+                    details_params = {"zpid": zpid}
+                    
+                    async with session.get(details_url, params=details_params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as details_response:
+                        if details_response.status == 200:
+                            details_data = await details_response.json()
+                            prop_data = details_data.get("data", {})
+                            reso_facts = prop_data.get("resoFacts", {})
+                            
+                            # Extract key information
+                            property_info = {
+                                "zpid": zpid,
+                                "price": prop_data.get("price"),
+                                "price_change": prop_data.get("priceChange"),
+                                "street_address": prop_data.get("streetAddress"),
+                                "city": prop_data.get("city"),
+                                "state": prop_data.get("state"),
+                                "zipcode": prop_data.get("zipcode"),
+                                "bedrooms": reso_facts.get("bedrooms"),
+                                "bathrooms": reso_facts.get("bathrooms"),
+                                "square_feet": reso_facts.get("buildingArea"),
+                                "year_built": None,
+                                "property_type": None,
+                                "architectural_style": reso_facts.get("architecturalStyle"),
+                                "days_on_market": None,
+                                "price_per_sqft": None,
+                                "lot_size": reso_facts.get("lotSize"),
+                                "parking_spaces": None,
+                                "has_garage": reso_facts.get("hasGarage"),
+                                "has_fireplace": reso_facts.get("hasFireplace"),
+                                "heating": None,
+                                "cooling": None,
+                                "zillow_url": f"https://www.zillow.com/homedetails/{zpid}_zpid/"
+                            }
+                            
+                            # Extract from atAGlanceFacts
+                            at_a_glance = reso_facts.get("atAGlanceFacts", [])
+                            for fact in at_a_glance:
+                                label = fact.get("factLabel", "")
+                                value = fact.get("factValue")
+                                
+                                if label == "Type":
+                                    property_info["property_type"] = value
+                                elif label == "Year Built":
+                                    property_info["year_built"] = value
+                                elif label == "Days on Zillow":
+                                    property_info["days_on_market"] = value
+                                elif label == "Price/sqft":
+                                    property_info["price_per_sqft"] = value
+                                elif label == "Parking":
+                                    property_info["parking_spaces"] = value
+                                elif label == "Heating":
+                                    property_info["heating"] = value
+                                elif label == "Cooling":
+                                    property_info["cooling"] = value
+                            
+                            return {"property_data": property_info}
+                        else:
+                            logger.error(f"Zillow details error: {details_response.status}")
+                            return {"property_data": None, "message": "Failed to get property details"}
+                else:
+                    logger.error(f"Zillow autocomplete error: {response.status}")
+                    return {"property_data": None, "message": "Failed to search property"}
+                    
+    except asyncio.TimeoutError:
+        return {"property_data": None, "message": "Zillow API timeout"}
+    except Exception as e:
+        logger.error(f"Zillow API error: {str(e)}")
+        return {"property_data": None, "message": "Failed to fetch Zillow data"}
 async def get_nearby_trails(
     listing_id: str,
     current_user: User = Depends(get_current_user_enhanced)
