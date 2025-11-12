@@ -1063,6 +1063,7 @@ async def get_nearby_trails(
             async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
                 if response.status == 200:
                     data = await response.json()
+                    logger.info(f"Trail API response: {data}")
                     trails = data.get("places", [])
                     
                     # Format trail data
@@ -1082,6 +1083,8 @@ async def get_nearby_trails(
                             "url": trail.get("url", "")
                         })
                     
+                    logger.info(f"Formatted {len(formatted_trails)} trails")
+                    
                     return {
                         "trails": formatted_trails,
                         "total": len(formatted_trails),
@@ -1092,7 +1095,7 @@ async def get_nearby_trails(
                         }
                     }
                 else:
-                    logger.error(f"Trail API error: {response.status}")
+                    logger.error(f"Trail API error: {response.status}, Body: {await response.text()}")
                     return {"trails": [], "message": f"API error: {response.status}"}
                     
     except asyncio.TimeoutError:
