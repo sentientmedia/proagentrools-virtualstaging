@@ -10,6 +10,11 @@ import LandingPage from './components/LandingPage';
 import AuthLoadingPage from './components/auth/AuthLoadingPage';
 import ListingsDashboard from './components/listings/ListingsDashboard';
 import AdminDashboard from './components/admin/AdminDashboard';
+import CreditPurchasePage from './components/credits/CreditPurchasePage';
+import PaymentSuccessPage from './components/credits/PaymentSuccessPage';
+import PaymentCancelPage from './components/credits/PaymentCancelPage';
+import TransactionHistoryPage from './components/credits/TransactionHistoryPage';
+import ReferralDashboard from './components/referrals/ReferralDashboard';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -46,6 +51,12 @@ const Header = () => {
                   >
                     Dashboard
                   </button>
+                  <button
+                    onClick={() => window.location.href = '/referrals'}
+                    className="hover:text-blue-300 transition-colors"
+                  >
+                    Referrals
+                  </button>
                   {user?.is_admin && (
                     <button
                       onClick={() => window.location.href = '/admin'}
@@ -66,9 +77,17 @@ const Header = () => {
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => window.location.href = '/credits/purchase'}
+                    className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    <span className="font-semibold">{user?.credits || 0}</span>
+                  </button>
                   <div className="text-sm">
                     <div className="font-medium">{user?.full_name}</div>
-                    <div className="text-blue-200">{user?.credits} credits</div>
                   </div>
                   <button
                     onClick={logout}
@@ -1299,6 +1318,46 @@ const AppRouter = () => {
     return (
       <ProtectedRoute>
         <ListingsDashboard />
+      </ProtectedRoute>
+    );
+  }
+
+  if (path === '/credits/purchase') {
+    return (
+      <ProtectedRoute>
+        <CreditPurchasePage />
+      </ProtectedRoute>
+    );
+  }
+
+  if (path === '/credits/transactions') {
+    return (
+      <ProtectedRoute>
+        <TransactionHistoryPage />
+      </ProtectedRoute>
+    );
+  }
+
+  if (path === '/payment/success') {
+    return (
+      <ProtectedRoute>
+        <PaymentSuccessPage />
+      </ProtectedRoute>
+    );
+  }
+
+  if (path === '/payment/cancel') {
+    return (
+      <ProtectedRoute>
+        <PaymentCancelPage />
+      </ProtectedRoute>
+    );
+  }
+
+  if (path === '/referrals') {
+    return (
+      <ProtectedRoute>
+        <ReferralDashboard />
       </ProtectedRoute>
     );
   }

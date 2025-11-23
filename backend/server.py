@@ -24,6 +24,7 @@ import aiofiles
 import jwt
 import bcrypt
 from passlib.context import CryptContext
+import stripe
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -150,6 +151,19 @@ RUNPOD_ENDPOINT = "https://api.runpod.ai/v2/kfi0ulqzkpuu5e"
 RUNPOD_API_KEY = os.environ.get('RUNPOD_API_KEY') or os.environ.get('REPLICATE_API_TOKEN')  # Try RunPod key first, fallback to existing
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 OPENAI_ASSISTANT_ID = "asst_dosMuAyLnY9vqMvVnAtO5GHx"  # Your Interior Design Assistant
+
+# Stripe Configuration
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
+stripe.api_key = STRIPE_SECRET_KEY
+
+# Credit Packages Configuration
+CREDIT_PACKAGES = [
+    {"id": "starter", "name": "Starter Pack", "credits": 100, "price": 10.00, "price_id": os.environ.get('STRIPE_PRICE_STARTER')},
+    {"id": "pro", "name": "Pro Pack", "credits": 300, "price": 25.00, "price_id": os.environ.get('STRIPE_PRICE_PRO'), "popular": True},
+    {"id": "business", "name": "Business Pack", "credits": 700, "price": 50.00, "price_id": os.environ.get('STRIPE_PRICE_BUSINESS')},
+    {"id": "enterprise", "name": "Enterprise Pack", "credits": 1500, "price": 100.00, "price_id": os.environ.get('STRIPE_PRICE_ENTERPRISE')},
+]
 
 # Create the main app without a prefix
 app = FastAPI(title="ProAgentTools", description="AI-powered tools for real estate agents")
@@ -354,12 +368,13 @@ class BrokerProfile(BaseModel):
 
 class User(UserBase):
     id: str
-    credits: int = 100  # Free tier starts with 100 credits
+    credits: int = 500  # Free tier starts with 500 credits
     subscription_status: str = "free"  # free, active, cancelled, expired
     subscription_plan: Optional[str] = None  # basic, pro, agency
     referral_code: str
     referred_by: Optional[str] = None
     total_referrals: int = 0
+    first_purchase_completed: bool = False  # Track if user has made their first purchase
     created_at: datetime
     last_login: Optional[datetime] = None
     is_admin: bool = False  # Admin flag for platform management
@@ -553,30 +568,28 @@ async def register_user(user_data: UserCreate):
             "full_name": user_data.full_name,
             "hashed_password": hashed_password,
             "is_active": True,
-            "credits": 100,  # Free tier starts with 100 credits
+            "credits": 500,  # Free tier starts with 500 credits
             "subscription_status": "free",
             "subscription_plan": None,
             "referral_code": referral_code,
             "referred_by": None,
             "total_referrals": 0,
+            "first_purchase_completed": False,
             "created_at": datetime.utcnow(),
             "last_login": None
         }
         
-        # Handle referral if provided
+        # Handle referral if provided (track referrer, but don't award credits yet)
         if user_data.referral_code:
             referrer = await db.users.find_one({"referral_code": user_data.referral_code})
-            if referrer and referrer.get('subscription_status') in ['active']:  # Must be paying member
+            if referrer:
                 user["referred_by"] = referrer["id"]
-                user["credits"] += 100  # Extra 100 credits for being referred
-                
-                # Give referrer 100 credits
+                # Increment total_referrals count for tracking
                 await db.users.update_one(
                     {"id": referrer["id"]},
-                    {
-                        "$inc": {"credits": 100, "total_referrals": 1}
-                    }
+                    {"$inc": {"total_referrals": 1}}
                 )
+                # Note: Referrer will get 500 credits when this user makes their first purchase
         
         # Insert user
         await db.users.insert_one(user)
@@ -4201,6 +4214,220 @@ async def get_gpt_concepts_history():
     except Exception as e:
         logger.error(f"Error retrieving GPT concepts history: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to retrieve history: {str(e)}")
+
+# ============================================
+# PAYMENT & CREDITS ENDPOINTS
+# ============================================
+
+# Pydantic models for payment
+class CreateCheckoutSessionRequest(BaseModel):
+    package_id: str
+
+class CreditTransaction(BaseModel):
+    id: str
+    user_id: str
+    type: str  # 'purchase', 'deduction', 'referral_bonus'
+    amount: int
+    description: str
+    created_at: datetime
+    stripe_payment_intent_id: Optional[str] = None
+
+@api_router.get("/credits/packages")
+async def get_credit_packages():
+    """Get available credit packages"""
+    return {"packages": CREDIT_PACKAGES}
+
+@api_router.post("/credits/create-checkout-session")
+async def create_checkout_session(
+    request: CreateCheckoutSessionRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a Stripe checkout session for purchasing credits"""
+    try:
+        # Find the package
+        package = next((p for p in CREDIT_PACKAGES if p["id"] == request.package_id), None)
+        if not package:
+            raise HTTPException(status_code=404, detail="Package not found")
+        
+        # Create Stripe checkout session
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': package['price_id'],
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=os.environ.get('FRONTEND_URL', 'http://localhost:3000') + '/payment/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=os.environ.get('FRONTEND_URL', 'http://localhost:3000') + '/payment/cancel',
+            client_reference_id=current_user.id,
+            metadata={
+                'user_id': current_user.id,
+                'package_id': package['id'],
+                'credits': package['credits']
+            }
+        )
+        
+        return {"checkout_url": checkout_session.url, "session_id": checkout_session.id}
+    
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Payment processing error")
+    except Exception as e:
+        logger.error(f"Checkout session creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+@api_router.post("/credits/webhook")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    payload = await request.body()
+    sig_header = request.headers.get('stripe-signature')
+    
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+    
+    # Handle the checkout.session.completed event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        
+        # Get user and package info from metadata
+        user_id = session['metadata']['user_id']
+        package_id = session['metadata']['package_id']
+        credits = int(session['metadata']['credits'])
+        payment_intent_id = session.get('payment_intent')
+        
+        # Add credits to user
+        await db.users.update_one(
+            {"id": user_id},
+            {"$inc": {"credits": credits}}
+        )
+        
+        # Check if this is the user's first purchase
+        user = await db.users.find_one({"id": user_id})
+        if user and not user.get('first_purchase_completed', False):
+            # Mark first purchase as completed
+            await db.users.update_one(
+                {"id": user_id},
+                {"$set": {"first_purchase_completed": True}}
+            )
+            
+            # Award 500 credits to referrer if user was referred
+            if user.get('referred_by'):
+                referrer_id = user['referred_by']
+                await db.users.update_one(
+                    {"id": referrer_id},
+                    {"$inc": {"credits": 500}}
+                )
+                
+                # Log referral bonus transaction
+                referral_transaction = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": referrer_id,
+                    "type": "referral_bonus",
+                    "amount": 500,
+                    "description": f"Referral bonus: {user['full_name']} made their first purchase",
+                    "created_at": datetime.utcnow(),
+                    "related_user_id": user_id
+                }
+                await db.credit_transactions.insert_one(referral_transaction)
+        
+        # Log the purchase transaction
+        transaction = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "type": "purchase",
+            "amount": credits,
+            "description": f"Purchased {package_id} package",
+            "created_at": datetime.utcnow(),
+            "stripe_payment_intent_id": payment_intent_id
+        }
+        await db.credit_transactions.insert_one(transaction)
+        
+        logger.info(f"Credits added for user {user_id}: {credits} credits")
+    
+    return {"status": "success"}
+
+@api_router.get("/credits/transactions")
+async def get_credit_transactions(current_user: User = Depends(get_current_user)):
+    """Get user's credit transaction history"""
+    try:
+        transactions = []
+        async for transaction in db.credit_transactions.find(
+            {"user_id": current_user.id}
+        ).sort("created_at", -1).limit(50):
+            if '_id' in transaction:
+                del transaction['_id']
+            transactions.append(transaction)
+        
+        return {"transactions": transactions}
+    except Exception as e:
+        logger.error(f"Error retrieving transactions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve transactions")
+
+# ============================================
+# REFERRAL ENDPOINTS
+# ============================================
+
+class ReferralStats(BaseModel):
+    referral_code: str
+    total_referrals: int
+    pending_referrals: int  # Signed up but haven't purchased
+    completed_referrals: int  # Made first purchase
+    total_credits_earned: int
+
+@api_router.get("/referrals/stats", response_model=ReferralStats)
+async def get_referral_stats(current_user: User = Depends(get_current_user)):
+    """Get user's referral statistics"""
+    try:
+        # Get all users referred by current user
+        referred_users = await db.users.find({"referred_by": current_user.id}).to_list(length=None)
+        
+        total_referrals = len(referred_users)
+        completed_referrals = sum(1 for u in referred_users if u.get('first_purchase_completed', False))
+        pending_referrals = total_referrals - completed_referrals
+        
+        # Calculate total credits earned from referrals
+        referral_transactions = await db.credit_transactions.find({
+            "user_id": current_user.id,
+            "type": "referral_bonus"
+        }).to_list(length=None)
+        total_credits_earned = sum(t['amount'] for t in referral_transactions)
+        
+        return ReferralStats(
+            referral_code=current_user.referral_code,
+            total_referrals=total_referrals,
+            pending_referrals=pending_referrals,
+            completed_referrals=completed_referrals,
+            total_credits_earned=total_credits_earned
+        )
+    except Exception as e:
+        logger.error(f"Error retrieving referral stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve referral stats")
+
+@api_router.get("/referrals/list")
+async def get_referral_list(current_user: User = Depends(get_current_user)):
+    """Get list of referred users"""
+    try:
+        referred_users = []
+        async for user in db.users.find({"referred_by": current_user.id}).sort("created_at", -1):
+            referred_users.append({
+                "id": user['id'],
+                "full_name": user['full_name'],
+                "email": user['email'],
+                "created_at": user['created_at'],
+                "first_purchase_completed": user.get('first_purchase_completed', False),
+                "status": "completed" if user.get('first_purchase_completed', False) else "pending"
+            })
+        
+        return {"referrals": referred_users}
+    except Exception as e:
+        logger.error(f"Error retrieving referral list: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve referral list")
 
 # Main route
 @api_router.get("/")
